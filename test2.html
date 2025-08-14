@@ -370,7 +370,85 @@ function exportAll(){
   const blob=new Blob([JSON.stringify(allData,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='taekwondoData.json'; a.click();
 }
-function importAll(){ alert('Import functionality coming soon'); } // placeholder
+//function importAll(){ alert('Import functionality coming soon'); } // placeholder
+
+function importAll() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = event => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        if(!importedData) return;
+
+        // ---- STUDENTS ----
+        if(importedData.students){
+          importedData.students.forEach(iStu => {
+            const existing = students.find(s => s.id === iStu.id);
+            if(existing){
+              // Check for differences
+              const diffs = [];
+              ['name','birthdate','belt','instructors','location','eligible','active'].forEach(key=>{
+                if(JSON.stringify(existing[key]) !== JSON.stringify(iStu[key])){
+                  diffs.push(`${key}: current="${JSON.stringify(existing[key])}", imported="${JSON.stringify(iStu[key])}"`);
+                }
+              });
+              if(diffs.length>0){
+                if(confirm(`Student ID ${iStu.id} has differences:\n${diffs.join('\n')}\nOverwrite with imported values?`)){
+                  Object.assign(existing,iStu);
+                }
+              }
+            } else {
+              students.push(iStu);
+              if(iStu.id >= nextStudentId) nextStudentId = iStu.id + 1;
+            }
+          });
+        }
+
+        // ---- BELT TESTS ----
+        if(importedData.beltTests){
+          importedData.beltTests.forEach(iTest => {
+            const exists = beltTests.find(bt => JSON.stringify(bt)===JSON.stringify(iTest));
+            if(!exists) beltTests.push(iTest);
+          });
+        }
+
+        // ---- INSTRUCTORS ----
+        if(importedData.instructors){
+          importedData.instructors.forEach(i => {
+            if(!instructors.includes(i)) instructors.push(i);
+          });
+        }
+
+        // ---- LOCATIONS ----
+        if(importedData.locations){
+          importedData.locations.forEach(l => {
+            if(!locations.includes(l)) locations.push(l);
+          });
+        }
+
+        // ---- BELTS ----
+        if(importedData.belts){
+          importedData.belts.forEach(b => {
+            if(!belts.includes(b)) belts.push(b);
+          });
+        }
+
+        saveAllData();
+        populateTables();
+        alert('Import complete.');
+      } catch(err){
+        alert('Error importing JSON: '+err);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
 
 // RESET DATA
 function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables(); }}
