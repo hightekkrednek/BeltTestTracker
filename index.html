@@ -46,7 +46,6 @@ textarea { width: 100%; }
 <h1>Taekwondo Belt Tracker</h1>
 
 <div id="dashboard" class="dashboard">
-<h2>Dashboard</h2>
 <div id="beltCounts"></div>
 <div id="upcomingTests"></div>
 <div id="testSummary"></div>
@@ -285,69 +284,69 @@ function printSection(id){ const section=document.getElementById(id); section.cl
 // --- Calendar ---
 let calendarMonth=new Date().getMonth(); let calendarYear=new Date().getFullYear();
 document.getElementById('prevMonthBtn').addEventListener('click',()=>{ calendarMonth--; if(calendarMonth<0){ calendarMonth=11; calendarYear--; } renderCalendar(); });
-document.getElementById('nextMonthBtn').addEventListener('click',()=>{ calendarMonth++; if(calendarMonth>11){ calendarMonth=0; calendarYear++; } renderCalendar(); });
+document.getElementById('nextMonthBtn').addEventListener('click',()=>{
+    calendarMonth++;
+    if(calendarMonth>11){ calendarMonth=0; calendarYear++; }
+    renderCalendar();
+});
 
 function renderCalendar(){
-const calendarDiv=document.getElementById('calendar'); calendarDiv.innerHTML='';
-document.getElementById('calendarMonthYear').textContent = `${new Date(calendarYear, calendarMonth).toLocaleString('default', { month: 'long' })} ${calendarYear}`;
+    const calendarDiv=document.getElementById('calendar');
+    calendarDiv.innerHTML='';
+    document.getElementById('calendarMonthYear').textContent=
+        `${new Date(calendarYear, calendarMonth).toLocaleString('default', { month: 'long' })} ${calendarYear}`;
 
-const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
-const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    const firstDay=new Date(calendarYear, calendarMonth, 1).getDay();
+    const daysInMonth=new Date(calendarYear, calendarMonth+1, 0).getDate();
 
-// Fill initial empty days
-for (let i = 0; i < firstDay; i++) {
-    const emptyDiv = document.createElement('div');
-    calendarDiv.appendChild(emptyDiv);
-}
+    // Empty cells for first day
+    for(let i=0;i<firstDay;i++){ const emptyDiv=document.createElement('div'); calendarDiv.appendChild(emptyDiv); }
 
-// Render each day
-for (let day = 1; day <= daysInMonth; day++) {
-    const dayDiv = document.createElement('div');
-    dayDiv.classList.add('calendar-day');
-    const dayHeader = document.createElement('h4');
-    dayHeader.textContent = day;
-    dayDiv.appendChild(dayHeader);
+    const tests=getData('tests');
 
-    // Add tests on this date
-    const tests = getData('tests');
-    const dayStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const dayTests = tests.filter(t => t.testDate === dayStr);
+    for(let day=1; day<=daysInMonth; day++){
+        const dayDiv=document.createElement('div');
+        dayDiv.classList.add('calendar-day');
+        const dayHeader=document.createElement('h4');
+        dayHeader.textContent=day;
+        dayDiv.appendChild(dayHeader);
 
-    dayTests.forEach(t => {
-        const testEntry = document.createElement('div');
-        testEntry.classList.add('test-entry');
-        testEntry.classList.add(`belt-${t.beltTestedFor}`);
-        testEntry.textContent = `${t.studentName} (${t.beltTestedFor}) - ${t.result}`;
-        
-        // Click to edit result
-        testEntry.addEventListener('click', () => {
-            const newResult = prompt("Update Result (Pass/Fail):", t.result);
-            if (newResult && (newResult === 'Pass' || newResult === 'Fail')) {
-                t.result = newResult;
+        const dayStr=`${calendarYear}-${String(calendarMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const dayTests=tests.filter(t=>t.testDate===dayStr);
 
-                // Update student belt if passed
-                if (newResult === 'Pass') {
-                    const students = getData('students');
-                    const student = students.find(s => s.id === t.studentId);
-                    if (student) {
-                        student.currentBelt = t.beltTestedFor;
-                        const nextDate = new Date(t.testDate);
-                        nextDate.setMonth(nextDate.getMonth() + 3);
-                        student.nextTestDate = nextDate.toISOString().split('T')[0];
-                        saveData('students', students);
+        dayTests.forEach(t=>{
+            const testEntry=document.createElement('div');
+            testEntry.classList.add('test-entry');
+            testEntry.classList.add(`belt-${t.beltTestedFor}`);
+            testEntry.textContent=`${t.studentName} (${t.beltTestedFor}) - ${t.result}`;
+
+            testEntry.addEventListener('click',()=>{
+                const newResult=prompt("Update Result (Pass/Fail):", t.result);
+                if(newResult && (newResult==='Pass' || newResult==='Fail')){
+                    t.result=newResult;
+                    if(newResult==='Pass'){
+                        const students=getData('students');
+                        const student=students.find(s=>s.id===t.studentId);
+                        if(student){
+                            student.currentBelt=t.beltTestedFor;
+                            const nextDate=new Date(t.testDate);
+                            nextDate.setMonth(nextDate.getMonth()+3);
+                            student.nextTestDate=nextDate.toISOString().split('T')[0];
+                            saveData('students',students);
+                        }
                     }
+                    saveData('tests',tests);
+                    renderStudents();
+                    renderTests();
+                    renderCalendar();
                 }
-                saveData('tests', tests);
-                renderStudents();
-                renderTests();
-                renderCalendar();
-            }
+            });
+
+            dayDiv.appendChild(testEntry);
         });
 
-        dayDiv.appendChild(testEntry);
-    });
-
-    calendarDiv.appendChild(dayDiv);
+        calendarDiv.appendChild(dayDiv);
+    }
 }
 
 // --- Initial Rendering ---
