@@ -368,23 +368,46 @@ function saveTest(){
   if(student) student.belt=belt;
   saveAllData(); populateTables(); closeTestModal();
 }
-function addTestRowToTable(t){
-  const tbody=document.querySelector('#beltTestsTable tbody');
-  const student=students.find(s=>s.id===t.studentId);
-  const row=document.createElement('tr');
-  row.innerHTML=`
-    <td>${student ? student.name : 'Unknown'}</td>
-    <td class="${beltClassName(t.belt)}">${t.belt}</td>
-    <td>${t.date}</td>
-    <td>${t.instructors.join(',')}</td>
-    <td>${t.location}</td>
-    <td>
-      <button onclick="editTest(${beltTests.indexOf(t)})">Edit</button>
-      <button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button>
-    </td>
+
+function addTestRowToTable(t) {
+  const tbody = document.querySelector('#beltTestsTable tbody');
+  const student = students.find(s => s.id === t.studentId);
+  const row = document.createElement('tr');
+
+  // Student cell (name + ID)
+  const studentCell = row.insertCell(0);
+  studentCell.innerHTML = `
+    <div>${student ? student.name : 'Unknown'}</div>
+    <div style="font-size: 0.8em; color: gray;">ID: ${t.studentId}</div>
   `;
+
+  // Belt cell
+  const beltCell = row.insertCell(1);
+  beltCell.className = beltClassName(t.belt);
+  beltCell.textContent = t.belt;
+
+  // Date cell
+  const dateCell = row.insertCell(2);
+  dateCell.textContent = t.date;
+
+  // Instructors cell
+  const instructorsCell = row.insertCell(3);
+  instructorsCell.textContent = t.instructors.join(',');
+
+  // Location cell
+  const locationCell = row.insertCell(4);
+  locationCell.textContent = t.location;
+
+  // Actions cell
+  const actionsCell = row.insertCell(5);
+  actionsCell.innerHTML = `
+    <button onclick="editTest(${beltTests.indexOf(t)})">Edit</button>
+    <button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button>
+  `;
+
   tbody.appendChild(row);
 }
+
 function editTest(index){ const t=beltTests[index]; if(t) openTestModal(t); }
 function deleteTest(index){ if(confirm('Delete belt test?')){ beltTests.splice(index,1); saveAllData(); populateTables(); } }
 
