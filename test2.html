@@ -5,47 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Taekwondo Tracker</title>
 <style>
-body { font-family: Arial, sans-serif; margin:0; background:#f4f4f9; color:#333; overflow-x:hidden; }
+body { font-family: Arial, sans-serif; margin:0; background:#f4f4f9; color:#333; }
 h2 { margin-top:0; }
 section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:95%; }
 table { width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:auto; word-wrap:break-word; }
-.table-container { overflow-x:auto; width:100%; }
+.table-container { overflow-x: auto; width: 100%; }
 th,td { padding:10px; border:1px solid #ddd; text-align:left; font-size:14px; overflow-wrap: break-word; }
 th { background:#e2e2f1; }
-input[type="text"], input[type="number"], input[type="date"], select { width:95%; padding:6px; box-sizing:border-box; border-radius:4px; border:1px solid #ccc; }
+input[type="text"], input[type="number"], input[type="date"], select { width:95%; padding:6px; border-radius:4px; border:1px solid #ccc; }
 input[type="checkbox"] { width:20px; height:20px; }
 button { margin:5px; padding:8px 12px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:14px; }
 button:hover { background:#534fd1; }
-.control-panel { background:#e8e8f8; padding:20px; border-radius:8px; margin:20px auto; max-width:95%; display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-start; }
+.student-active { background:#e6ffe6; }
 .belt-White{background:#ffffff;}
-.belt-White-Stripe{background:#f9f9f9;}
 .belt-Yellow{background:#fffacd;}
-.belt-Yellow-Stripe{background:#fff8b0;}
 .belt-Green{background:#90ee90;}
-.belt-Green-Stripe{background:#a0f0a0;}
 .belt-Blue{background:#add8e6;}
-.belt-Blue-Stripe{background:#b7dfee;}
 .belt-Red{background:#ff7f7f;}
-.belt-Red-Stripe{background:#ff9999;}
-.belt-Black{background:#333333; color:#fff;}
-.student-active{background:#e6ffe6;}
-.status-counts { font-weight:bold; margin-bottom:10px; }
+.belt-Black{background:#333;color:#fff;}
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000; overflow:auto; padding:10px;}
+.modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:100%; max-height:90%; overflow-y:auto; }
+.modal-header { font-weight:bold; margin-bottom:10px; }
+.modal-footer { text-align:right; margin-top:10px; }
 </style>
 </head>
 <body>
 
-<h1 style="text-align:center; background:#222; color:#fff; padding:15px 0; margin:0; border-bottom:4px solid #ffcc00;">Impact Martial Arts Belt Tracker</h1>
+<h1 style="text-align:center; background:#222; color:#fff; padding:15px 0; margin:0;">Impact Martial Arts Tracker</h1>
 
 <section id="studentsSection">
   <h2>Students</h2>
-  <div class="status-counts" id="studentStatusCounts"></div>
+  <div id="studentCounts" style="margin-bottom:10px;">Active: 0 | Inactive: 0</div>
   <div class="table-container">
     <table id="studentsTable">
       <thead>
         <tr>
           <th>ID</th>
           <th>Name</th>
-          <th>Birthdate</th>
+          <th>DOB</th>
           <th>Age</th>
           <th>Belt</th>
           <th>Instructor</th>
@@ -63,7 +60,7 @@ button:hover { background:#534fd1; }
 
 <section id="beltTestsSection">
   <h2>Belt Tests</h2>
-  <div class="status-counts" id="eligibleStatusCount"></div>
+  <div id="eligibleCounts" style="margin-bottom:10px;">Eligible Students: 0</div>
   <div class="table-container">
     <table id="beltTestsTable">
       <thead>
@@ -82,90 +79,121 @@ button:hover { background:#534fd1; }
   <button onclick="openTestModal()">Add Belt Test</button>
 </section>
 
-<!-- Modals for Student/Test omitted for brevity (same as before) -->
+<!-- MODALS (simplified for brevity) -->
+<div class="modal" id="studentModal">
+<div class="modal-content">
+<div class="modal-header">Add/Edit Student</div>
+<div class="modal-body">
+<label>Name: <input type="text" id="studentName"></label><br><br>
+<label>DOB: <input type="date" id="studentBirthdate"></label><br><br>
+<label>Belt: <select id="studentBelt"></select></label><br><br>
+<label>Instructor: <select id="studentInstructor"></select></label><br><br>
+<label>Location: <select id="studentLocation"></select></label><br><br>
+<label>Eligible: <input type="checkbox" id="studentEligible"></label><br><br>
+<label>Active: <input type="checkbox" id="studentActive"></label>
+</div>
+<div class="modal-footer">
+<button onclick="closeStudentModal()">Cancel</button>
+<button onclick="saveStudent()">Save</button>
+</div>
+</div>
+</div>
+
+<div class="modal" id="testModal">
+<div class="modal-content">
+<div class="modal-header">Add/Edit Belt Test</div>
+<div class="modal-body">
+<label>Student: <select id="testStudentId"></select></label><br><br>
+<label>Belt: <select id="testBelt"></select></label><br><br>
+<label>Date: <input type="date" id="testDate"></label><br><br>
+<label>Instructor(s): <select id="testInstructors" multiple></select></label><br><br>
+<label>Location: <select id="testLocation"></select></label>
+</div>
+<div class="modal-footer">
+<button onclick="closeTestModal()">Cancel</button>
+<button onclick="saveTest()">Save</button>
+</div>
+</div>
+</div>
 
 <script>
-// DATA
-let students=[], beltTests=[], nextStudentId=1000;
+let students=[], beltTests=[], belts=["White","Yellow","Green","Blue","Red","Black"], nextStudentId=1000;
 
-// UPDATE STATUS COUNTS
-function updateStatusCounts() {
-    const activeCount = students.filter(s => s.active).length;
-    const inactiveCount = students.filter(s => !s.active).length;
-    const eligibleCount = students.filter(s => s.active && s.eligible).length;
-    document.getElementById('studentStatusCounts').innerText = `Active: ${activeCount}, Inactive: ${inactiveCount}`;
-    document.getElementById('eligibleStatusCount').innerText = `Eligible (active only): ${eligibleCount}`;
+function saveAllData(){
+  localStorage.setItem('students',JSON.stringify(students));
+  localStorage.setItem('beltTests',JSON.stringify(beltTests));
+  localStorage.setItem('nextStudentId',nextStudentId);
 }
 
-// CALCULATE AGE
-function calculateAge(birthdate) {
-    if(!birthdate) return '';
-    const dob = new Date(birthdate);
-    const diff = new Date() - dob;
-    return Math.floor(diff / (1000*60*60*24*365.25));
+function loadAllData(){
+  students=JSON.parse(localStorage.getItem('students')||'[]');
+  beltTests=JSON.parse(localStorage.getItem('beltTests')||'[]');
+  nextStudentId=parseInt(localStorage.getItem('nextStudentId')||'1000');
+  populateTables();
 }
 
-// POPULATE STUDENT TABLE
-function populateStudentsTable() {
-    const tbody = document.querySelector('#studentsTable tbody');
-    tbody.innerHTML='';
-    students.forEach(s=>{
-        const row=document.createElement('tr');
-        if(s.active) row.classList.add('student-active');
-        row.innerHTML=`
-            <td>${s.id}</td>
-            <td>${s.name}</td>
-            <td>${s.birthdate}</td>
-            <td>${calculateAge(s.birthdate)}</td>
-            <td>${s.belt}</td>
-            <td>${s.instructor}</td>
-            <td>${s.location}</td>
-            <td>${s.eligible?'✔':''}</td>
-            <td>${s.active?'✔':''}</td>
-            <td>
-              <button onclick="editStudent(${s.id})">Edit</button>
-              <button onclick="deleteStudent(${s.id})">Delete</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-    updateStatusCounts();
+function updateStudentCounts(){
+  let active=students.filter(s=>s.active).length;
+  let inactive=students.filter(s=>!s.active).length;
+  document.getElementById('studentCounts').innerText=`Active: ${active} | Inactive: ${inactive}`;
+  let eligibleActive=students.filter(s=>s.active && s.eligible).length;
+  document.getElementById('eligibleCounts').innerText=`Eligible Students: ${eligibleActive}`;
 }
 
-// POPULATE BELT TEST TABLE (same logic)
-function populateBeltTestsTable() {
-    const tbody = document.querySelector('#beltTestsTable tbody');
-    tbody.innerHTML='';
-    beltTests.forEach(t=>{
-        const student = students.find(s=>s.id===t.studentId);
-        const studentName = student ? `${student.name} (${student.id})` : 'Unknown';
-        const row=document.createElement('tr');
-        row.innerHTML=`
-            <td>${studentName}</td>
-            <td>${t.belt}</td>
-            <td>${t.date}</td>
-            <td>${t.instructors.join(',')}</td>
-            <td>${t.location}</td>
-            <td>
-              <button onclick="editTest(${t.id})">Edit</button>
-              <button onclick="deleteTest(${t.id})">Delete</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-    updateStatusCounts();
+function populateTables(){
+  const tbodyS=document.querySelector('#studentsTable tbody'); tbodyS.innerHTML='';
+  students.forEach(s=>{
+    const row=document.createElement('tr'); if(s.active) row.classList.add('student-active');
+    let ageText='';
+    if(s.birthdate){ const b=new Date(s.birthdate), now=new Date(); ageText=now.getFullYear()-b.getFullYear(); const m=now.getMonth()-b.getMonth(); if(m<0 || (m===0 && now.getDate()<b.getDate())) ageText--; }
+    row.innerHTML=`<td>${s.id}</td><td>${s.name}</td><td>${s.birthdate}</td><td>${ageText}</td><td class="belt-${s.belt.replace(/\s/g,'-')}">${s.belt}</td><td>${s.instructor||''}</td><td>${s.location||''}</td><td>${s.eligible?'✔':''}</td><td>${s.active?'✔':''}</td><td><button onclick="editStudent(${s.id})">Edit</button></td>`;
+    tbodyS.appendChild(row);
+  });
+  const tbodyT=document.querySelector('#beltTestsTable tbody'); tbodyT.innerHTML='';
+  beltTests.forEach(t=>{
+    const s=students.find(st=>st.id===t.studentId); const name=s?s.name:'Unknown';
+    const row=document.createElement('tr');
+    row.innerHTML=`<td>${name}</td><td class="belt-${t.belt.replace(/\s/g,'-')}">${t.belt}</td><td>${t.date}</td><td>${t.instructors||''}</td><td>${t.location||''}</td><td><button onclick="editTest(${beltTests.indexOf(t)})">Edit</button></td>`;
+    tbodyT.appendChild(row);
+  });
+  updateStudentCounts();
 }
 
-// Example: Adding a student
-function addStudent(name, birthdate, belt, instructor, location, eligible, active) {
-    students.push({id:nextStudentId++, name, birthdate, belt, instructor, location, eligible, active});
-    populateStudentsTable();
-    populateBeltTestsTable();
+// Student modal actions
+let editingStudent=null;
+function openStudentModal(s=null){
+  editingStudent=s;
+  document.getElementById('studentName').value=s?s.name:'';
+  document.getElementById('studentBirthdate').value=s?s.birthdate:'';
+  document.getElementById('studentBelt').innerHTML=''; belts.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.text=b; if(s&&s.belt===b)o.selected=true; document.getElementById('studentBelt').add(o); });
+  document.getElementById('studentEligible').checked=s?s.eligible:false;
+  document.getElementById('studentActive').checked=s?s.active:true;
+  document.getElementById('studentModal').style.display='flex';
+}
+function closeStudentModal(){ document.getElementById('studentModal').style.display='none'; editingStudent=null; }
+function saveStudent(){
+  const name=document.getElementById('studentName').value.trim();
+  if(!name){ alert('Name required'); return;}
+  const birthdate=document.getElementById('studentBirthdate').value;
+  const belt=document.getElementById('studentBelt').value;
+  const eligible=document.getElementById('studentEligible').checked;
+  const active=document.getElementById('studentActive').checked;
+  if(editingStudent){
+    editingStudent.name=name; editingStudent.birthdate=birthdate; editingStudent.belt=belt; editingStudent.eligible=eligible; editingStudent.active=active;
+  } else {
+    students.push({id:nextStudentId++, name, birthdate, belt, eligible, active});
+  }
+  saveAllData(); populateTables(); closeStudentModal();
 }
 
-// Initial population (if any)
-populateStudentsTable();
-populateBeltTestsTable();
+// Belt test modal
+let editingTest=null;
+function openTestModal(t=null){ editingTest=t; document.getElementById('testModal').style.display='flex'; }
+function closeTestModal(){ document.getElementById('testModal').style.display='none'; editingTest=null; }
+
+// On load
+window.onload=()=>{ loadAllData(); };
 </script>
+
 </body>
 </html>
