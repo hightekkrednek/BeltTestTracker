@@ -166,6 +166,13 @@ const exportStudentsBtn=document.getElementById('exportStudentsBtn');
 const exportTestsBtn=document.getElementById('exportTestsBtn');
 const resetDemoBtn = document.getElementById('resetDemoBtn');
 
+// --- Helper for next belt ---
+function getNextBelt(currentBelt){
+    const beltOrder = ['White','Yellow','Green','Blue','Red','Black'];
+    const index = beltOrder.indexOf(currentBelt);
+    return index >= 0 && index < beltOrder.length - 1 ? beltOrder[index + 1] : currentBelt;
+}
+
 // --- Student Form ---
 studentForm.addEventListener('submit',e=>{
     e.preventDefault();
@@ -352,6 +359,7 @@ function renderTests() {
     });
 }
 
+// --- Save Test Inline Edit ---
 function saveTestEdit(index, beltCell, dateCell, resultCell, commentsCell) {
     const tests = getData('tests');
     const t = tests[index];
@@ -362,145 +370,191 @@ function saveTestEdit(index, beltCell, dateCell, resultCell, commentsCell) {
     const validBelts = ['White','Yellow','Green','Blue','Red','Black'];
     const validResults = ['Pass','Fail'];
 
-    if(!validBelts.includes(newBelt) || !validResults.includes(newResult) || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)){
-        alert('Invalid date format. Use YYYY-MM-DD.');
-        renderTests();
-        return;
-    }
+   if(!validBelts.includes(newBelt)){
+    alert('Invalid belt. Must be White, Yellow, Green, Blue, Red, or Black.');
+    renderTests();
+    return;
+}
+if(!validResults.includes(newResult)){
+    alert('Invalid result. Must be Pass or Fail.');
+    renderTests();
+    return;
+}
+if(!/^\d{4}-\d{2}-\d{2}$/.test(newDate)){
+    alert('Invalid date format. Use YYYY-MM-DD.');
+    renderTests();
+    return;
+}
 
-    t.beltTestedFor = newBelt;
-    t.testDate = newDate;
-    t.result = newResult;
-    t.comments = newComments;
+t.beltTestedFor = newBelt;
+t.testDate = newDate;
+t.result = newResult;
+t.comments = newComments;
 
-    // Update student belt if test passed
-    const students = getData('students');
-    const student = students.find(s => s.id === t.studentId);
-    if(student && newResult === 'Pass'){
-        student.currentBelt = newBelt;
-        const nextDate = new Date(newDate);
-        nextDate.setMonth(nextDate.getMonth() + 3);
-        student.nextTestDate = nextDate.toISOString().split('T')[0];
-        saveData('students', students);
-    }
+// Update student belt if test passed
+const students = getData('students');
+const student = students.find(s => s.id === t.studentId);
+if(student && newResult === 'Pass'){
+    student.currentBelt = newBelt;
+    const nextDate = new Date(newDate);
+    nextDate.setMonth(nextDate.getMonth() + 3);
+    student.nextTestDate = nextDate.toISOString().split('T')[0];
+    saveData('students', students);
+}
 
-    saveData('tests', tests);
+saveData('tests', tests);
+renderTests();
+renderStudents();
+renderCalendar();
+renderDashboard();
+}
+
+// --- Delete Test ---
+function deleteTest(index){
+const tests = getData('tests');
+if(confirm('Delete this test record?')){
+    tests.splice(index,1);
+    saveData('tests',tests);
     renderTests();
     renderStudents();
     renderCalendar();
     renderDashboard();
 }
 
-// --- Delete Test ---
-function deleteTest(index){
-    const tests = getData('tests');
-    if(confirm('Delete this test record?')){
-        tests.splice(index,1);
-        saveData('tests',tests);
-        renderTests();
-        renderStudents();
-        renderCalendar();
-        renderDashboard();
-    }
-}
-
 // --- Search Filter ---
 searchInput.addEventListener('input', () => {
-    renderStudents();
-    renderTests();
+renderStudents();
+renderTests();
 });
 
 // --- CSV Export ---
 function exportCSV(data, filename){
-    const csv = [];
-    const headers = Object.keys(data[0]);
-    csv.push(headers.join(','));
-    data.forEach(row => {
-        csv.push(headers.map(field => `"${row[field]}"`).join(','));
-    });
-    const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+const csv = [];
+const headers = Object.keys(data[0]);
+csv.push(headers.join(','));
+data.forEach(row => {
+    csv.push(headers.map(field => `"${row[field]}"`).join(','));
+});
+const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+const encodedUri = encodeURI(csvContent);
+const link = document.createElement("a");
+link.setAttribute("href", encodedUri);
+link.setAttribute("download", filename);
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
 }
 
 exportStudentsBtn.addEventListener('click', () => {
-    const students = getData('students');
-    if(students.length>0) exportCSV(students, 'students.csv');
+const students = getData('students');
+if(students.length>0) exportCSV(students, 'students.csv');
 });
 exportTestsBtn.addEventListener('click', () => {
-    const tests = getData('tests');
-    if(tests.length>0) exportCSV(tests, 'tests.csv');
+const tests = getData('tests');
+if(tests.length>0) exportCSV(tests, 'tests.csv');
 });
 
 // --- Dashboard ---
 function renderDashboard(){
-    const students = getData('students');
-    const tests = getData('tests');
-    const beltCounts={White:0,Yellow:0,Green:0,Blue:0,Red:0,Black:0};
-    students.forEach(s=>beltCounts[s.currentBelt]++);
-    document.getElementById('beltCounts').innerHTML='Belt Counts:<br>'+Object.entries(beltCounts).map(([b,c])=>`${b}: ${c}`).join('<br>');
+const students = getData('students');
+const tests = getData('tests');
+const beltCounts={White:0,Yellow:0,Green:0,Blue:0,Red:0,Black:0};
+students.forEach(s=>beltCounts[s.currentBelt]++);
+document.getElementById('beltCounts').innerHTML='Belt Counts:<br>'+Object.entries(beltCounts).map(([b,c])=>`${b}: ${c}`).join('<br>');
 
-    const today=new Date(); const nextMonth=new Date(); nextMonth.setMonth(today.getMonth()+1);
-    const upcoming = tests.filter(t => { const d = new Date(t.testDate); return d >= today && d <= nextMonth; });
-    document.getElementById('upcomingTests').innerHTML=`Upcoming Tests (Next Month): ${upcoming.length}`;
+const today=new Date(); const nextMonth=new Date(); nextMonth.setMonth(today.getMonth()+1);
+const upcoming = tests.filter(t => { const d = new Date(t.testDate); return d >= today && d <= nextMonth; });
+document.getElementById('upcomingTests').innerHTML=`Upcoming Tests (Next Month): ${upcoming.length}`;
 
-    const passCount = tests.filter(t => t.result==='Pass').length;
-    const failCount = tests.filter(t => t.result==='Fail').length;
-    document.getElementById('testSummary').innerHTML=`Test Results: Pass ${passCount} | Fail ${failCount}`;
+const passCount = tests.filter(t => t.result==='Pass').length;
+const failCount = tests.filter(t => t.result==='Fail').length;
+document.getElementById('testSummary').innerHTML=`Test Results: Pass ${passCount} | Fail ${failCount}`;
 }
 
 // --- Calendar ---
 let calendarMonth=(new Date()).getMonth(), calendarYear=(new Date()).getFullYear();
 document.getElementById('prevMonthBtn').addEventListener('click',()=>{
-    calendarMonth--; if(calendarMonth<0){calendarMonth=11; calendarYear--;}
-    renderCalendar();
+calendarMonth--; if(calendarMonth<0){calendarMonth=11; calendarYear--;}
+renderCalendar();
 });
 document.getElementById('nextMonthBtn').addEventListener('click',()=>{
-    calendarMonth++; if(calendarMonth>11){calendarMonth=0; calendarYear++;}
-    renderCalendar();
+calendarMonth++; if(calendarMonth>11){calendarMonth=0; calendarYear++;}
+renderCalendar();
 });
 
 function renderCalendar(){
-    const calendarDiv=document.getElementById('calendar');
-    calendarDiv.innerHTML='';
-    document.getElementById('calendarMonthYear').textContent=
-        `${new Date(calendarYear, calendarMonth).toLocaleString('default', { month: 'long' })} ${calendarYear}`;
-    const firstDay=new Date(calendarYear, calendarMonth, 1).getDay();
-    const daysInMonth=new Date(calendarYear, calendarMonth+1, 0).getDate();
-    for(let i=0;i<firstDay;i++){ calendarDiv.appendChild(document.createElement('div')); }
-    const tests=getData('tests');
-    for(let day=1; day<=daysInMonth; day++){
-        const dayDiv=document.createElement('div'); dayDiv.classList.add('calendar-day');
-        const dayHeader=document.createElement('h4'); dayHeader.textContent=day; dayDiv.appendChild(dayHeader);
-        const dayStr=`${calendarYear}-${String(calendarMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        const dayTests = tests.filter(t => t.testDate===dayStr);
-        dayTests.forEach(t=>{
-            const testEntry=document.createElement('div'); testEntry.classList.add('test-entry'); testEntry.classList.add(`belt-${t.beltTestedFor}`);
-            testEntry.textContent=`${t.studentName} (${t.beltTestedFor}) - ${t.result}`;
-            dayDiv.appendChild(testEntry);
-        });
-        calendarDiv.appendChild(dayDiv);
-    }
+const calendarDiv=document.getElementById('calendar');
+calendarDiv.innerHTML='';
+document.getElementById('calendarMonthYear').textContent=
+    `${new Date(calendarYear, calendarMonth).toLocaleString('default', { month: 'long' })} ${calendarYear}`;
+const firstDay=new Date(calendarYear, calendarMonth, 1).getDay();
+const daysInMonth=new Date(calendarYear, calendarMonth+1, 0).getDate();
+
+// Blank cells for alignment
+for(let i=0;i<firstDay;i++){ calendarDiv.appendChild(document.createElement('div')); }
+
+const tests=getData('tests');
+const students=getData('students');
+const today = new Date();
+
+for(let day=1; day<=daysInMonth; day++){
+    const dayDiv=document.createElement('div'); 
+    dayDiv.classList.add('calendar-day');
+    const dayHeader=document.createElement('h4'); dayHeader.textContent=day; 
+    dayDiv.appendChild(dayHeader);
+    const dayStr=`${calendarYear}-${String(calendarMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
+    // Completed tests
+    const dayTests = tests.filter(t => t.testDate===dayStr);
+    dayTests.forEach(t=>{
+        const testEntry=document.createElement('div'); 
+        testEntry.classList.add('test-entry'); 
+        testEntry.classList.add(`belt-${t.beltTestedFor}`);
+        testEntry.textContent=`${t.studentName} (${t.beltTestedFor}) - ${t.result}`;
+        dayDiv.appendChild(testEntry);
+    });
+
+    // Upcoming eligible tests (purple, clickable)
+    students.forEach(s=>{
+        if(s.nextTestDate === dayStr){
+            const upcomingEntry=document.createElement('div');
+            upcomingEntry.classList.add('test-entry');
+            upcomingEntry.style.backgroundColor='purple';
+            upcomingEntry.style.color='white';
+            upcomingEntry.style.cursor='pointer';
+            upcomingEntry.textContent=`${s.firstName} ${s.lastName} - Eligible for next belt`;
+
+            // Click to pre-fill test form
+            upcomingEntry.addEventListener('click', () => {
+                document.getElementById('studentSelect').value = s.id;
+                document.getElementById('beltTestedFor').value = getNextBelt(s.currentBelt);
+                document.getElementById('testDate').value = dayStr;
+                document.getElementById('testResult').value = '';
+                document.getElementById('comments').value = '';
+                window.scrollTo({ top: testForm.offsetTop, behavior: 'smooth' });
+            });
+
+            dayDiv.appendChild(upcomingEntry);
+        }
+    });
+
+    calendarDiv.appendChild(dayDiv);
+}
 }
 
 // --- Print ---
 function printSection(id){
-    const content=document.getElementById(id).outerHTML;
-    const w=window.open(); w.document.write('<html><head><title>Print</title></head><body>'+content+'</body></html>');
-    w.document.close(); w.print();
+const content=document.getElementById(id).outerHTML;
+const w=window.open(); w.document.write('<html><head><title>Print</title></head><body>'+content+'</body></html>');
+w.document.close(); w.print();
 }
 
 // --- Reset Demo Data ---
 resetDemoBtn.addEventListener('click', () => {
-    if(confirm("Reset all data to demo? All changes will be lost.")){
-        localStorage.removeItem('students'); localStorage.removeItem('tests');
-        location.reload();
-    }
+if(confirm("Reset all data to demo? All changes will be lost.")){
+    localStorage.removeItem('students'); localStorage.removeItem('tests');
+    location.reload();
+}
 });
 
 // --- Initial Render ---
