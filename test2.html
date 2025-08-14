@@ -16,8 +16,6 @@ input[type="checkbox"] { width:20px; height:20px; }
 button { margin:5px; padding:8px 12px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:14px; }
 button:hover { background:#534fd1; }
 .control-panel { background:#e8e8f8; padding:20px; border-radius:8px; margin:20px auto; max-width:1000px; }
-
-/* Belt colors */
 .belt-White{background:#ffffff;}
 .belt-White-Stripe{background:#f9f9f9;}
 .belt-Yellow{background:#fffacd;}
@@ -30,20 +28,21 @@ button:hover { background:#534fd1; }
 .belt-Red-Stripe{background:#ff9999;}
 .belt-Black{background:#333333; color:#fff;}
 .student-active{background:#e6ffe6;}
-
-/* Modal styles */
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; }
-.modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:90%; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000;}
+.modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:90%; max-height:90%; overflow-y:auto; }
 .modal-header { font-weight:bold; margin-bottom:10px; }
 .modal-footer { text-align:right; margin-top:10px; }
 select[multiple] { height:60px; }
+li { margin-bottom:5px; }
+li button { background:#ff4d4d; margin-left:5px; font-size:12px; padding:2px 6px; }
+li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </style>
 </head>
 <body>
 
 <section id="dashboard">
 <h2>Dashboard</h2>
-<div id="beltCounts">No belt tests yet.</div>
+<div id="beltCounts">No students yet.</div>
 </section>
 
 <section id="studentsSection">
@@ -88,14 +87,17 @@ select[multiple] { height:60px; }
 <section class="control-panel">
 <h2>Control Panel</h2>
 <div>
+<button onclick="openBeltModal()">Manage Belts</button>
+<button onclick="openInstructorModal()">Manage Instructors</button>
+<button onclick="openLocationModal()">Manage Locations</button>
+</div>
+<div>
 <button onclick="importStudents()">Import Students</button>
 <button onclick="exportStudents()">Export Students</button>
 <button onclick="importTests()">Import Tests</button>
 <button onclick="exportTests()">Export Tests</button>
 </div>
 <div>
-<button onclick="manageInstructors()">Manage Instructors</button>
-<button onclick="manageLocations()">Manage Locations</button>
 <button onclick="resetData()">Reset Data</button>
 </div>
 </section>
@@ -108,19 +110,7 @@ select[multiple] { height:60px; }
 <label>Name: <input type="text" id="studentName"></label><br><br>
 <label>Birthdate: <input type="date" id="studentBirthdate"></label><br><br>
 <label>Belt: 
-<select id="studentBelt">
-<option>White</option>
-<option>White Stripe</option>
-<option>Yellow</option>
-<option>Yellow Stripe</option>
-<option>Green</option>
-<option>Green Stripe</option>
-<option>Blue</option>
-<option>Blue Stripe</option>
-<option>Red</option>
-<option>Red Stripe</option>
-<option>Black</option>
-</select>
+<select id="studentBelt"></select>
 </label><br><br>
 <label>Instructor: <select id="studentInstructor"></select></label><br><br>
 <label>Location: <select id="studentLocation"></select></label><br><br>
@@ -140,21 +130,7 @@ select[multiple] { height:60px; }
 <div class="modal-header">Add/Edit Belt Test</div>
 <div class="modal-body">
 <label>Student: <select id="testStudentId"></select></label><br><br>
-<label>Belt: 
-<select id="testBelt">
-<option>White</option>
-<option>White Stripe</option>
-<option>Yellow</option>
-<option>Yellow Stripe</option>
-<option>Green</option>
-<option>Green Stripe</option>
-<option>Blue</option>
-<option>Blue Stripe</option>
-<option>Red</option>
-<option>Red Stripe</option>
-<option>Black</option>
-</select>
-</label><br><br>
+<label>Belt: <select id="testBelt"></select></label><br><br>
 <label>Date: <input type="date" id="testDate"></label><br><br>
 <label>Instructor(s): <select id="testInstructors" multiple></select></label><br><br>
 <label>Location: <select id="testLocation"></select></label>
@@ -166,11 +142,55 @@ select[multiple] { height:60px; }
 </div>
 </div>
 
+<!-- BELT MANAGEMENT MODAL -->
+<div class="modal" id="beltModal">
+<div class="modal-content">
+<div class="modal-header">Manage Belts</div>
+<div class="modal-body">
+<ul id="beltList"></ul>
+<input type="text" id="newBeltName" placeholder="New Belt Name">
+<button onclick="addBelt()">Add</button>
+</div>
+<div class="modal-footer">
+<button onclick="closeBeltModal()">Close</button>
+</div>
+</div>
+</div>
+
+<!-- INSTRUCTOR MODAL -->
+<div class="modal" id="instructorModal">
+<div class="modal-content">
+<div class="modal-header">Manage Instructors</div>
+<div class="modal-body">
+<ul id="instructorList"></ul>
+<input type="text" id="newInstructorName" placeholder="New Instructor Name">
+<button onclick="addInstructor()">Add</button>
+</div>
+<div class="modal-footer">
+<button onclick="closeInstructorModal()">Close</button>
+</div>
+</div>
+</div>
+
+<!-- LOCATION MODAL -->
+<div class="modal" id="locationModal">
+<div class="modal-content">
+<div class="modal-header">Manage Locations</div>
+<div class="modal-body">
+<ul id="locationList"></ul>
+<input type="text" id="newLocationName" placeholder="New Location Name">
+<button onclick="addLocation()">Add</button>
+</div>
+<div class="modal-footer">
+<button onclick="closeLocationModal()">Close</button>
+</div>
+</div>
+</div>
+
 <script>
 // DATA
-let students=[], beltTests=[], instructors=[], locations=[], nextStudentId=1000;
+let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
 let editingStudent=null, editingTest=null;
-const beltOptions=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"];
 
 // LOCAL STORAGE
 function saveAllData(){ 
@@ -178,6 +198,7 @@ function saveAllData(){
     localStorage.setItem('beltTests',JSON.stringify(beltTests)); 
     localStorage.setItem('instructors',JSON.stringify(instructors)); 
     localStorage.setItem('locations',JSON.stringify(locations)); 
+    localStorage.setItem('belts',JSON.stringify(belts));
     localStorage.setItem('nextStudentId',nextStudentId);
 }
 function loadAllData(){ 
@@ -185,6 +206,7 @@ function loadAllData(){
     beltTests=JSON.parse(localStorage.getItem('beltTests')||'[]'); 
     instructors=JSON.parse(localStorage.getItem('instructors')||'[]'); 
     locations=JSON.parse(localStorage.getItem('locations')||'[]'); 
+    belts=JSON.parse(localStorage.getItem('belts')||JSON.stringify(belts));
     nextStudentId=parseInt(localStorage.getItem('nextStudentId')||'1000'); 
 }
 
@@ -193,8 +215,8 @@ function beltClassName(belt){ return 'belt-'+belt.replace(/\s/g,'-'); }
 
 // DASHBOARD
 function updateBeltCounts(){
-  if(beltTests.length===0){document.getElementById('beltCounts').innerText="No belt tests yet.";return;}
-  let counts={}; beltTests.forEach(t=>{ counts[t.belt]=(counts[t.belt]||0)+1; });
+  if(students.length===0){document.getElementById('beltCounts').innerText="No students yet.";return;}
+  let counts={}; students.forEach(s=>{ counts[s.belt]=(counts[s.belt]||0)+1; });
   document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
 }
 
@@ -205,14 +227,24 @@ function populateTables(){
     const tbodyT=document.querySelector('#beltTestsTable tbody'); tbodyT.innerHTML='';
     beltTests.forEach(t=>{ addTestRowToTable(t); });
     updateBeltCounts();
+    populateBeltSelector();
 }
 
 // STUDENT FUNCTIONS
+function populateBeltSelector(){
+  const sel=document.getElementById('studentBelt');
+  sel.innerHTML='';
+  belts.forEach(b=>{const o=document.createElement('option'); o.value=b; o.text=b; sel.add(o);});
+  const testSel=document.getElementById('testBelt');
+  testSel.innerHTML='';
+  belts.forEach(b=>{const o=document.createElement('option'); o.value=b; o.text=b; testSel.add(o);});
+}
+
 function openStudentModal(s=null){
   editingStudent=s;
   document.getElementById('studentName').value=s?s.name:'';
   document.getElementById('studentBirthdate').value=s?s.birthdate:'';
-  document.getElementById('studentBelt').value=s?s.belt:'White';
+  document.getElementById('studentBelt').value=s?s.belt:belts[0];
   document.getElementById('studentEligible').checked=s?s.eligible:false;
   document.getElementById('studentActive').checked=s?s.active:true;
 
@@ -262,7 +294,7 @@ function addStudentRowToTable(s){
   tbody.appendChild(row);
 }
 function editStudent(id){ const s=students.find(x=>x.id===id); if(s) openStudentModal(s);}
-function deleteStudent(id){ if(confirm('Delete student?')){students=students.filter(x=>x.id!==id); saveAllData(); populateTables();}}
+function deleteStudent(id){ if(confirm('Delete student?')){ students=students.filter(x=>x.id!==id); saveAllData(); populateTables();}}
 
 // BELT TEST FUNCTIONS
 function openTestModal(t=null){
@@ -275,7 +307,7 @@ function openTestModal(t=null){
     if(t&&t.studentId===s.id) o.selected=true; 
     studentSel.add(o); 
   });
-  document.getElementById('testBelt').value=t?t.belt:'White';
+  document.getElementById('testBelt').value=t?t.belt:belts[0];
   document.getElementById('testDate').value=t?t.date:'';
   const selI=document.getElementById('testInstructors'); selI.innerHTML='';
   instructors.forEach(i=>{const o=document.createElement('option'); o.value=i; o.text=i; if(t&&t.instructors.includes(i)) o.selected=true; selI.add(o);});
@@ -314,22 +346,64 @@ function addTestRowToTable(t){
 function editTest(index){ openTestModal(beltTests[index]); }
 function deleteTest(index){ if(confirm('Delete this test?')){ beltTests.splice(index,1); saveAllData(); populateTables(); }}
 
-// INSTRUCTORS & LOCATIONS
-function manageInstructors(){ const val=prompt('Comma-separated instructors', instructors.join(',')); if(val!==null){ instructors=val.split(',').map(x=>x.trim()).filter(x=>x); saveAllData(); populateTables(); } }
-function manageLocations(){ const val=prompt('Comma-separated locations', locations.join(',')); if(val!==null){ locations=val.split(',').map(x=>x.trim()).filter(x=>x); saveAllData(); populateTables(); } }
+// BELT MANAGEMENT
+function openBeltModal(){
+  const ul=document.getElementById('beltList'); ul.innerHTML='';
+  belts.forEach((b,i)=>{
+    const li=document.createElement('li');
+    li.innerHTML=`${b} <button class="upBtn" onclick="moveBeltUp(${i})">↑</button><button class="downBtn" onclick="moveBeltDown(${i})">↓</button><button onclick="deleteBelt(${i})">X</button>`;
+    ul.appendChild(li);
+  });
+  document.getElementById('beltModal').style.display='flex';
+}
+function closeBeltModal(){ document.getElementById('beltModal').style.display='none'; saveAllData(); populateTables();}
+function addBelt(){ const val=document.getElementById('newBeltName').value.trim(); if(val){belts.push(val); document.getElementById('newBeltName').value=''; openBeltModal();}}
+function moveBeltUp(i){ if(i>0){ [belts[i-1],belts[i]]=[belts[i],belts[i-1]]; openBeltModal(); }}
+function moveBeltDown(i){ if(i<belts.length-1){ [belts[i],belts[i+1]]=[belts[i+1],belts[i]]; openBeltModal(); }}
+function deleteBelt(i){ if(confirm('Delete this belt?')){ belts.splice(i,1); openBeltModal(); }}
+
+// INSTRUCTOR MANAGEMENT
+function openInstructorModal(){
+  const ul=document.getElementById('instructorList'); ul.innerHTML='';
+  instructors.forEach((i,idx)=>{
+    const li=document.createElement('li');
+    li.innerHTML=`${i} <button onclick="editInstructor(${idx})">Edit</button><button onclick="deleteInstructor(${idx})">X</button>`;
+    ul.appendChild(li);
+  });
+  document.getElementById('instructorModal').style.display='flex';
+}
+function closeInstructorModal(){ document.getElementById('instructorModal').style.display='none'; saveAllData(); populateTables();}
+function addInstructor(){ const val=document.getElementById('newInstructorName').value.trim(); if(val){instructors.push(val); document.getElementById('newInstructorName').value=''; openInstructorModal();}}
+function editInstructor(idx){ const val=prompt('Edit instructor', instructors[idx]); if(val) { instructors[idx]=val; openInstructorModal(); } }
+function deleteInstructor(idx){ if(confirm('Delete this instructor?')){ instructors.splice(idx,1); openInstructorModal(); }}
+
+// LOCATION MANAGEMENT
+function openLocationModal(){
+  const ul=document.getElementById('locationList'); ul.innerHTML='';
+  locations.forEach((l,idx)=>{
+    const li=document.createElement('li');
+    li.innerHTML=`${l} <button onclick="editLocation(${idx})">Edit</button><button onclick="deleteLocation(${idx})">X</button>`;
+    ul.appendChild(li);
+  });
+  document.getElementById('locationModal').style.display='flex';
+}
+function closeLocationModal(){ document.getElementById('locationModal').style.display='none'; saveAllData(); populateTables();}
+function addLocation(){ const val=document.getElementById('newLocationName').value.trim(); if(val){locations.push(val); document.getElementById('newLocationName').value=''; openLocationModal();}}
+function editLocation(idx){ const val=prompt('Edit location', locations[idx]); if(val) { locations[idx]=val; openLocationModal(); } }
+function deleteLocation(idx){ if(confirm('Delete this location?')){ locations.splice(idx,1); openLocationModal(); }}
 
 // IMPORT/EXPORT JSON
-function importStudents(){ const f=document.createElement('input'); f.type='file'; f.accept='.json'; f.onchange=e=>{ const reader=new FileReader(); reader.onload=ev=>{ const imported=JSON.parse(ev.target.result); imported.forEach(s=>{ if(!students.find(x=>x.id===s.id)) students.push(s); }); saveAllData(); populateTables(); }; reader.readAsText(e.target.files[0]); }; f.click(); }
-function exportStudents(){ const blob=new Blob([JSON.stringify(students,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='students.json'; a.click(); URL.revokeObjectURL(url);}
-function importTests(){ const f=document.createElement('input'); f.type='file'; f.accept='.json'; f.onchange=e=>{ const reader=new FileReader(); reader.onload=ev=>{ const imported=JSON.parse(ev.target.result); imported.forEach(t=>{ beltTests.push(t); }); saveAllData(); populateTables(); }; reader.readAsText(e.target.files[0]); }; f.click();}
-function exportTests(){ const blob=new Blob([JSON.stringify(beltTests,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='beltTests.json'; a.click(); URL.revokeObjectURL(url); }
+function exportStudents(){ const blob=new Blob([JSON.stringify(students, null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='students.json'; a.click();}
+function importStudents(){ alert('Import functionality coming soon'); } // placeholder
+function exportTests(){ const blob=new Blob([JSON.stringify(beltTests, null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='beltTests.json'; a.click();}
+function importTests(){ alert('Import functionality coming soon'); } // placeholder
 
-// RESET
-function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[]; instructors=[]; locations=[]; nextStudentId=1000; saveAllData(); populateTables();}}
+// RESET DATA
+function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables(); }}
 
-// INIT
-loadAllData(); populateTables();
+// INITIALIZE
+loadAllData();
+populateTables();
 </script>
-
 </body>
 </html>
