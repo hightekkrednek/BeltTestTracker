@@ -6,20 +6,12 @@
 <style>
 body { font-family: Arial, sans-serif; background:#f0f0f0; margin:0; padding:0; }
 .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 10px; box-sizing: border-box; }
-section, .control-panel {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  margin: 20px 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
-  overflow-x: auto;
-  box-sizing: border-box;
-}
-table { width: 100%; border-collapse: collapse; table-layout: auto; }
-th, td { border: 1px solid #ccc; padding: 5px; text-align: left; }
-th { background: #eee; }
-#beltCounts { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 0; }
-.beltBadge { padding: 5px 10px; border-radius: 12px; font-weight: bold; min-width: 60px; text-align:center; }
+section { background:#fff; border-radius:8px; padding:20px; margin:20px 10px; box-shadow:0 0 10px rgba(0,0,0,0.05); overflow-x:auto; }
+table { width:100%; border-collapse: collapse; table-layout:auto; }
+th, td { border:1px solid #ccc; padding:5px; text-align:left; }
+th { background:#eee; }
+#beltCounts { display:flex; flex-wrap:wrap; gap:10px; padding:10px 0; }
+.beltBadge { padding:5px 10px; border-radius:12px; font-weight:bold; min-width:60px; text-align:center; }
 .belt-White{background:#ffffff; color:#000; border:1px solid #ccc;}
 .belt-White-Stripe{background:#f9f9f9; color:#000; border:1px solid #ccc;}
 .belt-Yellow{background:#fffacd; color:#000; border:1px solid #ccc;}
@@ -31,10 +23,12 @@ th { background: #eee; }
 .belt-Red{background:#ff7f7f; color:#000; border:1px solid #ccc;}
 .belt-Red-Stripe{background:#ff9999; color:#000; border:1px solid #ccc;}
 .belt-Black{background:#333333; color:#fff; border:1px solid #000;}
-#versionLabel { font-size: 12px; color: #555; margin-top:10px; text-align:right; }
-button { padding: 5px 10px; margin: 2px; }
+#versionLabel { font-size:12px; color:#555; margin-top:10px; text-align:right; }
+button { padding:5px 10px; margin:2px; }
 .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; }
 .modal-content { background:#fff; padding:20px; border-radius:8px; max-width:500px; width:90%; max-height:90%; overflow:auto; box-sizing:border-box; }
+.sort-buttons { display:flex; justify-content:space-between; margin-bottom:5px; }
+.control-panel { margin:20px 10px; background:#fff; padding:15px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05);}
 </style>
 </head>
 <body>
@@ -45,19 +39,6 @@ button { padding: 5px 10px; margin: 2px; }
   <div id="beltCounts"></div>
 </section>
 
-<section class="control-panel">
-  <h3>Control Panel</h3>
-  <button onclick="openStudentModal()">Add Student</button>
-  <button onclick="openBeltTestModal()">Add Belt Test</button>
-  <button onclick="openInstructorModal()">Manage Instructors</button>
-  <button onclick="openLocationModal()">Manage Locations</button>
-  <button onclick="openBeltModal()">Manage Belts</button>
-  <button onclick="importAll()">Import Data</button>
-  <button onclick="exportAll()">Export Data</button>
-  <button onclick="resetData()">Reset All Data</button>
-  <div id="versionLabel">v1</div>
-</section>
-
 <section>
   <h3>Students</h3>
   <table id="studentTable">
@@ -66,6 +47,7 @@ button { padding: 5px 10px; margin: 2px; }
     </tr></thead>
     <tbody></tbody>
   </table>
+  <button onclick="openStudentModal()">Add Student</button>
 </section>
 
 <section>
@@ -76,6 +58,7 @@ button { padding: 5px 10px; margin: 2px; }
     </tr></thead>
     <tbody></tbody>
   </table>
+  <button onclick="openBeltTestModal()">Add Belt Test</button>
 </section>
 
 <!-- Modals -->
@@ -89,21 +72,21 @@ button { padding: 5px 10px; margin: 2px; }
     <label>Location: <select id="studentLocation"></select></label><br>
     <label>Eligible: <input type="checkbox" id="studentEligible"></label><br>
     <label>Active: <input type="checkbox" id="studentActive" checked></label><br>
-    <button onclick="saveStudent()">Save Student</button>
+    <button id="saveStudentBtn">Save Student</button>
     <button onclick="closeStudentModal()">Cancel</button>
   </div>
 </div>
 
 <div id="beltTestModal" class="modal">
   <div class="modal-content">
-    <h3>Add Belt Test</h3>
+    <h3>Add/Edit Belt Test</h3>
     <label>Student: <select id="testStudent"></select></label><br>
     <label>Date: <input id="testDate" type="date"></label><br>
     <label>Previous Belt: <select id="testPrevBelt"></select></label><br>
     <label>New Belt: <select id="testNewBelt"></select></label><br>
     <label>Instructors: <select id="testInstructors" multiple></select></label><br>
     <label>Location: <select id="testLocation"></select></label><br>
-    <button onclick="saveBeltTest()">Save Test</button>
+    <button id="saveBeltTestBtn">Save Test</button>
     <button onclick="closeBeltTestModal()">Cancel</button>
   </div>
 </div>
@@ -111,6 +94,10 @@ button { padding: 5px 10px; margin: 2px; }
 <div id="beltModal" class="modal">
   <div class="modal-content">
     <h3>Manage Belts</h3>
+    <div class="sort-buttons">
+      <button onclick="moveBeltUp()">Up</button>
+      <button onclick="moveBeltDown()">Down</button>
+    </div>
     <ul id="beltList"></ul>
     <input id="newBeltName" placeholder="New Belt Name">
     <button onclick="addBelt()">Add Belt</button>
@@ -138,252 +125,200 @@ button { padding: 5px 10px; margin: 2px; }
   </div>
 </div>
 
+<section class="control-panel">
+  <h3>Control Panel</h3>
+  <button onclick="importAll()">Import Data</button>
+  <button onclick="exportAll()">Export Data</button>
+  <button onclick="resetData()">Reset All Data</button>
+  <div id="versionLabel">v1</div>
+</section>
+
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
+let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
 
-  function saveAllData(){
-    localStorage.setItem('tk_students',JSON.stringify(students));
-    localStorage.setItem('tk_tests',JSON.stringify(beltTests));
-    localStorage.setItem('tk_instructors',JSON.stringify(instructors));
-    localStorage.setItem('tk_locations',JSON.stringify(locations));
-    localStorage.setItem('tk_belts',JSON.stringify(belts));
-    localStorage.setItem('tk_nextId',nextStudentId);
-  }
-  function loadAllData(){
-    students=JSON.parse(localStorage.getItem('tk_students')||'[]');
-    beltTests=JSON.parse(localStorage.getItem('tk_tests')||'[]');
-    instructors=JSON.parse(localStorage.getItem('tk_instructors')||'[]');
-    locations=JSON.parse(localStorage.getItem('tk_locations')||'[]');
-    belts=JSON.parse(localStorage.getItem('tk_belts')||JSON.stringify(belts));
-    nextStudentId=parseInt(localStorage.getItem('tk_nextId')||nextStudentId);
-  }
+// --- Load/Save ---
+function saveAllData(){
+  localStorage.setItem('tk_students',JSON.stringify(students));
+  localStorage.setItem('tk_tests',JSON.stringify(beltTests));
+  localStorage.setItem('tk_instructors',JSON.stringify(instructors));
+  localStorage.setItem('tk_locations',JSON.stringify(locations));
+  localStorage.setItem('tk_belts',JSON.stringify(belts));
+  localStorage.setItem('tk_nextId',nextStudentId);
+}
+function loadAllData(){
+  students=JSON.parse(localStorage.getItem('tk_students')||'[]');
+  beltTests=JSON.parse(localStorage.getItem('tk_tests')||'[]');
+  instructors=JSON.parse(localStorage.getItem('tk_instructors')||'[]');
+  locations=JSON.parse(localStorage.getItem('tk_locations')||'[]');
+  belts=JSON.parse(localStorage.getItem('tk_belts')||JSON.stringify(belts));
+  nextStudentId=parseInt(localStorage.getItem('tk_nextId')||nextStudentId);
+}
 
-  // --- Helper Functions ---
-  function populateTables(){
-    // Students table
-    const tbody=document.querySelector('#studentTable tbody');
-    tbody.innerHTML='';
-    students.forEach(s=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${s.id}</td><td>${s.name}</td><td>${s.birthdate}</td><td>${s.belt}</td><td>${s.instructors.join(', ')}</td><td>${s.location}</td><td><input type="checkbox" ${s.eligible?'checked':''} onclick="s.eligible=this.checked"></td><td><input type="checkbox" ${s.active?'checked':''} onclick="s.active=this.checked"></td><td><button onclick="editStudent(${s.id})">Edit</button><button onclick="deleteStudent(${s.id})">Delete</button></td>`;
-      tbody.appendChild(tr);
-    });
+// --- Populate ---
+function populateTables(){
+  const tbody=document.querySelector('#studentTable tbody'); tbody.innerHTML='';
+  students.forEach(s=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${s.id}</td><td>${s.name}</td><td>${s.birthdate}</td><td>${s.belt}</td><td>${s.instructors.join(', ')}</td><td>${s.location}</td>
+      <td><input type="checkbox" ${s.eligible?'checked':''} onclick="s.eligible=this.checked"></td>
+      <td><input type="checkbox" ${s.active?'checked':''} onclick="s.active=this.checked"></td>
+      <td><button onclick="editStudent(${s.id})">Edit</button><button onclick="deleteStudent(${s.id})">Delete</button></td>`;
+    tbody.appendChild(tr);
+  });
 
-    // Belt Tests
-    const tbodyTest=document.querySelector('#beltTestTable tbody');
-    tbodyTest.innerHTML='';
-    beltTests.forEach(t=>{
-      const tr=document.createElement('tr');
-      const stuName=(students.find(s=>s.id==t.studentId)||{name:'Unknown'}).name;
-      tr.innerHTML=`<td>${stuName}</td><td>${t.date}</td><td>${t.prevBelt}</td><td>${t.newBelt}</td><td>${t.instructors.join(', ')}</td><td>${t.location}</td><td><button onclick="editTest('${t.id}')">Edit</button><button onclick="deleteTest('${t.id}')">Delete</button></td>`;
-      tbodyTest.appendChild(tr);
-    });
+  const tbodyTest=document.querySelector('#beltTestTable tbody'); tbodyTest.innerHTML='';
+  beltTests.forEach(t=>{
+    const tr=document.createElement('tr');
+    const stuName=(students.find(s=>s.id==t.studentId)||{name:'Unknown'}).name;
+    tr.innerHTML=`<td>${stuName}</td><td>${t.date}</td><td>${t.prevBelt}</td><td>${t.newBelt}</td><td>${t.instructors.join(', ')}</td><td>${t.location}</td>
+    <td><button onclick="editTest(${t.id})">Edit</button><button onclick="deleteTest(${t.id})">Delete</button></td>`;
+    tbodyTest.appendChild(tr);
+  });
 
-    // Dashboard belts
-    const beltDiv=document.getElementById('beltCounts');
-    beltDiv.innerHTML='';
-    belts.forEach(b=>{
-      const count=students.filter(s=>s.belt===b).length;
-      const span=document.createElement('span');
-      span.className='beltBadge belt-'+b.replace(' ','-');
-      span.textContent=`${b}: ${count}`;
-      beltDiv.appendChild(span);
-    });
-  }
+  const beltDiv=document.getElementById('beltCounts'); beltDiv.innerHTML='';
+  belts.forEach(b=>{
+    const count=students.filter(s=>s.belt===b).length;
+    const span=document.createElement('span'); span.className='beltBadge belt-'+b.replace(' ','-'); span.textContent=`${b}: ${count}`;
+    beltDiv.appendChild(span);
+  });
+}
 
-  // --- Modals Open/Close ---
-  window.openStudentModal=()=>{document.getElementById('studentModal').style.display='flex';populateStudentModal();}
-  window.closeStudentModal=()=>{document.getElementById('studentModal').style.display='none';}
-  window.openBeltTestModal=()=>{document.getElementById('beltTestModal').style.display='flex';populateTestModal();}
-  window.closeBeltTestModal=()=>{document.getElementById('beltTestModal').style.display='none';}
-  window.openInstructorModal=()=>{document.getElementById('instructorModal').style.display='flex';populateInstructorModal();}
-  window.closeInstructorModal=()=>{document.getElementById('instructorModal').style.display='none';}
-  window.openLocationModal=()=>{document.getElementById('locationModal').style.display='flex';populateLocationModal();}
-  window.closeLocationModal=()=>{document.getElementById('locationModal').style.display='none';}
-  window.openBeltModal=()=>{document.getElementById('beltModal').style.display='flex';populateBeltModal();}
-  window.closeBeltModal=()=>{document.getElementById('beltModal').style.display='none';}
+// --- Modals Open/Close ---
+window.openStudentModal=()=>{document.getElementById('studentModal').style.display='flex';populateStudentModal();}
+window.closeStudentModal=()=>{document.getElementById('studentModal').style.display='none';}
+window.openBeltTestModal=()=>{document.getElementById('beltTestModal').style.display='flex';populateTestModal();}
+window.closeBeltTestModal=()=>{document.getElementById('beltTestModal').style.display='none';}
+window.openInstructorModal=()=>{document.getElementById('instructorModal').style.display='flex';populateInstructorModal();}
+window.closeInstructorModal=()=>{document.getElementById('instructorModal').style.display='none';}
+window.openLocationModal=()=>{document.getElementById('locationModal').style.display='flex';populateLocationModal();}
+window.closeLocationModal=()=>{document.getElementById('locationModal').style.display='none';}
+window.openBeltModal=()=>{document.getElementById('beltModal').style.display='flex';populateBeltModal();}
+window.closeBeltModal=()=>{document.getElementById('beltModal').style.display='none';}
 
-  // --- Populate modal selects ---
-  function populateStudentModal(){
-    const beltSelect=document.getElementById('studentBelt');
-    beltSelect.innerHTML='';
-    belts.forEach(b=>beltSelect.appendChild(new Option(b,b)));
-    const instrSelect=document.getElementById('studentInstructors');
-    instrSelect.innerHTML=''; instructors.forEach(i=>instrSelect.appendChild(new Option(i,i)));
-    const locSelect=document.getElementById('studentLocation');
-    locSelect.innerHTML=''; locations.forEach(l=>locSelect.appendChild(new Option(l,l)));
-  }
+// --- Populate Modals ---
+function populateStudentModal(){
+  const beltSelect=document.getElementById('studentBelt'); beltSelect.innerHTML=''; belts.forEach(b=>beltSelect.appendChild(new Option(b,b)));
+  const instrSelect=document.getElementById('studentInstructors'); instrSelect.innerHTML=''; instructors.forEach(i=>instrSelect.appendChild(new Option(i,i)));
+  const locSelect=document.getElementById('studentLocation'); locSelect.innerHTML=''; locations.forEach(l=>locSelect.appendChild(new Option(l,l)));
+}
+function populateTestModal(){
+  const studentSel=document.getElementById('testStudent'); studentSel.innerHTML='';
+  students.filter(s=>s.active&&s.eligible).forEach(s=>studentSel.appendChild(new Option(s.name,s.id)));
+  const prevSel=document.getElementById('testPrevBelt'); const newSel=document.getElementById('testNewBelt'); prevSel.innerHTML=''; newSel.innerHTML='';
+  belts.forEach(b=>{prevSel.appendChild(new Option(b,b)); newSel.appendChild(new Option(b,b));});
+  const instrSel=document.getElementById('testInstructors'); instrSel.innerHTML=''; instructors.forEach(i=>instrSel.appendChild(new Option(i,i)));
+  const locSel=document.getElementById('testLocation'); locSel.innerHTML=''; locations.forEach(l=>locSel.appendChild(new Option(l,l)));
+}
 
-  function populateTestModal(){
-    const studentSel=document.getElementById('testStudent');
-    studentSel.innerHTML='';
-    students.filter(s=>s.active&&s.eligible).forEach(s=>studentSel.appendChild(new Option(s.name,s.id)));
-    const prevSel=document.getElementById('testPrevBelt');
-    const newSel=document.getElementById('testNewBelt');
-    prevSel.innerHTML=''; newSel.innerHTML='';
-    belts.forEach(b=>{prevSel.appendChild(new Option(b,b)); newSel.appendChild(new Option(b,b));});
-    const instrSel=document.getElementById('testInstructors');
-    instrSel.innerHTML=''; instructors.forEach(i=>instrSel.appendChild(new Option(i,i)));
-    const locSel=document.getElementById('testLocation');
-    locSel.innerHTML=''; locations.forEach(l=>locSel.appendChild(new Option(l,l)));
-  }
+// --- CRUD Functions ---
+let editingStudentId=null, editingTestId=null;
 
-  function populateInstructorModal(){ const ul=document.getElementById('instructorList'); ul.innerHTML=''; instructors.forEach((i,idx)=>ul.innerHTML+=`<li>${i} <button onclick="deleteInstructor(${idx})">Delete</button></li>`);}
-  function populateLocationModal(){ const ul=document.getElementById('locationList'); ul.innerHTML=''; locations.forEach((l,idx)=>ul.innerHTML+=`<li>${l} <button onclick="deleteLocation(${idx})">Delete</button></li>`);}
-  function populateBeltModal(){ const ul=document.getElementById('beltList'); ul.innerHTML=''; belts.forEach((b,idx)=>ul.innerHTML+=`<li>${b} <button onclick="deleteBelt(${idx})">Delete</button></li>`);}
+function saveStudent(){
+  const sName=document.getElementById('studentName').value;
+  const sBelt=document.getElementById('studentBelt').value;
+  const sInstr=Array.from(document.getElementById('studentInstructors').selectedOptions).map(o=>o.value);
+  const sLoc=document.getElementById('studentLocation').value;
+  const sBirth=document.getElementById('studentBirthdate').value;
+  const sElig=document.getElementById('studentEligible').checked;
+  const sActive=document.getElementById('studentActive').checked;
 
-  // --- CRUD Functions ---
-  window.saveStudent=()=>{
-    const sName=document.getElementById('studentName').value;
-    const sBelt=document.getElementById('studentBelt').value;
-    const sInstr=Array.from(document.getElementById('studentInstructors').selectedOptions).map(o=>o.value);
-    const sLoc=document.getElementById('studentLocation').value;
-    const sBirth=document.getElementById('studentBirthdate').value;
-    const sElig=document.getElementById('studentEligible').checked;
-    const sActive=document.getElementById('studentActive').checked;
+  if(editingStudentId!==null){
+    const s=students.find(st=>st.id===editingStudentId);
+    s.name=sName; s.birthdate=sBirth; s.belt=sBelt; s.instructors=sInstr; s.location=sLoc; s.eligible=sElig; s.active=sActive;
+    editingStudentId=null;
+  }else{
     students.push({id:nextStudentId++,name:sName,birthdate:sBirth,belt:sBelt,instructors:sInstr,location:sLoc,eligible:sElig,active:sActive});
-    saveAllData(); populateTables(); closeStudentModal();
   }
+  saveAllData(); populateTables(); closeStudentModal();
+}
 
-  window.saveBeltTest=()=>{
-    const sId=document.getElementById('testStudent').value;
-    const prevB=document.getElementById('testPrevBelt').value;
-    const newB=document.getElementById('testNewBelt').value;
-    const instr=Array.from(document.getElementById('testInstructors').selectedOptions).map(o=>o.value);
-    const loc=document.getElementById('testLocation').value;
+function editStudent(id){
+  const s=students.find(st=>st.id===id); if(!s) return;
+  editingStudentId=id;
+  document.getElementById('studentName').value=s.name;
+  document.getElementById('studentBirthdate').value=s.birthdate;
+  document.getElementById('studentBelt').value=s.belt;
+  Array.from(document.getElementById('studentInstructors').options).forEach(o=>o.selected=s.instructors.includes(o.value));
+  document.getElementById('studentLocation').value=s.location;
+  document.getElementById('studentEligible').checked=s.eligible;
+  document.getElementById('studentActive').checked=s.active;
+  openStudentModal();
+}
+
+function deleteStudent(id){if(confirm('Delete this student?')){students=students.filter(s=>s.id!==id); saveAllData(); populateTables();}}
+
+function saveBeltTest(){
+  const sId=document.getElementById('testStudent').value;
+  const prevB=document.getElementById('testPrevBelt').value;
+  const newB=document.getElementById('testNewBelt').value;
+  const instr=Array.from(document.getElementById('testInstructors').selectedOptions).map(o=>o.value);
+  const loc=document.getElementById('testLocation').value;
+  if(editingTestId!==null){
+    const t=beltTests.find(bt=>bt.id===editingTestId);
+    t.studentId=sId; t.date=document.getElementById('testDate').value; t.prevBelt=prevB; t.newBelt=newB; t.instructors=instr; t.location=loc;
+    const stu=students.find(s=>s.id==sId); if(stu) stu.belt=newB;
+    editingTestId=null;
+  }else{
     const tId=Date.now();
     beltTests.push({id:tId,studentId:sId,date:document.getElementById('testDate').value,prevBelt:prevB,newBelt:newB,instructors:instr,location:loc});
-    const student=students.find(s=>s.id==sId); if(student) student.belt=newB;
-    saveAllData(); populateTables(); closeBeltTestModal();
+    const stu=students.find(s=>s.id==sId); if(stu) stu.belt=newB;
   }
+  saveAllData(); populateTables(); closeBeltTestModal();
+}
 
-  window.addInstructor=()=>{ const val=document.getElementById('newInstructorName').value; if(val&&!instructors.includes(val)){instructors.push(val); saveAllData(); populateInstructorModal();}}
-  window.deleteInstructor=(idx)=>{instructors.splice(idx,1); saveAllData(); populateInstructorModal();}
-  window.addLocation=()=>{ const val=document.getElementById('newLocationName').value; if(val&&!locations.includes(val)){locations.push(val); saveAllData(); populateLocationModal();}}
-  window.deleteLocation=(idx)=>{locations.splice(idx,1); saveAllData(); populateLocationModal();}
-  window.addBelt=()=>{ const val=document.getElementById('newBeltName').value; if(val&&!belts.includes(val)){belts.push(val); saveAllData(); populateBeltModal();}}
+function editTest(id){
+  const t=beltTests.find(bt=>bt.id===id); if(!t) return;
+  editingTestId=id;
+  document.getElementById('testStudent').value=t.studentId;
+  document.getElementById('testDate').value=t.date;
+  document.getElementById('testPrevBelt').value=t.prevBelt;
+  document.getElementById('testNewBelt').value=t.newBelt;
+  Array.from(document.getElementById('testInstructors').options).forEach(o=>o.selected=t.instructors.includes(o.value));
+  document.getElementById('testLocation').value=t.location;
+  openBeltTestModal();
+}
 
-  window.deleteStudent=(id)=>{students=students.filter(s=>s.id!=id); saveAllData(); populateTables();}
-  window.deleteTest=(id)=>{beltTests=beltTests.filter(t=>t.id!=id); saveAllData(); populateTables();}
+function deleteTest(id){if(confirm('Delete this test?')){beltTests=beltTests.filter(t=>t.id!==id); saveAllData(); populateTables();}}
 
-  // --- Import/Export ---
-  window.exportAll=()=>{
-    const allData={students,beltTests,instructors,locations,belts};
-    const blob=new Blob([JSON.stringify(allData,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download='taekwondo_data.json';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  }
+// --- Import/Export/Reset ---
+function exportAll(){const data={students,beltTests,instructors,locations,belts}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='taekwondo_data.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);}
+function importAll(){const input=document.createElement('input'); input.type='file'; input.accept='.json'; input.onchange=()=>{const file=input.files[0]; const reader=new FileReader();
+reader.onload=function(e){try{const data=JSON.parse(e.target.result);
+if(data.students) students=data.students;
+if(data.beltTests) beltTests=data.beltTests;
+if(data.instructors) instructors=data.instructors;
+if(data.locations) locations=data.locations;
+if(data.belts) belts=data.belts;
+nextStudentId=Math.max(...students.map(s=>s.id),1000)+1;
+saveAllData(); populateTables();
+alert('Data imported successfully.');}catch(err){alert('Invalid JSON file.');}}; reader.readAsText(file);}; input.click();}
+function resetData(){if(confirm('Reset all data?')){students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables();}}
 
-  window.importAll=()=>{
-    const input=document.createElement('input'); input.type='file'; input.accept='application/json';
-    input.onchange=e=>{
-      const file=e.target.files[0]; if(!file) return;
-      const reader=new FileReader();
-      reader.onload=event=>{
-        try{
-          const importedData          =JSON.parse(event.target.result);
-          if(importedData.students) students = importedData.students;
-          if(importedData.beltTests) beltTests = importedData.beltTests;
-          if(importedData.instructors) instructors = importedData.instructors;
-          if(importedData.locations) locations = importedData.locations;
-          if(importedData.belts) belts = importedData.belts;
-          saveAllData();
-          populateTables();
-          alert('Data imported successfully!');
-        } catch(err) {
-          alert('Failed to import data: ' + err);
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
-  }
+// --- Belt Modal Functions ---
+function populateBeltModal(){const ul=document.getElementById('beltList'); ul.innerHTML=''; belts.forEach((b,i)=>{const li=document.createElement('li'); li.textContent=b; li.dataset.index=i; li.onclick=()=>li.classList.toggle('selected'); ul.appendChild(li);});}
+function addBelt(){const name=document.getElementById('newBeltName').value.trim(); if(name){belts.push(name); document.getElementById('newBeltName').value=''; saveAllData(); populateBeltModal(); populateTables();}}
+function moveBeltUp(){const sel=document.querySelector('#beltList .selected'); if(!sel) return; const idx=parseInt(sel.dataset.index); if(idx===0) return; [belts[idx-1],belts[idx]]=[belts[idx],belts[idx-1]]; saveAllData(); populateBeltModal(); populateTables();}
+function moveBeltDown(){const sel=document.querySelector('#beltList .selected'); if(!sel) return; const idx=parseInt(sel.dataset.index); if(idx===belts.length-1) return; [belts[idx+1],belts[idx]]=[belts[idx],belts[idx+1]]; saveAllData(); populateBeltModal(); populateTables();}
 
-  window.resetData = () => {
-    if(confirm('Are you sure you want to reset all data? This cannot be undone.')){
-      students = [];
-      beltTests = [];
-      instructors = [];
-      locations = [];
-      belts = ["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"];
-      nextStudentId = 1000;
-      saveAllData();
-      populateTables();
-    }
-  }
+// --- Instructor Modal ---
+function populateInstructorModal(){const ul=document.getElementById('instructorList'); ul.innerHTML=''; instructors.forEach((i,idx)=>{const li=document.createElement('li'); li.textContent=i; li.onclick=()=>{if(confirm('Delete this instructor?')){instructors.splice(idx,1); saveAllData(); populateInstructorModal(); populateTables();}}; ul.appendChild(li);});}
+function addInstructor(){const name=document.getElementById('newInstructorName').value.trim(); if(name){instructors.push(name); document.getElementById('newInstructorName').value=''; saveAllData(); populateInstructorModal(); populateTables();}}
 
-  function editStudent(id){
-    const student = students.find(s=>s.id==id);
-    if(!student) return;
-    document.getElementById('studentName').value = student.name;
-    document.getElementById('studentBirthdate').value = student.birthdate;
-    populateStudentModal();
-    document.getElementById('studentBelt').value = student.belt;
-    Array.from(document.getElementById('studentInstructors').options).forEach(o=>o.selected = student.instructors.includes(o.value));
-    document.getElementById('studentLocation').value = student.location;
-    document.getElementById('studentEligible').checked = student.eligible;
-    document.getElementById('studentActive').checked = student.active;
+// --- Location Modal ---
+function populateLocationModal(){const ul=document.getElementById('locationList'); ul.innerHTML=''; locations.forEach((l,idx)=>{const li=document.createElement('li'); li.textContent=l; li.onclick=()=>{if(confirm('Delete this location?')){locations.splice(idx,1); saveAllData(); populateLocationModal(); populateTables();}}; ul.appendChild(li);});}
+function addLocation(){const name=document.getElementById('newLocationName').value.trim(); if(name){locations.push(name); document.getElementById('newLocationName').value=''; saveAllData(); populateLocationModal(); populateTables();}}
 
-    closeStudentModal(); // close any previous modal
-    openStudentModal();
-    window.saveStudent = ()=>{
-      student.name = document.getElementById('studentName').value;
-      student.birthdate = document.getElementById('studentBirthdate').value;
-      student.belt = document.getElementById('studentBelt').value;
-      student.instructors = Array.from(document.getElementById('studentInstructors').selectedOptions).map(o=>o.value);
-      student.location = document.getElementById('studentLocation').value;
-      student.eligible = document.getElementById('studentEligible').checked;
-      student.active = document.getElementById('studentActive').checked;
-      saveAllData();
-      populateTables();
-      closeStudentModal();
-      // restore default saveStudent for adding new
-      window.saveStudent = defaultSaveStudent;
-    }
-  }
+// --- Button Event Listeners ---
+document.getElementById('saveStudentBtn').addEventListener('click',saveStudent);
+document.getElementById('saveBeltTestBtn').addEventListener('click',saveBeltTest);
 
-  function editTest(id){
-    const test = beltTests.find(t=>t.id==id);
-    if(!test) return;
-    populateTestModal();
-    document.getElementById('testStudent').value = test.studentId;
-    document.getElementById('testDate').value = test.date;
-    document.getElementById('testPrevBelt').value = test.prevBelt;
-    document.getElementById('testNewBelt').value = test.newBelt;
-    Array.from(document.getElementById('testInstructors').options).forEach(o=>o.selected = test.instructors.includes(o.value));
-    document.getElementById('testLocation').value = test.location;
+// --- Initialize ---
+loadAllData(); populateTables();
 
-    closeBeltTestModal();
-    openBeltTestModal();
-
-    window.saveBeltTest = ()=>{
-      test.studentId = document.getElementById('testStudent').value;
-      test.date = document.getElementById('testDate').value;
-      test.prevBelt = document.getElementById('testPrevBelt').value;
-      test.newBelt = document.getElementById('testNewBelt').value;
-      test.instructors = Array.from(document.getElementById('testInstructors').selectedOptions).map(o=>o.value);
-      test.location = document.getElementById('testLocation').value;
-
-      const student = students.find(s=>s.id==test.studentId);
-      if(student) student.belt = test.newBelt;
-
-      saveAllData();
-      populateTables();
-      closeBeltTestModal();
-      window.saveBeltTest = defaultSaveBeltTest;
-    }
-  }
-
-  // Store default functions for restoration
-  const defaultSaveStudent = window.saveStudent;
-  const defaultSaveBeltTest = window.saveBeltTest;
-
-  loadAllData();
-  populateTables();
 });
 </script>
+
 </div>
 </body>
 </html>
