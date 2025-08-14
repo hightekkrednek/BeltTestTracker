@@ -1,887 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Taekwondo Belt Tracker</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taekwondo Tracker</title>
 <style>
-:root{
-  --bg:#f7f8fa; --card:#fff; --ink:#222; --muted:#666; --acc:#1565c0;
-  --danger:#d32f2f; --border:#e0e0e0; --overlay:#0008;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;color:var(--ink);background:var(--bg)}
-.container{max-width:1200px;margin:20px auto;padding:16px}
-h1{margin:0 0 12px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
-.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-input,select,textarea,button{padding:8px 10px;border:1px solid var(--border);border-radius:8px;font:inherit}
-button{background:var(--acc);color:#fff;cursor:pointer;border:none}
-button.secondary{background:#fff;color:var(--ink);border:1px solid var(--border)}
-button.danger{background:var(--danger)}
-.table{width:100%;border-collapse:collapse}
-th,td{border-top:1px solid var(--border);padding:8px;text-align:left;vertical-align:top}
-th{background:#fafafa}
-.belt-White{} .belt-Yellow{background:#fff59d} .belt-Green{background:#a5d6a7}
-.belt-Blue{background:#81d4fa} .belt-Red{background:#ef9a9a} .belt-Black{background:#000;color:#fff}
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay);z-index:1000}
-.modal.open{display:flex}
-.modal-card{width:min(900px,94vw);max-height:86vh;overflow:auto;background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:0 12px 30px #0003;padding:12px}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border)}
-.diff-table{width:100%;border-collapse:collapse;margin-top:8px}
-.diff-table th,.diff-table td{border-top:1px solid var(--border);padding:8px;vertical-align:top}
-.diff{background:#fffef3}
-.note{color:var(--muted);font-size:13px;margin-top:8px}
-.grid-6{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-@media print{
-  body *{visibility:hidden}
-  .printable, .printable *{visibility:visible}
-  .printable{position:absolute;inset:0}
-  button{display:none}
-}
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f4f4f9;
+        color: #333;
+    }
+    h2 {
+        margin-top: 0;
+    }
+    section {
+        background: #fff;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        max-width: 1000px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    th, td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+        font-size: 14px;
+    }
+    th {
+        background: #e2e2f1;
+    }
+    input[type="text"], input[type="number"], select {
+        width: 95%;
+        padding: 6px;
+        box-sizing: border-box;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+    input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+    button {
+        margin: 5px;
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: none;
+        background: #6c63ff;
+        color: #fff;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    button:hover {
+        background: #534fd1;
+    }
+    .control-panel {
+        background: #e8e8f8;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px auto;
+        max-width: 1000px;
+    }
+    select[multiple] {
+        height: 60px;
+    }
 </style>
 </head>
 <body>
-<div class="container">
 
-  <h1>Taekwondo Belt Tracker</h1>
-
-  <div class="card" id="dashboardCard">
-    <div id="beltCounts" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-  </div>
-
-  <div class="controls card">
-    <input id="searchInput" placeholder="Search by student, belt, instructor, or location..." style="flex:1;min-width:220px"/>
-    <button id="importStudentsBtn" class="secondary">Import Students (JSON)</button>
-    <input id="importStudentsFile" type="file" accept=".json,application/json" style="display:none"/>
-    <button id="exportStudentsBtn" class="secondary">Export Students JSON</button>
-
-    <button id="importTestsBtn" class="secondary">Import Tests (JSON)</button>
-    <input id="importTestsFile" type="file" accept=".json,application/json" style="display:none"/>
-    <button id="exportTestsBtn" class="secondary">Export Tests JSON</button>
-
-    <button id="importAllBtn" class="secondary">Import All (backup.json)</button>
-    <input id="importAllFile" type="file" accept=".json,application/json" style="display:none"/>
-    <button id="exportAllBtn" class="secondary">Export All (backup.json)</button>
-
-    <button id="printStudentsBtn" class="secondary">Print Students</button>
-    <button id="printTestsBtn" class="secondary">Print Tests</button>
-    <button id="manageInstructorsBtn">Manage Instructors</button>
-    <button id="manageLocationsBtn">Manage Locations</button>
-    <button id="resetDemoBtn" class="danger">Reset Demo</button>
-  </div>
-
-  <div class="card">
-    <h2>Add New Student</h2>
-    <div class="grid-6">
-      <input id="firstName" placeholder="First Name"/>
-      <input id="lastName" placeholder="Last Name"/>
-      <input id="dob" type="date"/>
-      <select id="currentBelt"><option value="">Belt</option><option>White</option><option>Yellow</option><option>Green</option><option>Blue</option><option>Red</option><option>Black</option></select>
-      <select id="instructorSelect"><option value="">Instructor</option></select>
-      <select id="locationSelect"><option value="">Location</option></select>
+<section id="dashboard">
+    <h2>Dashboard</h2>
+    <div id="beltCounts">
+        <!-- Belt counts will be updated dynamically -->
     </div>
-    <div style="margin-top:8px">
-      <button id="addStudentBtn">Add Student</button>
-    </div>
-  </div>
+</section>
 
-  <div class="card printable">
+<section id="studentsSection">
     <h2>Students</h2>
-    <table id="studentsTable" class="table">
-      <thead>
-        <tr><th>ID</th><th>Name</th><th>DOB</th><th>Current Belt</th><th>Eligible?</th><th>Instructor</th><th>Location</th><th>Actions</th></tr>
-      </thead>
-      <tbody></tbody>
+    <table id="studentsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Instructor</th>
+                <th>Location</th>
+                <th>Eligible</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
     </table>
-  </div>
+    <button onclick="addStudentRow()">Add Student</button>
+</section>
 
-  <div class="card">
-    <h2>Record Belt Test</h2>
-    <div class="grid-6">
-      <select id="studentTestSelect"><option value="">Select Student</option></select>
-      <select id="beltTestedFor"><option value="">Belt Tested For</option><option>Yellow</option><option>Green</option><option>Blue</option><option>Red</option><option>Black</option></select>
-      <input id="testDate" type="date"/>
-      <select id="testResult"><option value="">Result</option><option>Pass</option><option>Fail</option></select>
-      <select id="testInstructors" multiple size="4" title="Ctrl/Cmd+click to select multiple"></select>
-      <select id="testLocations" multiple size="4" title="Ctrl/Cmd+click to select multiple"></select>
-    </div>
-    <textarea id="comments" rows="2" placeholder="Comments (optional)" style="width:100%;margin-top:8px"></textarea>
-    <div style="margin-top:8px">
-      <button id="addTestBtn">Record Test</button>
-    </div>
-  </div>
-
-  <div class="card printable">
-    <h2>Belt Test Records</h2>
-    <table id="testsTable" class="table">
-      <thead>
-        <tr><th>Test ID</th><th>Student</th><th>Belt</th><th>Date</th><th>Result</th><th>Instructors</th><th>Locations</th><th>Comments</th><th>Actions</th></tr>
-      </thead>
-      <tbody></tbody>
+<section id="beltTestsSection">
+    <h2>Belt Tests</h2>
+    <table id="beltTestsTable">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Belt</th>
+                <th>Date</th>
+                <th>Instructor(s)</th>
+                <th>Location</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
     </table>
-  </div>
+    <button onclick="addBeltTestRow()">Add Belt Test</button>
+</section>
 
-</div>
-
-<!-- Instructors modal -->
-<div id="instructorsModal" class="modal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3>Manage Instructors</h3>
-      <button class="secondary" onclick="closeModal('instructorsModal')">Close</button>
+<section class="control-panel">
+    <h2>Control Panel</h2>
+    <div>
+        <button onclick="importStudents()">Import Students</button>
+        <button onclick="exportStudents()">Export Students</button>
+        <button onclick="importTests()">Import Tests</button>
+        <button onclick="exportTests()">Export Tests</button>
     </div>
     <div>
-      <div style="display:flex;gap:8px">
-        <input id="instructorName" placeholder="New instructor name"/>
-        <button onclick="addInstructor()">Add</button>
-      </div>
-      <table style="width:100%;margin-top:10px">
-        <thead><tr><th>Instructor</th><th>Actions</th></tr></thead>
-        <tbody id="instructorTableBody"></tbody>
-      </table>
+        <button onclick="manageInstructors()">Manage Instructors</button>
+        <button onclick="manageLocations()">Manage Locations</button>
+        <button onclick="resetData()">Reset Data</button>
     </div>
-  </div>
-</div>
-
-<!-- Locations modal -->
-<div id="locationsModal" class="modal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3>Manage Locations</h3>
-      <button class="secondary" onclick="closeModal('locationsModal')">Close</button>
-    </div>
-    <div>
-      <div style="display:flex;gap:8px">
-        <input id="locationName" placeholder="New location name"/>
-        <button onclick="addLocation()">Add</button>
-      </div>
-      <table style="width:100%;margin-top:10px">
-        <thead><tr><th>Location</th><th>Actions</th></tr></thead>
-        <tbody id="locationTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- Merge modal -->
-<div id="mergeModal" class="modal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3 id="mergeTitle">Resolve Conflicts</h3>
-      <button class="secondary" onclick="closeModal('mergeModal')">Close</button>
-    </div>
-    <div id="mergeContent"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
-      <button id="mergePrevBtn" class="secondary">Prev</button>
-      <button id="mergeApplyBtn">Apply & Next</button>
-      <button id="mergeSkipBtn" class="secondary">Skip</button>
-    </div>
-    <div class="note">Choose whether to keep the Current (local) or Imported value for each field.</div>
-  </div>
-</div>
-
-<!-- Deletion modal -->
-<div id="deleteModal" class="modal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3 id="deleteTitle">Local-only Records</h3>
-      <button class="secondary" onclick="closeModal('deleteModal')">Close</button>
-    </div>
-    <div id="deleteContent"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-      <button id="deleteConfirmBtn" class="danger">Delete Selected</button>
-      <button id="deleteCancelBtn" class="secondary">Keep All</button>
-    </div>
-  </div>
-</div>
+</section>
 
 <script>
-/* ---------- Storage helpers ---------- */
-const getData = key => JSON.parse(localStorage.getItem(key) || '[]');
-const saveData = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+// DATA STORAGE
+let students = [];
+let beltTests = [];
+let instructors = [];
+let locations = [];
+let nextStudentId = 1000;
 
-/* ---------- ID generation ---------- */
-function generateStudentId(){
-  const students = getData('students');
-  if(students.length === 0) return 1000;
-  const maxId = students.reduce((m,s)=> (s.id>m? s.id : m), 1000);
-  if(maxId >= 9999){ alert('Max students reached (9999).'); return null; }
-  return maxId + 1;
-}
-const generateTestId = () => 't' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+// STUDENTS
+function generateStudentId() { return nextStudentId++; }
 
-/* ---------- normalize eligible ---------- */
-function normalizeEligible(v){
-  if(typeof v === 'boolean') return v;
-  if(typeof v === 'string'){
-    const s=v.trim().toLowerCase();
-    return (s==='✔' || s==='yes' || s==='true' || s==='1' || s==='y' || s==='on');
-  }
-  return !!v;
-}
-
-/* ---------- Demo seed (includes instructors & locations) ---------- */
-(function seed(){
-  if(!localStorage.getItem('instructors')){
-    saveData('instructors', ['John Smith','Jane Doe','Master Park']);
-  }
-  if(!localStorage.getItem('locations')){
-    saveData('locations', ['Main Dojo','East Dojo','West Dojo']);
-  }
-  if(!localStorage.getItem('students')){
-    saveData('students', [
-      {id:1000, firstName:'Ethan', lastName:'Lee', dob:'2015-04-10', currentBelt:'White', eligible:true, instructor:'John Smith', location:'Main Dojo'},
-      {id:1001, firstName:'Evelyn', lastName:'Kim', dob:'2016-07-22', currentBelt:'Yellow', eligible:true, instructor:'Jane Doe', location:'East Dojo'},
-      {id:1002, firstName:'Liam', lastName:'Chen', dob:'2014-11-05', currentBelt:'Green', eligible:true, instructor:'John Smith', location:'Main Dojo'}
-    ]);
-  } else {
-    // normalize eligibility
-    const s = getData('students').map(x=>({...x, eligible: normalizeEligible(x.eligible)}));
-    saveData('students', s);
-  }
-  if(!localStorage.getItem('tests')){
-    saveData('tests', [
-      {id:generateTestId(), studentId:1000, studentName:'Ethan Lee', beltTestedFor:'White', testDate:'2025-08-01', result:'Pass', comments:'Great start!', instructors:['John Smith'], locations:['Main Dojo']},
-      {id:generateTestId(), studentId:1001, studentName:'Evelyn Kim', beltTestedFor:'Yellow', testDate:'2025-07-15', result:'Pass', comments:'Good techniques.', instructors:['Jane Doe'], locations:['East Dojo']}
-    ]);
-  } else {
-    const t = getData('tests').map(x=> x.id ? x : ({ ...x, id: generateTestId() }));
-    saveData('tests', t);
-  }
-})();
-
-/* ---------- DOM refs ---------- */
-const beltCountsDiv = document.getElementById('beltCounts');
-const searchInput = document.getElementById('searchInput');
-
-const importStudentsBtn = document.getElementById('importStudentsBtn');
-const importStudentsFile = document.getElementById('importStudentsFile');
-const exportStudentsBtn = document.getElementById('exportStudentsBtn');
-
-const importTestsBtn = document.getElementById('importTestsBtn');
-const importTestsFile = document.getElementById('importTestsFile');
-const exportTestsBtn = document.getElementById('exportTestsBtn');
-
-const importAllBtn = document.getElementById('importAllBtn');
-const importAllFile = document.getElementById('importAllFile');
-const exportAllBtn = document.getElementById('exportAllBtn');
-
-const printStudentsBtn = document.getElementById('printStudentsBtn');
-const printTestsBtn = document.getElementById('printTestsBtn');
-const resetDemoBtn = document.getElementById('resetDemoBtn');
-
-const instructorSelect = document.getElementById('instructorSelect');
-const locationSelect = document.getElementById('locationSelect');
-
-const addStudentBtn = document.getElementById('addStudentBtn');
-const studentsTableBody = document.querySelector('#studentsTable tbody');
-
-const studentTestSelect = document.getElementById('studentTestSelect');
-const beltTestedFor = document.getElementById('beltTestedFor');
-const testDate = document.getElementById('testDate');
-const testResult = document.getElementById('testResult');
-const testInstructors = document.getElementById('testInstructors');
-const testLocations = document.getElementById('testLocations');
-const comments = document.getElementById('comments');
-const addTestBtn = document.getElementById('addTestBtn');
-const testsTableBody = document.querySelector('#testsTable tbody');
-
-const manageInstructorsBtn = document.getElementById('manageInstructorsBtn');
-const manageLocationsBtn = document.getElementById('manageLocationsBtn');
-
-const instructorsModal = document.getElementById('instructorsModal');
-const instructorTableBody = document.getElementById('instructorTableBody');
-const locationsModal = document.getElementById('locationsModal');
-const locationTableBody = document.getElementById('locationTableBody');
-
-const mergeModal = document.getElementById('mergeModal');
-const mergeTitle = document.getElementById('mergeTitle');
-const mergeContent = document.getElementById('mergeContent');
-const mergePrevBtn = document.getElementById('mergePrevBtn');
-const mergeApplyBtn = document.getElementById('mergeApplyBtn');
-const mergeSkipBtn = document.getElementById('mergeSkipBtn');
-
-const deleteModal = document.getElementById('deleteModal');
-const deleteTitle = document.getElementById('deleteTitle');
-const deleteContent = document.getElementById('deleteContent');
-const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
-const deleteCancelBtn = document.getElementById('deleteCancelBtn');
-
-/* ---------- Modal helpers ---------- */
-function openModal(id){ document.getElementById(id).classList.add('open'); }
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-window.closeModal = closeModal;
-
-/* ---------- Renderers ---------- */
-function renderDashboard(){
-  const students = getData('students');
-  const counts = {White:0,Yellow:0,Green:0,Blue:0,Red:0,Black:0};
-  students.forEach(s => { if(counts[s.currentBelt] != null) counts[s.currentBelt]++; });
-  beltCountsDiv.innerHTML = '';
-  Object.entries(counts).forEach(([belt,count])=>{
-    const pill = document.createElement('div'); pill.className='pill'; pill.style.padding='8px 10px'; pill.style.borderRadius='8px'; pill.style.border='1px solid var(--border)';
-    pill.style.background = belt === 'Black' ? '#000' : '#fff';
-    pill.style.color = belt === 'Black' ? '#fff' : '#222';
-    pill.textContent = `${belt}: ${count}`;
-    beltCountsDiv.appendChild(pill);
-  });
+function addStudentRow() {
+    const id = generateStudentId();
+    const tbody = document.querySelector('#studentsTable tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${id}</td>
+        <td contenteditable="true"></td>
+        <td>
+            <select id="inst-${id}">
+                ${instructors.map(ins => `<option value="${ins}">${ins}</option>`).join('')}
+            </select>
+        </td>
+        <td>
+            <select id="loc-${id}">
+                ${locations.map(loc => `<option value="${loc}">${loc}</option>`).join('')}
+            </select>
+        </td>
+        <td><input type="checkbox" onchange="updateEligibility(${id}, this.checked)"></td>
+        <td><button onclick="deleteStudent(this)">Delete</button></td>
+    `;
+    tbody.appendChild(row);
+    students.push({id, name:'', instructors:[], location:'', eligible:false});
 }
 
-function renderInstructorSelects(){
-  const list = getData('instructors');
-  instructorSelect.innerHTML = '<option value="">Instructor</option>';
-  list.forEach(i=>{
-    const opt = document.createElement('option'); opt.value = i; opt.textContent = i; instructorSelect.appendChild(opt);
-  });
-  // test multiselect
-  testInstructors.innerHTML = '';
-  list.forEach(i=>{
-    const opt = document.createElement('option'); opt.value=i; opt.textContent=i; testInstructors.appendChild(opt);
-  });
-  // instructor modal table will be rendered separately
+function updateEligibility(id, checked) {
+    const s = students.find(st => st.id === id);
+    if(s) s.eligible = checked;
 }
 
-function renderLocationSelects(){
-  const list = getData('locations');
-  locationSelect.innerHTML = '<option value="">Location</option>';
-  list.forEach(l=>{
-    const opt = document.createElement('option'); opt.value=l; opt.textContent=l; locationSelect.appendChild(opt);
-  });
-  // test multiselect
-  testLocations.innerHTML = '';
-  list.forEach(l=>{
-    const opt = document.createElement('option'); opt.value=l; opt.textContent=l; testLocations.appendChild(opt);
-  });
+function deleteStudent(btn) {
+    const row = btn.closest('tr');
+    const id = parseInt(row.cells[0].innerText);
+    students = students.filter(s => s.id !== id);
+    row.remove();
 }
 
-function renderInstructorsModal(){
-  const list = getData('instructors');
-  instructorTableBody.innerHTML = '';
-  list.forEach((name, idx)=>{
-    const tr = document.createElement('tr');
-    const tdName = document.createElement('td'); tdName.contentEditable = true; tdName.textContent = name;
-    const tdAct = document.createElement('td');
-    const save = document.createElement('button'); save.textContent = 'Save'; save.className='secondary';
-    save.onclick = ()=>{ const arr=getData('instructors'); arr[idx]=tdName.textContent.trim(); saveData('instructors', arr); renderInstructorsModal(); renderInstructorSelects(); };
-    const del = document.createElement('button'); del.textContent = 'Delete'; del.className='danger';
-    del.onclick = ()=>{ if(confirm('Delete instructor?')){ const arr=getData('instructors'); arr.splice(idx,1); saveData('instructors',arr); renderInstructorsModal(); renderInstructorSelects(); } };
-    tdAct.append(save,' ',del);
-    tr.append(tdName, tdAct);
-    instructorTableBody.appendChild(tr);
-  });
+// BELT TESTS
+function addBeltTestRow() {
+    const tbody = document.querySelector('#beltTestsTable tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td>
+            <select multiple>
+                ${instructors.map(ins => `<option value="${ins}">${ins}</option>`).join('')}
+            </select>
+        </td>
+        <td>
+            <select>
+                ${locations.map(loc => `<option value="${loc}">${loc}</option>`).join('')}
+            </select>
+        </td>
+        <td><button onclick="deleteBeltTest(this)">Delete</button></td>
+    `;
+    tbody.appendChild(row);
 }
 
-function renderLocationsModal(){
-  const list = getData('locations');
-  locationTableBody.innerHTML = '';
-  list.forEach((name, idx)=>{
-    const tr = document.createElement('tr');
-    const tdName = document.createElement('td'); tdName.contentEditable = true; tdName.textContent = name;
-    const tdAct = document.createElement('td');
-    const save = document.createElement('button'); save.textContent='Save'; save.className='secondary';
-    save.onclick = ()=>{ const arr=getData('locations'); arr[idx]=tdName.textContent.trim(); saveData('locations',arr); renderLocationsModal(); renderLocationSelects(); };
-    const del = document.createElement('button'); del.textContent='Delete'; del.className='danger';
-    del.onclick = ()=>{ if(confirm('Delete location?')){ const arr=getData('locations'); arr.splice(idx,1); saveData('locations',arr); renderLocationsModal(); renderLocationSelects(); } };
-    tdAct.append(save,' ',del);
-    tr.append(tdName, tdAct);
-    locationTableBody.appendChild(tr);
-  });
+function deleteBeltTest(btn) {
+    const row = btn.closest('tr');
+    row.remove();
 }
 
-function renderStudents(){
-  const students = getData('students');
-  const filter = (searchInput.value||'').toLowerCase();
-  studentsTableBody.innerHTML = '';
-  studentTestSelect.innerHTML = '<option value="">Select Student</option>';
-  students.forEach(s=>{
-    const fullName = `${s.firstName||''} ${s.lastName||''}`.trim();
-    if(filter && !fullName.toLowerCase().includes(filter) && !(s.currentBelt||'').toLowerCase().includes(filter) && !(s.instructor||'').toLowerCase().includes(filter) && !(s.location||'').toLowerCase().includes(filter)) return;
-
-    const tr = document.createElement('tr');
-
-    const tdId = document.createElement('td'); tdId.textContent = s.id;
-    const tdName = document.createElement('td'); tdName.contentEditable = true; tdName.textContent = fullName;
-    const tdDob = document.createElement('td'); tdDob.contentEditable = true; tdDob.textContent = s.dob || '';
-    const tdBelt = document.createElement('td'); tdBelt.contentEditable = true; tdBelt.textContent = s.currentBelt || '';
-    const tdElig = document.createElement('td');
-    const cb = document.createElement('input'); cb.type='checkbox'; cb.checked = !!normalizeEligible(s.eligible);
-    cb.onchange = ()=>{ const arr=getData('students'); const st = arr.find(x=>x.id===s.id); if(st){ st.eligible = cb.checked; saveData('students', arr); } };
-    tdElig.appendChild(cb);
-
-    const tdInstr = document.createElement('td'); tdInstr.contentEditable = true; tdInstr.textContent = s.instructor || '';
-    const tdLoc = document.createElement('td'); tdLoc.contentEditable = true; tdLoc.textContent = s.location || '';
-
-    const tdAct = document.createElement('td');
-    const save = document.createElement('button'); save.textContent='Save';
-    save.onclick = ()=> saveStudentInline(s.id, tdName, tdDob, tdBelt, cb, tdInstr, tdLoc);
-    const del = document.createElement('button'); del.textContent='Delete'; del.className='danger';
-    del.onclick = ()=> { if(confirm('Delete student and their tests?')) deleteStudent(s.id); };
-    tdAct.append(save,' ',del);
-
-    tr.append(tdId, tdName, tdDob, tdBelt, tdElig, tdInstr, tdLoc, tdAct);
-    studentsTableBody.appendChild(tr);
-
-    const opt = document.createElement('option'); opt.value = s.id; opt.textContent = fullName; studentTestSelect.appendChild(opt);
-  });
-  renderDashboard();
-  renderTests(); // keep names up-to-date
-}
-
-function renderTests(){
-  const tests = getData('tests');
-  testsTableBody.innerHTML = '';
-  tests.forEach(t=>{
-    const tr = document.createElement('tr');
-    const tdId = document.createElement('td'); tdId.textContent = t.id;
-    const tdStu = document.createElement('td'); tdStu.contentEditable = true; tdStu.textContent = t.studentName || '';
-    const tdBelt = document.createElement('td'); tdBelt.contentEditable = true; tdBelt.textContent = t.beltTestedFor || '';
-    const tdDate = document.createElement('td'); tdDate.contentEditable = true; tdDate.textContent = t.testDate || '';
-    const tdRes = document.createElement('td'); tdRes.contentEditable = true; tdRes.textContent = t.result || '';
-    const tdInstr = document.createElement('td'); tdInstr.contentEditable = true; tdInstr.textContent = (t.instructors||[]).join(', ');
-    const tdLoc = document.createElement('td'); tdLoc.contentEditable = true; tdLoc.textContent = (t.locations||[]).join(', ');
-    const tdCmt = document.createElement('td'); tdCmt.contentEditable = true; tdCmt.textContent = t.comments || '';
-    const tdAct = document.createElement('td');
-    const save = document.createElement('button'); save.textContent='Save';
-    save.onclick = ()=> saveTestInline(t.id, tdStu, tdBelt, tdDate, tdRes, tdInstr, tdLoc, tdCmt);
-    const del = document.createElement('button'); del.textContent='Delete'; del.className='danger';
-    del.onclick = ()=> { if(confirm('Delete this test?')) deleteTest(t.id); };
-    tdAct.append(save,' ',del);
-
-    tr.append(tdId, tdStu, tdBelt, tdDate, tdRes, tdInstr, tdLoc, tdCmt, tdAct);
-    testsTableBody.appendChild(tr);
-  });
-}
-
-/* ---------- CRUD helpers ---------- */
-function saveStudentInline(id, nameCell, dobCell, beltCell, eligCheckbox, instrCell, locCell){
-  const students = getData('students');
-  const s = students.find(x=>x.id===id); if(!s) return;
-  const names = nameCell.textContent.trim().split(/\s+/);
-  if(names.length < 2){ alert('Please enter first and last name'); renderStudents(); return; }
-  const belts = ['White','Yellow','Green','Blue','Red','Black'];
-  const belt = beltCell.textContent.trim();
-  if(!belts.includes(belt)){ alert('Invalid belt. Use White/Yellow/Green/Blue/Red/Black.'); renderStudents(); return; }
-  s.firstName = names[0];
-  s.lastName = names.slice(1).join(' ');
-  s.dob = dobCell.textContent.trim();
-  s.currentBelt = belt;
-  s.eligible = !!eligCheckbox.checked;
-  s.instructor = instrCell.textContent.trim();
-  s.location = locCell.textContent.trim();
-  saveData('students', students);
-  renderStudents();
-}
-
-function deleteStudent(id){
-  if(!confirm('Delete this student and their tests?')) return;
-  const students = getData('students').filter(s=>s.id!==id); saveData('students', students);
-  const tests = getData('tests').filter(t=>t.studentId!==id); saveData('tests', tests);
-  renderStudents(); renderTests();
-}
-
-function saveTestInline(id, tdStu, tdBelt, tdDate, tdRes, tdInstr, tdLoc, tdCmt){
-  const tests = getData('tests'); const idx = tests.findIndex(x=>x.id===id); if(idx<0) return;
-  tests[idx].studentName = tdStu.textContent.trim();
-  tests[idx].beltTestedFor = tdBelt.textContent.trim();
-  tests[idx].testDate = tdDate.textContent.trim();
-  tests[idx].result = tdRes.textContent.trim();
-  tests[idx].instructors = tdInstr.textContent.split(',').map(s=>s.trim()).filter(Boolean);
-  tests[idx].locations = tdLoc.textContent.split(',').map(s=>s.trim()).filter(Boolean);
-  tests[idx].comments = tdCmt.textContent.trim();
-  saveData('tests', tests);
-  renderTests();
-}
-
-function deleteTest(id){
-  if(!confirm('Delete this test?')) return;
-  const tests = getData('tests').filter(t=>t.id!==id); saveData('tests', tests); renderTests();
-}
-
-/* ---------- Add Student / Test ---------- */
-addStudentBtn.onclick = ()=>{
-  const id = generateStudentId(); if(id===null) return;
-  const first = document.getElementById('firstName').value.trim();
-  const last  = document.getElementById('lastName').value.trim();
-  const dob   = document.getElementById('dob').value;
-  const belt  = document.getElementById('currentBelt').value;
-  const instr = instructorSelect.value;
-  const loc   = locationSelect.value;
-  if(!first||!last||!dob||!belt||!instr||!loc){ alert('Please fill all fields (including instructor & location).'); return; }
-  const students = getData('students');
-  students.push({ id, firstName:first, lastName:last, dob, currentBelt:belt, eligible:true, instructor:instr, location:loc });
-  saveData('students', students);
-  document.getElementById('firstName').value=''; document.getElementById('lastName').value=''; document.getElementById('dob').value=''; document.getElementById('currentBelt').value='';
-  instructorSelect.value=''; locationSelect.value='';
-  renderStudents();
-};
-
-addTestBtn.onclick = ()=>{
-  const sid = parseInt(studentTestSelect.value||'0',10);
-  const beltFor = beltTestedFor.value;
-  const dt = testDate.value;
-  const res = testResult.value;
-  const instrs = Array.from(testInstructors.selectedOptions).map(o=>o.value);
-  const locs = Array.from(testLocations.selectedOptions).map(o=>o.value);
-  const cmts = comments.value.trim();
-  if(!sid || !beltFor || !dt || !res){ alert('Please fill student, belt, date, and result.'); return; }
-  const students = getData('students');
-  const s = students.find(x=>x.id===sid); if(!s){ alert('Student not found'); return; }
-  const tests = getData('tests');
-  const newTest = { id: generateTestId(), studentId: sid, studentName: `${s.firstName} ${s.lastName}`, beltTestedFor: beltFor, testDate: dt, result: res, comments: cmts, instructors: instrs, locations: locs };
-  tests.push(newTest);
-  if(res==='Pass'){ s.currentBelt = beltFor; saveData('students', students); }
-  saveData('tests', tests);
-  // Reset form
-  studentTestSelect.value=''; beltTestedFor.value=''; testDate.value=''; testResult.value=''; comments.value='';
-  Array.from(testInstructors.options).forEach(o=>o.selected=false);
-  Array.from(testLocations.options).forEach(o=>o.selected=false);
-  renderStudents(); renderTests();
-};
-
-/* ---------- Export JSON ---------- */
-function downloadJSON(filename, obj){
-  const blob = new Blob([JSON.stringify(obj, null, 2)], { type:'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url);
-}
-exportStudentsBtn.onclick = ()=> {
-  const s = getData('students').map(x=>({...x, eligible: !!normalizeEligible(x.eligible)}));
-  downloadJSON('students.json', s);
-};
-exportTestsBtn.onclick = ()=> {
-  const t = getData('tests'); downloadJSON('tests.json', t);
-};
-exportAllBtn.onclick = ()=> {
-  const payload = { students: getData('students').map(x=>({...x, eligible: !!normalizeEligible(x.eligible)})), tests: getData('tests'), instructors: getData('instructors'), locations: getData('locations') };
-  downloadJSON('backup.json', payload);
-};
-
-/* ---------- Import JSON helpers ---------- */
-importStudentsBtn.onclick = ()=> importStudentsFile.click();
-importTestsBtn.onclick = ()=> importTestsFile.click();
-importAllBtn.onclick = ()=> importAllFile.click();
-
-importStudentsFile.onchange = async (e)=> {
-  const f = e.target.files[0]; if(!f) return;
-  const data = await readJsonFromFile(f);
-  if(!Array.isArray(data)){ alert('Students JSON must be an array'); importStudentsFile.value=''; return; }
-  await handleImport(data, 'students');
-  importStudentsFile.value='';
-};
-importTestsFile.onchange = async (e)=> {
-  const f = e.target.files[0]; if(!f) return;
-  const data = await readJsonFromFile(f);
-  if(!Array.isArray(data)){ alert('Tests JSON must be an array'); importTestsFile.value=''; return; }
-  await handleImport(data, 'tests');
-  importTestsFile.value='';
-};
-importAllFile.onchange = async (e)=> {
-  const f = e.target.files[0]; if(!f) return;
-  const parsed = await readJsonFromFile(f);
-  if(!parsed){ importAllFile.value=''; return; }
-  const sArr = Array.isArray(parsed.students) ? parsed.students : [];
-  const tArr = Array.isArray(parsed.tests) ? parsed.tests : [];
-  const instrArr = Array.isArray(parsed.instructors) ? parsed.instructors : [];
-  const locArr = Array.isArray(parsed.locations) ? parsed.locations : [];
-  // Merge instructors & locations first
-  await handleInstructorsImport(instrArr);
-  await handleLocationsImport(locArr);
-  // Then students & tests
-  await handleImport(sArr, 'students');
-  await handleImport(tArr, 'tests');
-  alert('Combined import finished.');
-  importAllFile.value='';
-};
-
-/* read json file utility */
-function readJsonFromFile(file){
-  return new Promise((resolve)=>{
-    const r = new FileReader();
-    r.onload = e => { try{ resolve(JSON.parse(e.target.result)); } catch(err){ alert('Invalid JSON'); resolve(null); } };
-    r.onerror = ()=> { alert('Failed to read file'); resolve(null); };
-    r.readAsText(file);
-  });
-}
-
-/* ---------- Merge & deletion state ---------- */
-let mergeQueue = []; // {type:'student'|'test', local, incoming}
-let mergeIndex = 0;
-let pendingDeletions = []; // array of {type, id, label}
-
-/* ---------- Merge helpers ---------- */
-function buildDiffTable(fields, local, incoming){
-  const table = document.createElement('table'); table.className='diff-table';
-  const head = document.createElement('thead'); head.innerHTML = '<tr><th>Field</th><th>Current</th><th>Imported</th><th>Keep</th></tr>'; table.appendChild(head);
-  const body = document.createElement('tbody');
-  fields.forEach(f=>{
-    const tr = document.createElement('tr');
-    const curVal = formatFieldValue(f, local[f]);
-    const incVal = formatFieldValue(f, incoming[f]);
-    tr.innerHTML = `<td><strong>${f}</strong></td>
-      <td class="diff">${escapeHtml(curVal)}</td>
-      <td class="diff">${escapeHtml(incVal)}</td>
-      <td>
-        <label><input type="radio" name="keep-${f}" value="current" checked> Current</label>
-        <label style="margin-left:8px"><input type="radio" name="keep-${f}" value="incoming"> Imported</label>
-      </td>`;
-    body.appendChild(tr);
-  });
-  table.appendChild(body);
-  return table;
-}
-function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch])); }
-function formatFieldValue(field, val){
-  if(field === 'eligible') return normalizeEligible(val) ? 'true' : 'false';
-  if(Array.isArray(val)) return val.join(', ');
-  return val==null ? '' : String(val);
-}
-
-/* ---------- Import/merge main ---------- */
-async function handleImport(incomingArray, type){
-  // type: 'students' or 'tests'
-  if(!Array.isArray(incomingArray)) return;
-  const incoming = incomingArray.map(item=>{
-    if(type==='students'){
-      return {...item, eligible: normalizeEligible(item.eligible)};
-    } else {
-      return {...item, instructors: Array.isArray(item.instructors) ? item.instructors : String(item.instructors||'').split(',').map(s=>s.trim()).filter(Boolean), locations: Array.isArray(item.locations) ? item.locations : String(item.locations||'').split(',').map(s=>s.trim()).filter(Boolean)};
+// INSTRUCTORS & LOCATIONS
+function manageInstructors() {
+    const newIns = prompt("Enter comma-separated instructors", instructors.join(','));
+    if(newIns!==null) {
+        instructors = newIns.split(',').map(s => s.trim()).filter(s=>s);
+        updateInstructorSelects();
     }
-  });
-
-  const local = getData(type);
-  const idField = 'id';
-
-  // 1) Add new
-  const localById = new Map(local.map(x=>[String(x[idField]), x]));
-  const incomingIds = new Set(incoming.map(x=>String(x[idField])));
-  const newOnes = incoming.filter(x=> !localById.has(String(x[idField])));
-  if(newOnes.length){
-    const merged = local.concat(newOnes);
-    saveData(type, merged);
-  }
-
-  // 2) Conflicts
-  mergeQueue = [];
-  incoming.forEach(inc=>{
-    const cur = localById.get(String(inc[idField]));
-    if(!cur) return;
-    if(type==='students'){
-      if(studentDiffers(cur, inc)) mergeQueue.push({type:'student', local:cur, incoming:inc});
-    } else {
-      if(testDiffers(cur, inc)) mergeQueue.push({type:'test', local:cur, incoming:inc});
+}
+function manageLocations() {
+    const newLoc = prompt("Enter comma-separated locations", locations.join(','));
+    if(newLoc!==null) {
+        locations = newLoc.split(',').map(s => s.trim()).filter(s=>s);
+        updateLocationSelects();
     }
-  });
-
-  // 3) Local-only (deletions candidate)
-  const localOnly = local.filter(x=> !incomingIds.has(String(x[idField])) ).map(x=>({ type, id:x[idField], label: (type==='students') ? `${x.firstName||''} ${x.lastName||''}`.trim()||`ID ${x[idField]}` : `Test ${x[idField]}` }));
-  pendingDeletions = localOnly;
-
-  if(mergeQueue.length > 0){
-    mergeIndex = 0;
-    await processMergeQueueSequential();
-  } else {
-    await showDeletionPrompt(type);
-  }
 }
-
-/* comparators */
-function studentDiffers(a,b){
-  return a.firstName !== b.firstName || a.lastName !== b.lastName || a.dob !== b.dob || a.currentBelt !== b.currentBelt || !!normalizeEligible(a.eligible) !== !!normalizeEligible(b.eligible) || (a.instructor||'') !== (b.instructor||'') || (a.location||'') !== (b.location||'');
-}
-function testDiffers(a,b){
-  const arrEq = (x,y)=> (x||[]).join('|') !== (y||[]).join('|');
-  return a.studentName!==b.studentName || a.beltTestedFor!==b.beltTestedFor || a.testDate!==b.testDate || a.result!==b.result || arrEq(a.instructors,b.instructors) || arrEq(a.locations,b.locations) || (a.comments||'')!==(b.comments||'');
-}
-
-/* sequential merge queue processor */
-function showMergeItem(item, idx, total){
-  const isStudent = item.type === 'student';
-  mergeTitle.textContent = `${isStudent ? 'Student' : 'Test'} Conflict ( ${idx+1} of ${total} ) — ID: ${item.local.id || item.local.id}`;
-  const fields = isStudent ? ['firstName','lastName','dob','currentBelt','eligible','instructor','location'] : ['studentName','beltTestedFor','testDate','result','instructors','locations','comments'];
-  mergeContent.innerHTML = '';
-  mergeContent.appendChild(buildDiffTable(fields, item.local, item.incoming));
-  mergePrevBtn.disabled = (idx===0);
-  openModal('mergeModal');
-}
-
-function processMergeQueueSequential(){
-  return new Promise(resolve => {
-    async function next(){
-      if(mergeIndex >= mergeQueue.length){
-        closeModal('mergeModal');
-        // after merges, prompt deletions
-        await showDeletionPrompt(mergeQueue.length ? (mergeQueue[0].type==='student' ? 'students' : 'tests') : pendingDeletions.length ? pendingDeletions[0].type : 'students');
-        resolve();
-        return;
-      }
-      const item = mergeQueue[mergeIndex];
-      showMergeItem(item, mergeIndex, mergeQueue.length);
-
-      const applyHandler = ()=>{
-        const fields = (item.type==='student') ? ['firstName','lastName','dob','currentBelt','eligible','instructor','location'] : ['studentName','beltTestedFor','testDate','result','instructors','locations','comments'];
-        const form = mergeContent;
-        fields.forEach(f=>{
-          const choice = form.querySelector(`input[name="keep-${f}"]:checked`)?.value || 'current';
-          if(choice === 'incoming'){
-            if(f === 'eligible'){ item.local[f] = !!item.incoming[f]; }
-            else if(f === 'instructors' || f === 'locations'){ item.local[f] = Array.isArray(item.incoming[f]) ? item.incoming[f] : String(item.incoming[f]||'').split(',').map(s=>s.trim()).filter(Boolean); }
-            else item.local[f] = item.incoming[f];
-          }
-        });
-        // save to storage
-        if(item.type === 'student'){
-          const arr = getData('students'); const idx = arr.findIndex(x=>String(x.id)===String(item.local.id));
-          if(idx>=0){ arr[idx] = item.local; saveData('students', arr); }
-        } else {
-          const arr = getData('tests'); const idx = arr.findIndex(x=>String(x.id)===String(item.local.id));
-          if(idx>=0){ arr[idx] = item.local; saveData('tests', arr); }
+function updateInstructorSelects() {
+    students.forEach(s => {
+        const sel = document.getElementById(`inst-${s.id}`);
+        if(sel) {
+            sel.innerHTML = instructors.map(ins=>`<option value="${ins}">${ins}</option>`).join('');
         }
-        mergeIndex++;
-        setTimeout(next, 10);
-      };
-      const skipHandler = ()=>{ mergeIndex++; setTimeout(next, 10); };
-      const prevHandler = ()=>{ if(mergeIndex>0){ mergeIndex--; setTimeout(next, 10); } else setTimeout(next, 10); };
-
-      mergeApplyBtn.onclick = ()=>{ closeModal('mergeModal'); applyHandler(); };
-      mergeSkipBtn.onclick = ()=>{ closeModal('mergeModal'); skipHandler(); };
-      mergePrevBtn.onclick = ()=>{ closeModal('mergeModal'); prevHandler(); };
-    }
-    next();
-  });
-}
-
-/* ---------- Deletion prompt ---------- */
-function showDeletionPrompt(type){
-  return new Promise(resolve=>{
-    if(!pendingDeletions || pendingDeletions.length === 0){
-      renderStudents(); renderTests(); alert(`${type === 'students' ? 'Students' : 'Tests'} import complete.`);
-      resolve();
-      return;
-    }
-    deleteTitle.textContent = `Local-only ${type} records not present in import`;
-    deleteContent.innerHTML = '';
-    const list = document.createElement('div');
-    pendingDeletions.forEach(item=>{
-      const label = item.label || `${item.type.slice(0,-1)} ${item.id}`;
-      const el = document.createElement('label'); el.style.display='block'; el.style.margin='6px 0';
-      el.innerHTML = `<input type="checkbox" value="${escapeHtml(String(item.id))}"> ${escapeHtml(label)} (ID: ${escapeHtml(String(item.id))})`;
-      list.appendChild(el);
     });
-    deleteContent.appendChild(list);
-    openModal('deleteModal');
+    document.querySelectorAll('#beltTestsTable select[multiple]').forEach(sel=>{
+        sel.innerHTML = instructors.map(ins=>`<option value="${ins}">${ins}</option>`).join('');
+    });
+}
+function updateLocationSelects() {
+    students.forEach(s => {
+        const sel = document.getElementById(`loc-${s.id}`);
+        if(sel) sel.innerHTML = locations.map(loc=>`<option value="${loc}">${loc}</option>`).join('');
+    });
+    document.querySelectorAll('#beltTestsTable select:not([multiple])').forEach(sel=>{
+        sel.innerHTML = locations.map(loc=>`<option value="${loc}">${loc}</option>`).join('');
+    });
+}
 
-    deleteConfirmBtn.onclick = ()=>{
-      const selected = Array.from(deleteContent.querySelectorAll('input[type="checkbox"]:checked')).map(cb=>cb.value);
-      if(selected.length === 0){ closeModal('deleteModal'); pendingDeletions=[]; renderStudents(); renderTests(); alert('No records deleted. Import complete.'); resolve(); return; }
-      if(type === 'students'){
-        let s = getData('students').filter(x=> !selected.includes(String(x.id)) );
-        saveData('students', s);
-        let t = getData('tests').filter(x=> !selected.includes(String(x.studentId)) );
-        saveData('tests', t);
-      } else if(type === 'tests'){
-        let t = getData('tests').filter(x=> !selected.includes(String(x.id)) );
-        saveData('tests', t);
-      } else if(type === 'instructors'){
-        let arr = getData('instructors').filter(x=> !selected.includes(String(x)) );
-        saveData('instructors', arr);
-        // students/tests referencing removed instructors remain as text — user can clean manually
-      } else if(type === 'locations'){
-        let arr = getData('locations').filter(x=> !selected.includes(String(x)) );
-        saveData('locations', arr);
-      }
-      pendingDeletions = [];
-      closeModal('deleteModal');
-      renderInstructorSelects(); renderLocationSelects(); renderStudents(); renderTests();
-      alert('Selected local records deleted.');
-      resolve();
+// IMPORT / EXPORT JSON
+function importStudents() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.onchange = e=>{
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = ev=>{
+            const imported = JSON.parse(ev.target.result);
+            mergeStudents(imported);
+        };
+        reader.readAsText(file);
     };
-    deleteCancelBtn.onclick = ()=>{
-      closeModal('deleteModal'); pendingDeletions = []; renderStudents(); renderTests(); alert('Kept all local records. Import complete.'); resolve();
+    fileInput.click();
+}
+function exportStudents() {
+    const blob = new Blob([JSON.stringify(students, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'students.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importTests() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.onchange = e=>{
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = ev=>{
+            const imported = JSON.parse(ev.target.result);
+            beltTests.push(...imported); // simple merge, could add smart diff later
+            alert('Tests imported.');
+        };
+        reader.readAsText(file);
     };
-  });
+    fileInput.click();
+}
+function exportTests() {
+    const blob = new Blob([JSON.stringify(beltTests, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'beltTests.json';
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
-/* ---------- Instructors & Locations import handlers (for combined backup) ---------- */
-async function handleInstructorsImport(incoming){
-  if(!Array.isArray(incoming)) return;
-  const local = getData('instructors');
-  const newOnes = incoming.filter(x=> !local.includes(x));
-  if(newOnes.length){
-    const merged = local.concat(newOnes);
-    saveData('instructors', merged);
-  }
-  // local-only deletion prompt
-  const localOnly = local.filter(x=> !incoming.includes(x)).map(x=>({type:'instructors', id:x, label:x}));
-  pendingDeletions = localOnly;
-  if(pendingDeletions.length) await showDeletionPrompt('instructors');
-  renderInstructorSelects();
+// SIMPLE MERGE EXAMPLE FOR STUDENTS
+function mergeStudents(imported) {
+    imported.forEach(s=>{
+        const existing = students.find(st=>st.id===s.id);
+        if(existing) {
+            // Prompt for differences
+            let changes = [];
+            if(existing.name!==s.name) changes.push(`Name: "${existing.name}" -> "${s.name}"`);
+            if(existing.location!==s.location) changes.push(`Location: "${existing.location}" -> "${s.location}"`);
+            if(existing.instructors.join(',')!==s.instructors.join(',')) changes.push(`Instructors: "${existing.instructors.join(',')}" -> "${s.instructors.join(',')}"`);
+            if(changes.length>0){
+                if(confirm(`Differences found for student ID ${s.id}:\n${changes.join('\n')}\nApply updates?`)) {
+                    existing.name = s.name;
+                    existing.location = s.location;
+                    existing.instructors = s.instructors;
+                    existing.eligible = s.eligible;
+                }
+            }
+        } else {
+            students.push(s);
+            addStudentRowFromImport(s);
+        }
+    });
+    alert('Students imported.');
 }
 
-async function handleLocationsImport(incoming){
-  if(!Array.isArray(incoming)) return;
-  const local = getData('locations');
-  const newOnes = incoming.filter(x=> !local.includes(x));
-  if(newOnes.length){
-    const merged = local.concat(newOnes);
-    saveData('locations', merged);
-  }
-  const localOnly = local.filter(x=> !incoming.includes(x)).map(x=>({type:'locations', id:x, label:x}));
-  pendingDeletions = localOnly;
-  if(pendingDeletions.length) await showDeletionPrompt('locations');
-  renderLocationSelects();
+function addStudentRowFromImport(s) {
+    const tbody = document.querySelector('#studentsTable tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${s.id}</td>
+        <td contenteditable="true">${s.name}</td>
+        <td>
+            <select id="inst-${s.id}">
+                ${instructors.map(ins=>`<option value="${ins}" ${s.instructors.includes(ins)?'selected':''}>${ins}</option>`).join('')}
+            </select>
+        </td>
+        <td>
+            <select id="loc-${s.id}">
+                ${locations.map(loc=>`<option value="${loc}" ${loc===s.location?'selected':''}>${loc}</option>`).join('')}
+            </select>
+        </td>
+        <td><input type="checkbox" ${s.eligible?'checked':''} onchange="updateEligibility(${s.id}, this.checked)"></td>
+        <td><button onclick="deleteStudent(this)">Delete</button></td>
+    `;
+    tbody.appendChild(row);
+    if(s.id>=nextStudentId) nextStudentId = s.id+1;
 }
 
-/* ---------- Manage instructors & locations UI ---------- */
-manageInstructorsBtn.onclick = ()=> { renderInstructorsModal(); openModal('instructorsModal'); };
-manageLocationsBtn.onclick = ()=> { renderLocationsModal(); openModal('locationsModal'); };
-
-function addInstructor(){
-  const name = document.getElementById('instructorName').value.trim();
-  if(!name) return;
-  const list = getData('instructors'); list.push(name); saveData('instructors', list);
-  document.getElementById('instructorName').value='';
-  renderInstructorsModal(); renderInstructorSelects();
-}
-function addLocation(){
-  const name = document.getElementById('locationName').value.trim();
-  if(!name) return;
-  const list = getData('locations'); list.push(name); saveData('locations', list);
-  document.getElementById('locationName').value='';
-  renderLocationsModal(); renderLocationSelects();
+// RESET
+function resetData() {
+    if(confirm("Are you sure you want to reset all data?")){
+        students = [];
+        beltTests = [];
+        instructors = [];
+        locations = [];
+        nextStudentId = 1000;
+        document.querySelector('#studentsTable tbody').innerHTML = '';
+        document.querySelector('#beltTestsTable tbody').innerHTML = '';
+        updateBeltCounts();
+    }
 }
 
-/* ---------- Import single-type helper to reuse earlier logic ---------- */
-/* exports already defined above - handleImport used for students & tests */
-
-/* ---------- Print / Reset ---------- */
-printStudentsBtn.onclick = ()=> {
-  const w=window.open('','Print','width=900,height=700'); w.document.write('<html><head><title>Students</title></head><body>'+document.querySelector('.printable').outerHTML+'</body></html>'); w.document.close(); w.print(); w.close();
-};
-printTestsBtn.onclick = ()=> {
-  const w=window.open('','Print','width=900,height=700'); w.document.write('<html><head><title>Tests</title></head><body>'+document.getElementById('testsTable').outerHTML+'</body></html>'); w.document.close(); w.print(); w.close();
-};
-resetDemoBtn.onclick = ()=> {
-  if(!confirm('Reset demo data? This will erase students and tests.')) return;
-  localStorage.removeItem('students'); localStorage.removeItem('tests'); // keep instructors & locations optionally
-  location.reload();
-};
-
-/* ---------- initialize ---------- */
-function init(){
-  renderInstructorSelects();
-  renderLocationSelects();
-  renderInstructorsModal();
-  renderLocationsModal();
-  renderStudents();
-  renderTests();
-  renderDashboard();
-}
-init();
-
-/* ---------- search ---------- */
-searchInput.addEventListener('input', ()=> renderStudents());
-
+// INITIALIZE
+updateBeltCounts();
 </script>
+
 </body>
 </html>
