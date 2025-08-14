@@ -1,199 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Taekwondo Belt Tracking</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Taekwondo Belt Tracker</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f7f7f8; }
-  .container { max-width: 1100px; margin: auto; background: #fff; padding: 18px; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
-  h1 { margin: 0 0 12px; }
-  .controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
-  button { padding:8px 12px; border-radius:6px; border:0; background:#1565c0; color:#fff; cursor:pointer; }
-  button.secondary { background:#fff; color:#222; border:1px solid #ddd; }
-  button.danger { background:#d32f2f; }
-  table { width:100%; border-collapse:collapse; margin-bottom:14px; }
-  th,td { border:1px solid #e6e6e6; padding:8px; text-align:left; vertical-align:top; }
-  th { background:#fafafa; }
-  input[type="text"], input[type="date"], select, textarea { padding:8px; border:1px solid #ddd; border-radius:6px; }
-  .row6 { display:grid; grid-template-columns: repeat(6, 1fr); gap:8px; margin-bottom:8px; align-items:center; }
-  .modal { display:none; position:fixed; inset:0; background: rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:9999; }
-  .modal.open { display:flex; }
-  .modal-card { background:#fff; width:min(880px,94vw); max-height:86vh; overflow:auto; border-radius:10px; padding:14px; box-shadow:0 16px 40px rgba(0,0,0,0.25); }
-  .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-  .diff-table { width:100%; border-collapse:collapse; margin:6px 0; }
-  .diff-table th,.diff-table td{ border-top:1px solid #eee; padding:8px; vertical-align:top; }
-  .diff { background:#fffef3; }
-  .note { color:#666; font-size:13px; margin-top:8px; }
-  .danger-small { background:#d32f2f; color:#fff; border:none; padding:6px 10px; border-radius:6px; }
-  .muted { color:#666; font-size:13px; }
-  @media print {
-    body * { visibility:hidden; }
-    .printable, .printable * { visibility:visible; }
-    .printable { position:absolute; left:0; top:0; width:100%; }
-    button { display:none; }
-  }
+:root{
+  --bg:#f7f8fa; --card:#fff; --ink:#222; --muted:#666; --acc:#1565c0;
+  --danger:#d32f2f; --border:#e0e0e0; --overlay:#0008;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+.container{max-width:1200px;margin:20px auto;padding:16px}
+h1{margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input,select,textarea,button{padding:8px 10px;border:1px solid var(--border);border-radius:8px;font:inherit}
+button{background:var(--acc);color:#fff;cursor:pointer;border:none}
+button.secondary{background:#fff;color:var(--ink);border:1px solid var(--border)}
+button.danger{background:var(--danger)}
+.table{width:100%;border-collapse:collapse}
+th,td{border-top:1px solid var(--border);padding:8px;text-align:left;vertical-align:top}
+th{background:#fafafa}
+.belt-White{} .belt-Yellow{background:#fff59d} .belt-Green{background:#a5d6a7}
+.belt-Blue{background:#81d4fa} .belt-Red{background:#ef9a9a} .belt-Black{background:#000;color:#fff}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay);z-index:1000}
+.modal.open{display:flex}
+.modal-card{width:min(900px,94vw);max-height:86vh;overflow:auto;background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:0 12px 30px #0003;padding:12px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.diff-table{width:100%;border-collapse:collapse;margin-top:8px}
+.diff-table th,.diff-table td{border-top:1px solid var(--border);padding:8px;vertical-align:top}
+.diff{background:#fffef3}
+.note{color:var(--muted);font-size:13px;margin-top:8px}
+.grid-6{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+@media print{
+  body *{visibility:hidden}
+  .printable, .printable *{visibility:visible}
+  .printable{position:absolute;inset:0}
+  button{display:none}
+}
 </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Taekwondo Belt Tracker</h1>
+<div class="container">
 
-    <div class="controls">
-      <input id="searchInput" type="text" placeholder="Search students or belts..." style="padding:8px; min-width:260px;">
-      <button id="importStudentsBtn" class="secondary">Import Students (JSON)</button>
-      <input id="importStudentsFile" type="file" accept=".json,application/json" style="display:none;">
-      <button id="exportStudentsBtn" class="secondary">Export Students JSON</button>
+  <h1>Taekwondo Belt Tracker</h1>
 
-      <button id="importTestsBtn" class="secondary">Import Tests (JSON)</button>
-      <input id="importTestsFile" type="file" accept=".json,application/json" style="display:none;">
-      <button id="exportTestsBtn" class="secondary">Export Tests JSON</button>
+  <div class="card" id="dashboardCard">
+    <div id="beltCounts" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
 
-      <button id="importAllBtn" class="secondary">Import All (backup.json)</button>
-      <input id="importAllFile" type="file" accept=".json,application/json" style="display:none;">
-      <button id="exportAllBtn" class="secondary">Export All (backup.json)</button>
+  <div class="controls card">
+    <input id="searchInput" placeholder="Search by student, belt, instructor, or location..." style="flex:1;min-width:220px"/>
+    <button id="importStudentsBtn" class="secondary">Import Students (JSON)</button>
+    <input id="importStudentsFile" type="file" accept=".json,application/json" style="display:none"/>
+    <button id="exportStudentsBtn" class="secondary">Export Students JSON</button>
 
-      <button id="printStudentsBtn" class="secondary">Print Students</button>
-      <button id="printTestsBtn" class="secondary">Print Tests</button>
-      <button id="resetDemoBtn" class="danger">Reset Demo</button>
-    </div>
+    <button id="importTestsBtn" class="secondary">Import Tests (JSON)</button>
+    <input id="importTestsFile" type="file" accept=".json,application/json" style="display:none"/>
+    <button id="exportTestsBtn" class="secondary">Export Tests JSON</button>
 
+    <button id="importAllBtn" class="secondary">Import All (backup.json)</button>
+    <input id="importAllFile" type="file" accept=".json,application/json" style="display:none"/>
+    <button id="exportAllBtn" class="secondary">Export All (backup.json)</button>
+
+    <button id="printStudentsBtn" class="secondary">Print Students</button>
+    <button id="printTestsBtn" class="secondary">Print Tests</button>
+    <button id="manageInstructorsBtn">Manage Instructors</button>
+    <button id="manageLocationsBtn">Manage Locations</button>
+    <button id="resetDemoBtn" class="danger">Reset Demo</button>
+  </div>
+
+  <div class="card">
     <h2>Add New Student</h2>
-    <div class="row6">
-      <input id="firstName" placeholder="First name">
-      <input id="lastName" placeholder="Last name">
-      <input id="dob" type="date">
+    <div class="grid-6">
+      <input id="firstName" placeholder="First Name"/>
+      <input id="lastName" placeholder="Last Name"/>
+      <input id="dob" type="date"/>
       <select id="currentBelt"><option value="">Belt</option><option>White</option><option>Yellow</option><option>Green</option><option>Blue</option><option>Red</option><option>Black</option></select>
-      <div></div>
+      <select id="instructorSelect"><option value="">Instructor</option></select>
+      <select id="locationSelect"><option value="">Location</option></select>
+    </div>
+    <div style="margin-top:8px">
       <button id="addStudentBtn">Add Student</button>
     </div>
+  </div>
 
-    <div class="printable">
-      <h2>Students</h2>
-      <table id="studentsTable">
-        <thead>
-          <tr><th>ID</th><th>Name</th><th>DOB</th><th>Current Belt</th><th>Eligible?</th><th>Actions</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+  <div class="card printable">
+    <h2>Students</h2>
+    <table id="studentsTable" class="table">
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>DOB</th><th>Current Belt</th><th>Eligible?</th><th>Instructor</th><th>Location</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
+  <div class="card">
     <h2>Record Belt Test</h2>
-    <div class="row6">
+    <div class="grid-6">
       <select id="studentTestSelect"><option value="">Select Student</option></select>
       <select id="beltTestedFor"><option value="">Belt Tested For</option><option>Yellow</option><option>Green</option><option>Blue</option><option>Red</option><option>Black</option></select>
-      <input id="testDate" type="date">
+      <input id="testDate" type="date"/>
       <select id="testResult"><option value="">Result</option><option>Pass</option><option>Fail</option></select>
       <select id="testInstructors" multiple size="4" title="Ctrl/Cmd+click to select multiple"></select>
       <select id="testLocations" multiple size="4" title="Ctrl/Cmd+click to select multiple"></select>
     </div>
-    <textarea id="comments" rows="2" placeholder="Comments (optional)" style="width:100%; margin-top:8px;"></textarea>
-    <div style="margin-top:8px;">
+    <textarea id="comments" rows="2" placeholder="Comments (optional)" style="width:100%;margin-top:8px"></textarea>
+    <div style="margin-top:8px">
       <button id="addTestBtn">Record Test</button>
     </div>
+  </div>
 
-    <div class="printable">
-      <h2>Belt Test Records</h2>
-      <table id="testsTable">
-        <thead>
-          <tr><th>Test ID</th><th>Student</th><th>Belt</th><th>Date</th><th>Result</th><th>Instructors</th><th>Locations</th><th>Comments</th><th>Actions</th></tr>
-        </thead>
-        <tbody></tbody>
+  <div class="card printable">
+    <h2>Belt Test Records</h2>
+    <table id="testsTable" class="table">
+      <thead>
+        <tr><th>Test ID</th><th>Student</th><th>Belt</th><th>Date</th><th>Result</th><th>Instructors</th><th>Locations</th><th>Comments</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Instructors modal -->
+<div id="instructorsModal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Manage Instructors</h3>
+      <button class="secondary" onclick="closeModal('instructorsModal')">Close</button>
+    </div>
+    <div>
+      <div style="display:flex;gap:8px">
+        <input id="instructorName" placeholder="New instructor name"/>
+        <button onclick="addInstructor()">Add</button>
+      </div>
+      <table style="width:100%;margin-top:10px">
+        <thead><tr><th>Instructor</th><th>Actions</th></tr></thead>
+        <tbody id="instructorTableBody"></tbody>
       </table>
     </div>
   </div>
+</div>
 
-  <!-- Merge conflict modal -->
-  <div id="mergeModal" class="modal" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="mergeTitle">Resolve Conflict</h3>
-        <button class="secondary" onclick="closeModal('mergeModal')">Close</button>
+<!-- Locations modal -->
+<div id="locationsModal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Manage Locations</h3>
+      <button class="secondary" onclick="closeModal('locationsModal')">Close</button>
+    </div>
+    <div>
+      <div style="display:flex;gap:8px">
+        <input id="locationName" placeholder="New location name"/>
+        <button onclick="addLocation()">Add</button>
       </div>
-      <div id="mergeContent"></div>
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:10px;">
-        <button id="mergePrevBtn" class="secondary">Prev</button>
-        <button id="mergeApplyBtn">Apply & Next</button>
-        <button id="mergeSkipBtn" class="secondary">Skip</button>
-      </div>
-      <div class="note">Pick per-field whether to keep local (Current) or imported values.</div>
+      <table style="width:100%;margin-top:10px">
+        <thead><tr><th>Location</th><th>Actions</th></tr></thead>
+        <tbody id="locationTableBody"></tbody>
+      </table>
     </div>
   </div>
+</div>
 
-  <!-- Deletion modal -->
-  <div id="deleteModal" class="modal" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="deleteTitle">Local-only Records Found</h3>
-        <button class="secondary" onclick="closeModal('deleteModal')">Close</button>
-      </div>
-      <div id="deleteContent"></div>
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
-        <button id="deleteConfirmBtn" class="danger">Delete Selected</button>
-        <button id="deleteCancelBtn" class="secondary">Keep All</button>
-      </div>
+<!-- Merge modal -->
+<div id="mergeModal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="mergeTitle">Resolve Conflicts</h3>
+      <button class="secondary" onclick="closeModal('mergeModal')">Close</button>
+    </div>
+    <div id="mergeContent"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+      <button id="mergePrevBtn" class="secondary">Prev</button>
+      <button id="mergeApplyBtn">Apply & Next</button>
+      <button id="mergeSkipBtn" class="secondary">Skip</button>
+    </div>
+    <div class="note">Choose whether to keep the Current (local) or Imported value for each field.</div>
+  </div>
+</div>
+
+<!-- Deletion modal -->
+<div id="deleteModal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="deleteTitle">Local-only Records</h3>
+      <button class="secondary" onclick="closeModal('deleteModal')">Close</button>
+    </div>
+    <div id="deleteContent"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button id="deleteConfirmBtn" class="danger">Delete Selected</button>
+      <button id="deleteCancelBtn" class="secondary">Keep All</button>
     </div>
   </div>
+</div>
 
 <script>
 /* ---------- Storage helpers ---------- */
 const getData = key => JSON.parse(localStorage.getItem(key) || '[]');
 const saveData = (key, data) => localStorage.setItem(key, JSON.stringify(data));
 
-/* ---------- ID helpers ---------- */
+/* ---------- ID generation ---------- */
 function generateStudentId(){
   const students = getData('students');
   if(students.length === 0) return 1000;
-  const maxId = students.reduce((m,s)=> s.id > m ? s.id : m, 1000);
+  const maxId = students.reduce((m,s)=> (s.id>m? s.id : m), 1000);
   if(maxId >= 9999){ alert('Max students reached (9999).'); return null; }
   return maxId + 1;
 }
 const generateTestId = () => 't' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 
-/* ---------- normalize ---------- */
+/* ---------- normalize eligible ---------- */
 function normalizeEligible(v){
   if(typeof v === 'boolean') return v;
   if(typeof v === 'string'){
-    const s = v.trim().toLowerCase();
-    return (s === '✔' || s === 'yes' || s === 'true' || s === '1' || s === 'y' || s === 'on');
+    const s=v.trim().toLowerCase();
+    return (s==='✔' || s==='yes' || s==='true' || s==='1' || s==='y' || s==='on');
   }
   return !!v;
 }
 
-/* ---------- seed demo ---------- */
+/* ---------- Demo seed (includes instructors & locations) ---------- */
 (function seed(){
+  if(!localStorage.getItem('instructors')){
+    saveData('instructors', ['John Smith','Jane Doe','Master Park']);
+  }
+  if(!localStorage.getItem('locations')){
+    saveData('locations', ['Main Dojo','East Dojo','West Dojo']);
+  }
   if(!localStorage.getItem('students')){
     saveData('students', [
-      {id:1000, firstName:'Ethan', lastName:'Lee', dob:'2015-04-10', currentBelt:'White', eligible:true},
-      {id:1001, firstName:'Evelyn', lastName:'Kim', dob:'2016-07-22', currentBelt:'Yellow', eligible:true},
-      {id:1002, firstName:'Liam', lastName:'Chen', dob:'2014-11-05', currentBelt:'Green', eligible:true}
+      {id:1000, firstName:'Ethan', lastName:'Lee', dob:'2015-04-10', currentBelt:'White', eligible:true, instructor:'John Smith', location:'Main Dojo'},
+      {id:1001, firstName:'Evelyn', lastName:'Kim', dob:'2016-07-22', currentBelt:'Yellow', eligible:true, instructor:'Jane Doe', location:'East Dojo'},
+      {id:1002, firstName:'Liam', lastName:'Chen', dob:'2014-11-05', currentBelt:'Green', eligible:true, instructor:'John Smith', location:'Main Dojo'}
     ]);
   } else {
-    // normalize any old values
-    const s = getData('students').map(x=> ({ ...x, eligible: normalizeEligible(x.eligible) }));
+    // normalize eligibility
+    const s = getData('students').map(x=>({...x, eligible: normalizeEligible(x.eligible)}));
     saveData('students', s);
   }
   if(!localStorage.getItem('tests')){
     saveData('tests', [
-      {id: generateTestId(), studentId:1000, studentName:'Ethan Lee', beltTestedFor:'White', testDate:'2025-08-01', result:'Pass', comments:'Great start!', instructors:[], locations:[]},
-      {id: generateTestId(), studentId:1001, studentName:'Evelyn Kim', beltTestedFor:'Yellow', testDate:'2025-07-15', result:'Pass', comments:'Good techniques.', instructors:[], locations:[]}
+      {id:generateTestId(), studentId:1000, studentName:'Ethan Lee', beltTestedFor:'White', testDate:'2025-08-01', result:'Pass', comments:'Great start!', instructors:['John Smith'], locations:['Main Dojo']},
+      {id:generateTestId(), studentId:1001, studentName:'Evelyn Kim', beltTestedFor:'Yellow', testDate:'2025-07-15', result:'Pass', comments:'Good techniques.', instructors:['Jane Doe'], locations:['East Dojo']}
     ]);
   } else {
-    // ensure tests have ids
     const t = getData('tests').map(x=> x.id ? x : ({ ...x, id: generateTestId() }));
     saveData('tests', t);
   }
 })();
 
-/* ---------- DOM references ---------- */
-const studentsTBody = document.querySelector('#studentsTable tbody');
-const testsTBody = document.querySelector('#testsTable tbody');
+/* ---------- DOM refs ---------- */
+const beltCountsDiv = document.getElementById('beltCounts');
+const searchInput = document.getElementById('searchInput');
+
+const importStudentsBtn = document.getElementById('importStudentsBtn');
+const importStudentsFile = document.getElementById('importStudentsFile');
+const exportStudentsBtn = document.getElementById('exportStudentsBtn');
+
+const importTestsBtn = document.getElementById('importTestsBtn');
+const importTestsFile = document.getElementById('importTestsFile');
+const exportTestsBtn = document.getElementById('exportTestsBtn');
+
+const importAllBtn = document.getElementById('importAllBtn');
+const importAllFile = document.getElementById('importAllFile');
+const exportAllBtn = document.getElementById('exportAllBtn');
+
+const printStudentsBtn = document.getElementById('printStudentsBtn');
+const printTestsBtn = document.getElementById('printTestsBtn');
+const resetDemoBtn = document.getElementById('resetDemoBtn');
+
+const instructorSelect = document.getElementById('instructorSelect');
+const locationSelect = document.getElementById('locationSelect');
+
+const addStudentBtn = document.getElementById('addStudentBtn');
+const studentsTableBody = document.querySelector('#studentsTable tbody');
+
 const studentTestSelect = document.getElementById('studentTestSelect');
+const beltTestedFor = document.getElementById('beltTestedFor');
+const testDate = document.getElementById('testDate');
+const testResult = document.getElementById('testResult');
 const testInstructors = document.getElementById('testInstructors');
 const testLocations = document.getElementById('testLocations');
+const comments = document.getElementById('comments');
+const addTestBtn = document.getElementById('addTestBtn');
+const testsTableBody = document.querySelector('#testsTable tbody');
 
-const importStudentsFile = document.getElementById('importStudentsFile');
-const importTestsFile = document.getElementById('importTestsFile');
-const importAllFile = document.getElementById('importAllFile');
+const manageInstructorsBtn = document.getElementById('manageInstructorsBtn');
+const manageLocationsBtn = document.getElementById('manageLocationsBtn');
+
+const instructorsModal = document.getElementById('instructorsModal');
+const instructorTableBody = document.getElementById('instructorTableBody');
+const locationsModal = document.getElementById('locationsModal');
+const locationTableBody = document.getElementById('locationTableBody');
 
 const mergeModal = document.getElementById('mergeModal');
 const mergeTitle = document.getElementById('mergeTitle');
@@ -208,275 +308,312 @@ const deleteContent = document.getElementById('deleteContent');
 const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
 const deleteCancelBtn = document.getElementById('deleteCancelBtn');
 
-let mergeQueue = []; // queue of {type:'student'|'test', local, incoming}
-let mergeIndex = 0;
-let pendingDeletions = []; // array of {type, id, label}
+/* ---------- Modal helpers ---------- */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+window.closeModal = closeModal;
 
-/* ---------- renderers ---------- */
+/* ---------- Renderers ---------- */
+function renderDashboard(){
+  const students = getData('students');
+  const counts = {White:0,Yellow:0,Green:0,Blue:0,Red:0,Black:0};
+  students.forEach(s => { if(counts[s.currentBelt] != null) counts[s.currentBelt]++; });
+  beltCountsDiv.innerHTML = '';
+  Object.entries(counts).forEach(([belt,count])=>{
+    const pill = document.createElement('div'); pill.className='pill'; pill.style.padding='8px 10px'; pill.style.borderRadius='8px'; pill.style.border='1px solid var(--border)';
+    pill.style.background = belt === 'Black' ? '#000' : '#fff';
+    pill.style.color = belt === 'Black' ? '#fff' : '#222';
+    pill.textContent = `${belt}: ${count}`;
+    beltCountsDiv.appendChild(pill);
+  });
+}
+
+function renderInstructorSelects(){
+  const list = getData('instructors');
+  instructorSelect.innerHTML = '<option value="">Instructor</option>';
+  list.forEach(i=>{
+    const opt = document.createElement('option'); opt.value = i; opt.textContent = i; instructorSelect.appendChild(opt);
+  });
+  // test multiselect
+  testInstructors.innerHTML = '';
+  list.forEach(i=>{
+    const opt = document.createElement('option'); opt.value=i; opt.textContent=i; testInstructors.appendChild(opt);
+  });
+  // instructor modal table will be rendered separately
+}
+
+function renderLocationSelects(){
+  const list = getData('locations');
+  locationSelect.innerHTML = '<option value="">Location</option>';
+  list.forEach(l=>{
+    const opt = document.createElement('option'); opt.value=l; opt.textContent=l; locationSelect.appendChild(opt);
+  });
+  // test multiselect
+  testLocations.innerHTML = '';
+  list.forEach(l=>{
+    const opt = document.createElement('option'); opt.value=l; opt.textContent=l; testLocations.appendChild(opt);
+  });
+}
+
+function renderInstructorsModal(){
+  const list = getData('instructors');
+  instructorTableBody.innerHTML = '';
+  list.forEach((name, idx)=>{
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td'); tdName.contentEditable = true; tdName.textContent = name;
+    const tdAct = document.createElement('td');
+    const save = document.createElement('button'); save.textContent = 'Save'; save.className='secondary';
+    save.onclick = ()=>{ const arr=getData('instructors'); arr[idx]=tdName.textContent.trim(); saveData('instructors', arr); renderInstructorsModal(); renderInstructorSelects(); };
+    const del = document.createElement('button'); del.textContent = 'Delete'; del.className='danger';
+    del.onclick = ()=>{ if(confirm('Delete instructor?')){ const arr=getData('instructors'); arr.splice(idx,1); saveData('instructors',arr); renderInstructorsModal(); renderInstructorSelects(); } };
+    tdAct.append(save,' ',del);
+    tr.append(tdName, tdAct);
+    instructorTableBody.appendChild(tr);
+  });
+}
+
+function renderLocationsModal(){
+  const list = getData('locations');
+  locationTableBody.innerHTML = '';
+  list.forEach((name, idx)=>{
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td'); tdName.contentEditable = true; tdName.textContent = name;
+    const tdAct = document.createElement('td');
+    const save = document.createElement('button'); save.textContent='Save'; save.className='secondary';
+    save.onclick = ()=>{ const arr=getData('locations'); arr[idx]=tdName.textContent.trim(); saveData('locations',arr); renderLocationsModal(); renderLocationSelects(); };
+    const del = document.createElement('button'); del.textContent='Delete'; del.className='danger';
+    del.onclick = ()=>{ if(confirm('Delete location?')){ const arr=getData('locations'); arr.splice(idx,1); saveData('locations',arr); renderLocationsModal(); renderLocationSelects(); } };
+    tdAct.append(save,' ',del);
+    tr.append(tdName, tdAct);
+    locationTableBody.appendChild(tr);
+  });
+}
+
 function renderStudents(){
   const students = getData('students');
-  const filter = (document.getElementById('searchInput').value||'').toLowerCase();
-  studentsTBody.innerHTML = '';
+  const filter = (searchInput.value||'').toLowerCase();
+  studentsTableBody.innerHTML = '';
   studentTestSelect.innerHTML = '<option value="">Select Student</option>';
   students.forEach(s=>{
     const fullName = `${s.firstName||''} ${s.lastName||''}`.trim();
-    if(filter && !fullName.toLowerCase().includes(filter) && !(s.currentBelt||'').toLowerCase().includes(filter)) return;
+    if(filter && !fullName.toLowerCase().includes(filter) && !(s.currentBelt||'').toLowerCase().includes(filter) && !(s.instructor||'').toLowerCase().includes(filter) && !(s.location||'').toLowerCase().includes(filter)) return;
 
     const tr = document.createElement('tr');
-    const idCell = document.createElement('td'); idCell.textContent = s.id;
-    const nameCell = document.createElement('td'); nameCell.contentEditable = true; nameCell.textContent = fullName;
-    const dobCell = document.createElement('td'); dobCell.contentEditable = true; dobCell.textContent = s.dob || '';
-    const beltCell = document.createElement('td'); beltCell.contentEditable = true; beltCell.textContent = s.currentBelt || '';
-    const eligCell = document.createElement('td');
-    const cb = document.createElement('input'); cb.type='checkbox'; cb.checked = !!normalizeEligible(s.eligible);
-    cb.onchange = ()=>{ const arr = getData('students'); const st = arr.find(x=>x.id===s.id); if(st){ st.eligible = cb.checked; saveData('students', arr); } };
-    eligCell.appendChild(cb);
-    const actCell = document.createElement('td');
-    const saveBtn = document.createElement('button'); saveBtn.textContent='Save';
-    saveBtn.onclick = ()=> saveStudentInline(s.id, nameCell, dobCell, beltCell, cb);
-    const delBtn = document.createElement('button'); delBtn.textContent='Delete'; delBtn.className='danger';
-    delBtn.onclick = ()=> { if(confirm('Delete this student and their tests?')) deleteStudent(s.id); };
-    actCell.append(saveBtn, ' ', delBtn);
 
-    tr.append(idCell, nameCell, dobCell, beltCell, eligCell, actCell);
-    studentsTBody.appendChild(tr);
+    const tdId = document.createElement('td'); tdId.textContent = s.id;
+    const tdName = document.createElement('td'); tdName.contentEditable = true; tdName.textContent = fullName;
+    const tdDob = document.createElement('td'); tdDob.contentEditable = true; tdDob.textContent = s.dob || '';
+    const tdBelt = document.createElement('td'); tdBelt.contentEditable = true; tdBelt.textContent = s.currentBelt || '';
+    const tdElig = document.createElement('td');
+    const cb = document.createElement('input'); cb.type='checkbox'; cb.checked = !!normalizeEligible(s.eligible);
+    cb.onchange = ()=>{ const arr=getData('students'); const st = arr.find(x=>x.id===s.id); if(st){ st.eligible = cb.checked; saveData('students', arr); } };
+    tdElig.appendChild(cb);
+
+    const tdInstr = document.createElement('td'); tdInstr.contentEditable = true; tdInstr.textContent = s.instructor || '';
+    const tdLoc = document.createElement('td'); tdLoc.contentEditable = true; tdLoc.textContent = s.location || '';
+
+    const tdAct = document.createElement('td');
+    const save = document.createElement('button'); save.textContent='Save';
+    save.onclick = ()=> saveStudentInline(s.id, tdName, tdDob, tdBelt, cb, tdInstr, tdLoc);
+    const del = document.createElement('button'); del.textContent='Delete'; del.className='danger';
+    del.onclick = ()=> { if(confirm('Delete student and their tests?')) deleteStudent(s.id); };
+    tdAct.append(save,' ',del);
+
+    tr.append(tdId, tdName, tdDob, tdBelt, tdElig, tdInstr, tdLoc, tdAct);
+    studentsTableBody.appendChild(tr);
 
     const opt = document.createElement('option'); opt.value = s.id; opt.textContent = fullName; studentTestSelect.appendChild(opt);
   });
+  renderDashboard();
+  renderTests(); // keep names up-to-date
 }
 
 function renderTests(){
   const tests = getData('tests');
-  testsTBody.innerHTML = '';
+  testsTableBody.innerHTML = '';
   tests.forEach(t=>{
     const tr = document.createElement('tr');
     const tdId = document.createElement('td'); tdId.textContent = t.id;
-    const tdStudent = document.createElement('td'); tdStudent.contentEditable=true; tdStudent.textContent = t.studentName || '';
-    const tdBelt = document.createElement('td'); tdBelt.contentEditable=true; tdBelt.textContent = t.beltTestedFor || '';
-    const tdDate = document.createElement('td'); tdDate.contentEditable=true; tdDate.textContent = t.testDate || '';
-    const tdResult = document.createElement('td'); tdResult.contentEditable=true; tdResult.textContent = t.result || '';
-    const tdInstr = document.createElement('td'); tdInstr.contentEditable=true; tdInstr.textContent = (t.instructors||[]).join(', ');
-    const tdLoc = document.createElement('td'); tdLoc.contentEditable=true; tdLoc.textContent = (t.locations||[]).join(', ');
-    const tdCmt = document.createElement('td'); tdCmt.contentEditable=true; tdCmt.textContent = t.comments || '';
+    const tdStu = document.createElement('td'); tdStu.contentEditable = true; tdStu.textContent = t.studentName || '';
+    const tdBelt = document.createElement('td'); tdBelt.contentEditable = true; tdBelt.textContent = t.beltTestedFor || '';
+    const tdDate = document.createElement('td'); tdDate.contentEditable = true; tdDate.textContent = t.testDate || '';
+    const tdRes = document.createElement('td'); tdRes.contentEditable = true; tdRes.textContent = t.result || '';
+    const tdInstr = document.createElement('td'); tdInstr.contentEditable = true; tdInstr.textContent = (t.instructors||[]).join(', ');
+    const tdLoc = document.createElement('td'); tdLoc.contentEditable = true; tdLoc.textContent = (t.locations||[]).join(', ');
+    const tdCmt = document.createElement('td'); tdCmt.contentEditable = true; tdCmt.textContent = t.comments || '';
     const tdAct = document.createElement('td');
-    const saveBtn = document.createElement('button'); saveBtn.textContent='Save';
-    saveBtn.onclick = ()=> saveTestInline(t.id, tdStudent, tdBelt, tdDate, tdResult, tdInstr, tdLoc, tdCmt);
-    const delBtn = document.createElement('button'); delBtn.textContent='Delete'; delBtn.className='danger';
-    delBtn.onclick = ()=> { if(confirm('Delete this test record?')) deleteTest(t.id); };
-    tdAct.append(saveBtn, ' ', delBtn);
+    const save = document.createElement('button'); save.textContent='Save';
+    save.onclick = ()=> saveTestInline(t.id, tdStu, tdBelt, tdDate, tdRes, tdInstr, tdLoc, tdCmt);
+    const del = document.createElement('button'); del.textContent='Delete'; del.className='danger';
+    del.onclick = ()=> { if(confirm('Delete this test?')) deleteTest(t.id); };
+    tdAct.append(save,' ',del);
 
-    tr.append(tdId, tdStudent, tdBelt, tdDate, tdResult, tdInstr, tdLoc, tdCmt, tdAct);
-    testsTBody.appendChild(tr);
+    tr.append(tdId, tdStu, tdBelt, tdDate, tdRes, tdInstr, tdLoc, tdCmt, tdAct);
+    testsTableBody.appendChild(tr);
   });
 }
 
-/* ---------- student/test CRUD ---------- */
-function saveStudentInline(id, nameCell, dobCell, beltCell, eligCheckbox){
-  const arr = getData('students'); const s = arr.find(x=>x.id===id); if(!s) return;
+/* ---------- CRUD helpers ---------- */
+function saveStudentInline(id, nameCell, dobCell, beltCell, eligCheckbox, instrCell, locCell){
+  const students = getData('students');
+  const s = students.find(x=>x.id===id); if(!s) return;
   const names = nameCell.textContent.trim().split(/\s+/);
-  if(names.length < 2){ alert('Please enter full name (first and last).'); renderStudents(); return; }
+  if(names.length < 2){ alert('Please enter first and last name'); renderStudents(); return; }
   const belts = ['White','Yellow','Green','Blue','Red','Black'];
   const belt = beltCell.textContent.trim();
-  if(!belts.includes(belt)){ alert('Invalid belt. Use: White, Yellow, Green, Blue, Red, Black'); renderStudents(); return; }
+  if(!belts.includes(belt)){ alert('Invalid belt. Use White/Yellow/Green/Blue/Red/Black.'); renderStudents(); return; }
   s.firstName = names[0];
   s.lastName = names.slice(1).join(' ');
   s.dob = dobCell.textContent.trim();
   s.currentBelt = belt;
   s.eligible = !!eligCheckbox.checked;
-  saveData('students', arr);
+  s.instructor = instrCell.textContent.trim();
+  s.location = locCell.textContent.trim();
+  saveData('students', students);
   renderStudents();
 }
 
 function deleteStudent(id){
-  let s = getData('students').filter(x=>x.id!==id); saveData('students', s);
-  let t = getData('tests').filter(x=>x.studentId!==id); saveData('tests', t);
+  if(!confirm('Delete this student and their tests?')) return;
+  const students = getData('students').filter(s=>s.id!==id); saveData('students', students);
+  const tests = getData('tests').filter(t=>t.studentId!==id); saveData('tests', tests);
   renderStudents(); renderTests();
 }
 
-function saveTestInline(id, tdStudent, tdBelt, tdDate, tdResult, tdInstr, tdLoc, tdCmt){
-  const arr = getData('tests'); const idx = arr.findIndex(x=>x.id===id); if(idx<0) return;
-  arr[idx].studentName = tdStudent.textContent.trim();
-  arr[idx].beltTestedFor = tdBelt.textContent.trim();
-  arr[idx].testDate = tdDate.textContent.trim();
-  arr[idx].result = tdResult.textContent.trim();
-  arr[idx].instructors = tdInstr.textContent.split(',').map(s=>s.trim()).filter(Boolean);
-  arr[idx].locations = tdLoc.textContent.split(',').map(s=>s.trim()).filter(Boolean);
-  arr[idx].comments = tdCmt.textContent.trim();
-  saveData('tests', arr);
+function saveTestInline(id, tdStu, tdBelt, tdDate, tdRes, tdInstr, tdLoc, tdCmt){
+  const tests = getData('tests'); const idx = tests.findIndex(x=>x.id===id); if(idx<0) return;
+  tests[idx].studentName = tdStu.textContent.trim();
+  tests[idx].beltTestedFor = tdBelt.textContent.trim();
+  tests[idx].testDate = tdDate.textContent.trim();
+  tests[idx].result = tdRes.textContent.trim();
+  tests[idx].instructors = tdInstr.textContent.split(',').map(s=>s.trim()).filter(Boolean);
+  tests[idx].locations = tdLoc.textContent.split(',').map(s=>s.trim()).filter(Boolean);
+  tests[idx].comments = tdCmt.textContent.trim();
+  saveData('tests', tests);
   renderTests();
 }
 
 function deleteTest(id){
-  let t = getData('tests').filter(x=>x.id!==id); saveData('tests', t); renderTests();
+  if(!confirm('Delete this test?')) return;
+  const tests = getData('tests').filter(t=>t.id!==id); saveData('tests', tests); renderTests();
 }
 
-/* ---------- add student/test UI ---------- */
-document.getElementById('addStudentBtn').addEventListener('click', ()=>{
+/* ---------- Add Student / Test ---------- */
+addStudentBtn.onclick = ()=>{
+  const id = generateStudentId(); if(id===null) return;
   const first = document.getElementById('firstName').value.trim();
   const last  = document.getElementById('lastName').value.trim();
   const dob   = document.getElementById('dob').value;
   const belt  = document.getElementById('currentBelt').value;
-  if(!first || !last || !dob || !belt){ alert('Please fill First, Last, DOB and Belt.'); return; }
+  const instr = instructorSelect.value;
+  const loc   = locationSelect.value;
+  if(!first||!last||!dob||!belt||!instr||!loc){ alert('Please fill all fields (including instructor & location).'); return; }
   const students = getData('students');
-  const id = generateStudentId(); if(id===null) return;
-  students.push({ id, firstName: first, lastName: last, dob, currentBelt: belt, eligible: true });
+  students.push({ id, firstName:first, lastName:last, dob, currentBelt:belt, eligible:true, instructor:instr, location:loc });
   saveData('students', students);
   document.getElementById('firstName').value=''; document.getElementById('lastName').value=''; document.getElementById('dob').value=''; document.getElementById('currentBelt').value='';
+  instructorSelect.value=''; locationSelect.value='';
   renderStudents();
-});
+};
 
-document.getElementById('addTestBtn').addEventListener('click', ()=>{
-  const sid = parseInt(document.getElementById('studentTestSelect').value || '0',10);
-  const beltFor = document.getElementById('beltTestedFor').value;
-  const dt = document.getElementById('testDate').value;
-  const res = document.getElementById('testResult').value;
-  const instrs = Array.from(document.getElementById('testInstructors').selectedOptions).map(o=>o.value);
-  const locs = Array.from(document.getElementById('testLocations').selectedOptions).map(o=>o.value);
-  const cmts = document.getElementById('comments').value.trim();
-  if(!sid || !beltFor || !dt || !res){ alert('Please fill Student, Belt, Date, and Result.'); return; }
-  const students = getData('students'); const s = students.find(x=>x.id===sid); if(!s){ alert('Student not found'); return; }
+addTestBtn.onclick = ()=>{
+  const sid = parseInt(studentTestSelect.value||'0',10);
+  const beltFor = beltTestedFor.value;
+  const dt = testDate.value;
+  const res = testResult.value;
+  const instrs = Array.from(testInstructors.selectedOptions).map(o=>o.value);
+  const locs = Array.from(testLocations.selectedOptions).map(o=>o.value);
+  const cmts = comments.value.trim();
+  if(!sid || !beltFor || !dt || !res){ alert('Please fill student, belt, date, and result.'); return; }
+  const students = getData('students');
+  const s = students.find(x=>x.id===sid); if(!s){ alert('Student not found'); return; }
   const tests = getData('tests');
   const newTest = { id: generateTestId(), studentId: sid, studentName: `${s.firstName} ${s.lastName}`, beltTestedFor: beltFor, testDate: dt, result: res, comments: cmts, instructors: instrs, locations: locs };
-  tests.push(newTest); saveData('tests', tests);
-  if(res === 'Pass'){ s.currentBelt = beltFor; saveData('students', students); }
-  // reset form
-  document.getElementById('studentTestSelect').value=''; document.getElementById('beltTestedFor').value=''; document.getElementById('testDate').value=''; document.getElementById('testResult').value=''; document.getElementById('comments').value='';
-  Array.from(document.getElementById('testInstructors').options).forEach(o=>o.selected=false);
-  Array.from(document.getElementById('testLocations').options).forEach(o=>o.selected=false);
+  tests.push(newTest);
+  if(res==='Pass'){ s.currentBelt = beltFor; saveData('students', students); }
+  saveData('tests', tests);
+  // Reset form
+  studentTestSelect.value=''; beltTestedFor.value=''; testDate.value=''; testResult.value=''; comments.value='';
+  Array.from(testInstructors.options).forEach(o=>o.selected=false);
+  Array.from(testLocations.options).forEach(o=>o.selected=false);
   renderStudents(); renderTests();
-});
+};
 
-/* ---------- export JSON ---------- */
+/* ---------- Export JSON ---------- */
 function downloadJSON(filename, obj){
-  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url);
 }
-document.getElementById('exportStudentsBtn').addEventListener('click', ()=> {
-  const s = getData('students').map(x=> ({ ...x, eligible: !!normalizeEligible(x.eligible) }));
+exportStudentsBtn.onclick = ()=> {
+  const s = getData('students').map(x=>({...x, eligible: !!normalizeEligible(x.eligible)}));
   downloadJSON('students.json', s);
-});
-document.getElementById('exportTestsBtn').addEventListener('click', ()=> {
-  const t = getData('tests');
-  downloadJSON('tests.json', t);
-});
-document.getElementById('exportAllBtn').addEventListener('click', ()=> {
-  const payload = { students: getData('students').map(x=> ({ ...x, eligible: !!normalizeEligible(x.eligible) })), tests: getData('tests') };
+};
+exportTestsBtn.onclick = ()=> {
+  const t = getData('tests'); downloadJSON('tests.json', t);
+};
+exportAllBtn.onclick = ()=> {
+  const payload = { students: getData('students').map(x=>({...x, eligible: !!normalizeEligible(x.eligible)})), tests: getData('tests'), instructors: getData('instructors'), locations: getData('locations') };
   downloadJSON('backup.json', payload);
-});
+};
 
-/* ---------- import helpers (single-type & combined) ---------- */
-document.getElementById('importStudentsBtn').addEventListener('click', ()=> importStudentsFile.click());
-document.getElementById('importTestsBtn').addEventListener('click', ()=> importTestsFile.click());
-document.getElementById('importAllBtn').addEventListener('click', ()=> importAllFile.click());
+/* ---------- Import JSON helpers ---------- */
+importStudentsBtn.onclick = ()=> importStudentsFile.click();
+importTestsBtn.onclick = ()=> importTestsFile.click();
+importAllBtn.onclick = ()=> importAllFile.click();
 
-importStudentsFile.addEventListener('change', async (e)=>{
+importStudentsFile.onchange = async (e)=> {
   const f = e.target.files[0]; if(!f) return;
-  try{
-    const txt = await f.text(); const parsed = JSON.parse(txt);
-    if(!Array.isArray(parsed)){ alert('Students JSON must be an array'); importStudentsFile.value=''; return; }
-    await handleImport(parsed, 'students');
-  } catch(err){ alert('Invalid JSON'); }
+  const data = await readJsonFromFile(f);
+  if(!Array.isArray(data)){ alert('Students JSON must be an array'); importStudentsFile.value=''; return; }
+  await handleImport(data, 'students');
   importStudentsFile.value='';
-});
-
-importTestsFile.addEventListener('change', async (e)=>{
+};
+importTestsFile.onchange = async (e)=> {
   const f = e.target.files[0]; if(!f) return;
-  try{
-    const txt = await f.text(); const parsed = JSON.parse(txt);
-    if(!Array.isArray(parsed)){ alert('Tests JSON must be an array'); importTestsFile.value=''; return; }
-    await handleImport(parsed, 'tests');
-  } catch(err){ alert('Invalid JSON'); }
+  const data = await readJsonFromFile(f);
+  if(!Array.isArray(data)){ alert('Tests JSON must be an array'); importTestsFile.value=''; return; }
+  await handleImport(data, 'tests');
   importTestsFile.value='';
-});
-
-importAllFile.addEventListener('change', async (e)=>{
+};
+importAllFile.onchange = async (e)=> {
   const f = e.target.files[0]; if(!f) return;
-  try{
-    const txt = await f.text(); const parsed = JSON.parse(txt);
-    const stArr = Array.isArray(parsed.students) ? parsed.students : [];
-    const tArr = Array.isArray(parsed.tests) ? parsed.tests : [];
-    // merge students first, then tests
-    await handleImport(stArr, 'students');
-    await handleImport(tArr, 'tests');
-    alert('Combined import finished.');
-  } catch(err){ alert('Invalid JSON'); }
+  const parsed = await readJsonFromFile(f);
+  if(!parsed){ importAllFile.value=''; return; }
+  const sArr = Array.isArray(parsed.students) ? parsed.students : [];
+  const tArr = Array.isArray(parsed.tests) ? parsed.tests : [];
+  const instrArr = Array.isArray(parsed.instructors) ? parsed.instructors : [];
+  const locArr = Array.isArray(parsed.locations) ? parsed.locations : [];
+  // Merge instructors & locations first
+  await handleInstructorsImport(instrArr);
+  await handleLocationsImport(locArr);
+  // Then students & tests
+  await handleImport(sArr, 'students');
+  await handleImport(tArr, 'tests');
+  alert('Combined import finished.');
   importAllFile.value='';
-});
+};
 
-/* ---------- merge + deletion flow ---------- */
-async function handleImport(incomingArray, type){
-  // type: 'students' or 'tests'
-  if(!Array.isArray(incomingArray)) return;
-  // normalize incoming
-  let incoming = incomingArray.map(item => {
-    if(type === 'students'){
-      return { ...item, eligible: normalizeEligible(item.eligible) };
-    } else {
-      return { ...item, instructors: Array.isArray(item.instructors) ? item.instructors : String(item.instructors||'').split(',').map(s=>s.trim()).filter(Boolean), locations: Array.isArray(item.locations) ? item.locations : String(item.locations||'').split(',').map(s=>s.trim()).filter(Boolean) };
-    }
+/* read json file utility */
+function readJsonFromFile(file){
+  return new Promise((resolve)=>{
+    const r = new FileReader();
+    r.onload = e => { try{ resolve(JSON.parse(e.target.result)); } catch(err){ alert('Invalid JSON'); resolve(null); } };
+    r.onerror = ()=> { alert('Failed to read file'); resolve(null); };
+    r.readAsText(file);
   });
-
-  const local = getData(type);
-  const idField = 'id';
-
-  // 1) add new
-  const localById = new Map(local.map(x=>[String(x[idField]), x]));
-  const incomingIds = new Set(incoming.map(x=>String(x[idField])));
-  const newOnes = incoming.filter(x => !localById.has(String(x[idField])));
-  if(newOnes.length){
-    const merged = local.concat(newOnes);
-    saveData(type, merged);
-  }
-
-  // 2) conflicts (per-field)
-  mergeQueue = [];
-  incoming.forEach(inc => {
-    const cur = localById.get(String(inc[idField]));
-    if(!cur) return;
-    if(type === 'students'){
-      if(studentDiffers(cur, inc)) mergeQueue.push({ type:'student', local: cur, incoming: inc });
-    } else {
-      if(testDiffers(cur, inc)) mergeQueue.push({ type:'test', local: cur, incoming: inc });
-    }
-  });
-
-  // 3) local-only (candidate deletions)
-  const localOnly = local.filter(x => !incomingIds.has(String(x[idField]))).map(x=>({ type, id: x[idField], label: (type==='students') ? `${x.firstName||''} ${x.lastName||''}`.trim() || `ID ${x[id]}` : `Test ${x[id]}` }));
-  pendingDeletions = localOnly;
-
-  // process queue sequentially (modal-driven)
-  if(mergeQueue.length > 0){
-    mergeIndex = 0;
-    await processMergeQueueSequential();
-  } else {
-    // no conflicts — prompt deletions immediately
-    await showDeletionPrompt(type);
-  }
 }
 
-/* helper comparators */
-function studentDiffers(a,b){
-  return a.firstName !== b.firstName || a.lastName !== b.lastName || a.dob !== b.dob ||
-         a.currentBelt !== b.currentBelt || !!normalizeEligible(a.eligible) !== !!normalizeEligible(b.eligible) ||
-         (a.instructor||'') !== (b.instructor||'') || (a.location||'') !== (b.location||'');
-}
-function testDiffers(a,b){
-  const arrEq = (x,y) => (x||[]).join('|') !== (y||[]).join('|');
-  return a.studentName !== b.studentName || a.beltTestedFor !== b.beltTestedFor ||
-         a.testDate !== b.testDate || a.result !== b.result ||
-         arrEq(a.instructors,b.instructors) || arrEq(a.locations,b.locations) ||
-         (a.comments||'') !== (b.comments||'');
-}
+/* ---------- Merge & deletion state ---------- */
+let mergeQueue = []; // {type:'student'|'test', local, incoming}
+let mergeIndex = 0;
+let pendingDeletions = []; // array of {type, id, label}
 
-/* build diff UI */
+/* ---------- Merge helpers ---------- */
 function buildDiffTable(fields, local, incoming){
   const table = document.createElement('table'); table.className='diff-table';
-  const thead = document.createElement('thead');
-  thead.innerHTML = '<tr><th>Field</th><th>Current</th><th>Imported</th><th>Keep</th></tr>';
-  table.appendChild(thead);
-  const tbody = document.createElement('tbody');
+  const head = document.createElement('thead'); head.innerHTML = '<tr><th>Field</th><th>Current</th><th>Imported</th><th>Keep</th></tr>'; table.appendChild(head);
+  const body = document.createElement('tbody');
   fields.forEach(f=>{
     const tr = document.createElement('tr');
     const curVal = formatFieldValue(f, local[f]);
@@ -488,211 +625,262 @@ function buildDiffTable(fields, local, incoming){
         <label><input type="radio" name="keep-${f}" value="current" checked> Current</label>
         <label style="margin-left:8px"><input type="radio" name="keep-${f}" value="incoming"> Imported</label>
       </td>`;
-    tbody.appendChild(tr);
+    body.appendChild(tr);
   });
-  table.appendChild(tbody);
+  table.appendChild(body);
   return table;
 }
-function escapeHtml(str){ return String(str==null ? '' : str).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch])); }
-function formatFieldValue(field,val){
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch])); }
+function formatFieldValue(field, val){
   if(field === 'eligible') return normalizeEligible(val) ? 'true' : 'false';
   if(Array.isArray(val)) return val.join(', ');
-  return val == null ? '' : String(val);
+  return val==null ? '' : String(val);
 }
 
-/* sequential processing of mergeQueue via modal and promises */
-function showMergeItem(item, i, total){
+/* ---------- Import/merge main ---------- */
+async function handleImport(incomingArray, type){
+  // type: 'students' or 'tests'
+  if(!Array.isArray(incomingArray)) return;
+  const incoming = incomingArray.map(item=>{
+    if(type==='students'){
+      return {...item, eligible: normalizeEligible(item.eligible)};
+    } else {
+      return {...item, instructors: Array.isArray(item.instructors) ? item.instructors : String(item.instructors||'').split(',').map(s=>s.trim()).filter(Boolean), locations: Array.isArray(item.locations) ? item.locations : String(item.locations||'').split(',').map(s=>s.trim()).filter(Boolean)};
+    }
+  });
+
+  const local = getData(type);
+  const idField = 'id';
+
+  // 1) Add new
+  const localById = new Map(local.map(x=>[String(x[idField]), x]));
+  const incomingIds = new Set(incoming.map(x=>String(x[idField])));
+  const newOnes = incoming.filter(x=> !localById.has(String(x[idField])));
+  if(newOnes.length){
+    const merged = local.concat(newOnes);
+    saveData(type, merged);
+  }
+
+  // 2) Conflicts
+  mergeQueue = [];
+  incoming.forEach(inc=>{
+    const cur = localById.get(String(inc[idField]));
+    if(!cur) return;
+    if(type==='students'){
+      if(studentDiffers(cur, inc)) mergeQueue.push({type:'student', local:cur, incoming:inc});
+    } else {
+      if(testDiffers(cur, inc)) mergeQueue.push({type:'test', local:cur, incoming:inc});
+    }
+  });
+
+  // 3) Local-only (deletions candidate)
+  const localOnly = local.filter(x=> !incomingIds.has(String(x[idField])) ).map(x=>({ type, id:x[idField], label: (type==='students') ? `${x.firstName||''} ${x.lastName||''}`.trim()||`ID ${x[idField]}` : `Test ${x[idField]}` }));
+  pendingDeletions = localOnly;
+
+  if(mergeQueue.length > 0){
+    mergeIndex = 0;
+    await processMergeQueueSequential();
+  } else {
+    await showDeletionPrompt(type);
+  }
+}
+
+/* comparators */
+function studentDiffers(a,b){
+  return a.firstName !== b.firstName || a.lastName !== b.lastName || a.dob !== b.dob || a.currentBelt !== b.currentBelt || !!normalizeEligible(a.eligible) !== !!normalizeEligible(b.eligible) || (a.instructor||'') !== (b.instructor||'') || (a.location||'') !== (b.location||'');
+}
+function testDiffers(a,b){
+  const arrEq = (x,y)=> (x||[]).join('|') !== (y||[]).join('|');
+  return a.studentName!==b.studentName || a.beltTestedFor!==b.beltTestedFor || a.testDate!==b.testDate || a.result!==b.result || arrEq(a.instructors,b.instructors) || arrEq(a.locations,b.locations) || (a.comments||'')!==(b.comments||'');
+}
+
+/* sequential merge queue processor */
+function showMergeItem(item, idx, total){
   const isStudent = item.type === 'student';
-  mergeTitle.textContent = `${isStudent ? 'Student' : 'Test'} Conflict (${i+1} of ${total}) — ID: ${item.local.id || item.local.id}`;
+  mergeTitle.textContent = `${isStudent ? 'Student' : 'Test'} Conflict ( ${idx+1} of ${total} ) — ID: ${item.local.id || item.local.id}`;
   const fields = isStudent ? ['firstName','lastName','dob','currentBelt','eligible','instructor','location'] : ['studentName','beltTestedFor','testDate','result','instructors','locations','comments'];
   mergeContent.innerHTML = '';
   mergeContent.appendChild(buildDiffTable(fields, item.local, item.incoming));
-  mergePrevBtn.disabled = (i === 0);
+  mergePrevBtn.disabled = (idx===0);
   openModal('mergeModal');
 }
-
-function openModal(id){ document.getElementById(id).classList.add('open'); }
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
 function processMergeQueueSequential(){
   return new Promise(resolve => {
     async function next(){
       if(mergeIndex >= mergeQueue.length){
-        // done with merges — prompt deletions
         closeModal('mergeModal');
-        await showDeletionPrompt(mergeQueue.length ? mergeQueue[0].type==='student' ? 'students' : 'tests' : pendingDeletions.length ? pendingDeletions[0].type : 'students');
+        // after merges, prompt deletions
+        await showDeletionPrompt(mergeQueue.length ? (mergeQueue[0].type==='student' ? 'students' : 'tests') : pendingDeletions.length ? pendingDeletions[0].type : 'students');
         resolve();
         return;
       }
       const item = mergeQueue[mergeIndex];
       showMergeItem(item, mergeIndex, mergeQueue.length);
 
-      // wait for user action
-      const onApply = ()=>{
+      const applyHandler = ()=>{
         const fields = (item.type==='student') ? ['firstName','lastName','dob','currentBelt','eligible','instructor','location'] : ['studentName','beltTestedFor','testDate','result','instructors','locations','comments'];
         const form = mergeContent;
         fields.forEach(f=>{
           const choice = form.querySelector(`input[name="keep-${f}"]:checked`)?.value || 'current';
           if(choice === 'incoming'){
-            if(f==='eligible'){ item.local[f] = !!item.incoming[f]; }
-            else if(f==='instructors' || f==='locations'){ item.local[f] = Array.isArray(item.incoming[f]) ? item.incoming[f] : String(item.incoming[f]||'').split(',').map(s=>s.trim()).filter(Boolean); }
+            if(f === 'eligible'){ item.local[f] = !!item.incoming[f]; }
+            else if(f === 'instructors' || f === 'locations'){ item.local[f] = Array.isArray(item.incoming[f]) ? item.incoming[f] : String(item.incoming[f]||'').split(',').map(s=>s.trim()).filter(Boolean); }
             else item.local[f] = item.incoming[f];
           }
         });
-        // save local updated record
+        // save to storage
         if(item.type === 'student'){
-          const arr = getData('students'); const idx = arr.findIndex(x=>String(x.id) === String(item.local.id));
-          if(idx >= 0){ arr[idx] = item.local; saveData('students', arr); }
+          const arr = getData('students'); const idx = arr.findIndex(x=>String(x.id)===String(item.local.id));
+          if(idx>=0){ arr[idx] = item.local; saveData('students', arr); }
         } else {
-          const arr = getData('tests'); const idx = arr.findIndex(x=>String(x.id) === String(item.local.id));
-          if(idx >= 0){ arr[idx] = item.local; saveData('tests', arr); }
+          const arr = getData('tests'); const idx = arr.findIndex(x=>String(x.id)===String(item.local.id));
+          if(idx>=0){ arr[idx] = item.local; saveData('tests', arr); }
         }
         mergeIndex++;
-        // small delay to allow UI update
-        setTimeout(next, 50);
+        setTimeout(next, 10);
       };
+      const skipHandler = ()=>{ mergeIndex++; setTimeout(next, 10); };
+      const prevHandler = ()=>{ if(mergeIndex>0){ mergeIndex--; setTimeout(next, 10); } else setTimeout(next, 10); };
 
-      const onSkip = ()=>{
-        mergeIndex++;
-        setTimeout(next, 50);
-      };
-
-      const onPrev = ()=>{
-        if(mergeIndex > 0){ mergeIndex--; setTimeout(next, 50); }
-        else { /* nothing */ }
-      };
-
-      mergeApplyBtn.onclick = ()=>{ closeModal('mergeModal'); onApply(); };
-      mergeSkipBtn.onclick = ()=>{ closeModal('mergeModal'); onSkip(); };
-      mergePrevBtn.onclick = ()=>{ closeModal('mergeModal'); onPrev(); };
+      mergeApplyBtn.onclick = ()=>{ closeModal('mergeModal'); applyHandler(); };
+      mergeSkipBtn.onclick = ()=>{ closeModal('mergeModal'); skipHandler(); };
+      mergePrevBtn.onclick = ()=>{ closeModal('mergeModal'); prevHandler(); };
     }
     next();
   });
 }
 
-/* ---------- deletion prompt UI ---------- */
-async function showDeletionPrompt(type){
-  if(!pendingDeletions || pendingDeletions.length === 0){
-    renderStudents(); renderTests(); alert(`${type === 'students' ? 'Student' : 'Test'} import complete.`);
-    return;
-  }
-  // Build list: pendingDeletions contains objects {type,id,label}
-  deleteTitle.textContent = `Local-only ${type} records not present in import`;
-  deleteContent.innerHTML = '';
-  const listDiv = document.createElement('div');
-  pendingDeletions.forEach(item => {
-    const id = item.id; const label = item.label || `${type.slice(0,-1)} ${id}`;
-    const row = document.createElement('label'); row.style.display='block'; row.style.margin='6px 0';
-    row.innerHTML = `<input type="checkbox" value="${id}"> ${escapeHtml(label)} (ID: ${escapeHtml(String(id))})`;
-    listDiv.appendChild(row);
-  });
-  deleteContent.appendChild(listDiv);
-  openModal('deleteModal');
-
-  deleteConfirmBtn.onclick = ()=>{
-    const checked = Array.from(deleteContent.querySelectorAll('input[type="checkbox"]:checked')).map(cb=>cb.value);
-    if(checked.length === 0){ closeModal('deleteModal'); pendingDeletions = []; renderStudents(); renderTests(); alert('No records deleted. Import complete.'); return; }
-    if(type === 'students'){
-      let s = getData('students').filter(x => !checked.includes(String(x.id)));
-      saveData('students', s);
-      // cascade tests removal
-      let t = getData('tests').filter(x => !checked.includes(String(x.studentId)));
-      saveData('tests', t);
-    } else {
-      let t = getData('tests').filter(x => !checked.includes(String(x.id)));
-      saveData('tests', t);
+/* ---------- Deletion prompt ---------- */
+function showDeletionPrompt(type){
+  return new Promise(resolve=>{
+    if(!pendingDeletions || pendingDeletions.length === 0){
+      renderStudents(); renderTests(); alert(`${type === 'students' ? 'Students' : 'Tests'} import complete.`);
+      resolve();
+      return;
     }
-    pendingDeletions = [];
-    closeModal('deleteModal');
-    renderStudents(); renderTests();
-    alert('Selected local records deleted.');
-  };
+    deleteTitle.textContent = `Local-only ${type} records not present in import`;
+    deleteContent.innerHTML = '';
+    const list = document.createElement('div');
+    pendingDeletions.forEach(item=>{
+      const label = item.label || `${item.type.slice(0,-1)} ${item.id}`;
+      const el = document.createElement('label'); el.style.display='block'; el.style.margin='6px 0';
+      el.innerHTML = `<input type="checkbox" value="${escapeHtml(String(item.id))}"> ${escapeHtml(label)} (ID: ${escapeHtml(String(item.id))})`;
+      list.appendChild(el);
+    });
+    deleteContent.appendChild(list);
+    openModal('deleteModal');
 
-  deleteCancelBtn.onclick = ()=>{
-    closeModal('deleteModal');
-    pendingDeletions = [];
-    renderStudents(); renderTests();
-    alert('Kept all local records. Import complete.');
-  };
-}
-
-/* ---------- simple file-read utilities ---------- */
-function readJsonFromFileInput(file){
-  return new Promise((resolve, reject)=>{
-    const reader = new FileReader();
-    reader.onload = e => {
-      try{ resolve(JSON.parse(e.target.result)); } catch(err){ reject(err); }
+    deleteConfirmBtn.onclick = ()=>{
+      const selected = Array.from(deleteContent.querySelectorAll('input[type="checkbox"]:checked')).map(cb=>cb.value);
+      if(selected.length === 0){ closeModal('deleteModal'); pendingDeletions=[]; renderStudents(); renderTests(); alert('No records deleted. Import complete.'); resolve(); return; }
+      if(type === 'students'){
+        let s = getData('students').filter(x=> !selected.includes(String(x.id)) );
+        saveData('students', s);
+        let t = getData('tests').filter(x=> !selected.includes(String(x.studentId)) );
+        saveData('tests', t);
+      } else if(type === 'tests'){
+        let t = getData('tests').filter(x=> !selected.includes(String(x.id)) );
+        saveData('tests', t);
+      } else if(type === 'instructors'){
+        let arr = getData('instructors').filter(x=> !selected.includes(String(x)) );
+        saveData('instructors', arr);
+        // students/tests referencing removed instructors remain as text — user can clean manually
+      } else if(type === 'locations'){
+        let arr = getData('locations').filter(x=> !selected.includes(String(x)) );
+        saveData('locations', arr);
+      }
+      pendingDeletions = [];
+      closeModal('deleteModal');
+      renderInstructorSelects(); renderLocationSelects(); renderStudents(); renderTests();
+      alert('Selected local records deleted.');
+      resolve();
     };
-    reader.onerror = err => reject(err);
-    reader.readAsText(file);
+    deleteCancelBtn.onclick = ()=>{
+      closeModal('deleteModal'); pendingDeletions = []; renderStudents(); renderTests(); alert('Kept all local records. Import complete.'); resolve();
+    };
   });
 }
 
-/* ---------- top-level import handlers (previously used simple approach) ---------- */
-/* The handleImport function above is the main importer and merges + deletion prompt. */
+/* ---------- Instructors & Locations import handlers (for combined backup) ---------- */
+async function handleInstructorsImport(incoming){
+  if(!Array.isArray(incoming)) return;
+  const local = getData('instructors');
+  const newOnes = incoming.filter(x=> !local.includes(x));
+  if(newOnes.length){
+    const merged = local.concat(newOnes);
+    saveData('instructors', merged);
+  }
+  // local-only deletion prompt
+  const localOnly = local.filter(x=> !incoming.includes(x)).map(x=>({type:'instructors', id:x, label:x}));
+  pendingDeletions = localOnly;
+  if(pendingDeletions.length) await showDeletionPrompt('instructors');
+  renderInstructorSelects();
+}
 
-/* ---------- other UI actions: print, reset ---------- */
-document.getElementById('printStudentsBtn').addEventListener('click', ()=>{
-  const w = window.open('','Print','width=900,height=700'); w.document.write('<html><head><title>Students</title></head><body>'+document.querySelector('.printable').outerHTML+'</body></html>'); w.document.close(); w.print(); w.close();
-});
-document.getElementById('printTestsBtn').addEventListener('click', ()=>{
-  const w = window.open('','Print','width=900,height=700'); w.document.write('<html><head><title>Tests</title></head><body>'+document.getElementById('testsTable').outerHTML+'</body></html>'); w.document.close(); w.print(); w.close();
-});
+async function handleLocationsImport(incoming){
+  if(!Array.isArray(incoming)) return;
+  const local = getData('locations');
+  const newOnes = incoming.filter(x=> !local.includes(x));
+  if(newOnes.length){
+    const merged = local.concat(newOnes);
+    saveData('locations', merged);
+  }
+  const localOnly = local.filter(x=> !incoming.includes(x)).map(x=>({type:'locations', id:x, label:x}));
+  pendingDeletions = localOnly;
+  if(pendingDeletions.length) await showDeletionPrompt('locations');
+  renderLocationSelects();
+}
 
-document.getElementById('resetDemoBtn').addEventListener('click', ()=>{
-  if(confirm('Reset demo data? This will erase students and tests.')){ localStorage.removeItem('students'); localStorage.removeItem('tests'); location.reload(); }
-});
+/* ---------- Manage instructors & locations UI ---------- */
+manageInstructorsBtn.onclick = ()=> { renderInstructorsModal(); openModal('instructorsModal'); };
+manageLocationsBtn.onclick = ()=> { renderLocationsModal(); openModal('locationsModal'); };
 
-/* ---------- wire small controls ---------- */
-document.getElementById('importStudentsBtn').addEventListener('click', ()=> importStudentsFile.click());
-document.getElementById('importTestsBtn').addEventListener('click', ()=> importTestsFile.click());
-document.getElementById('importAllBtn').addEventListener('click', ()=> importAllFile.click());
+function addInstructor(){
+  const name = document.getElementById('instructorName').value.trim();
+  if(!name) return;
+  const list = getData('instructors'); list.push(name); saveData('instructors', list);
+  document.getElementById('instructorName').value='';
+  renderInstructorsModal(); renderInstructorSelects();
+}
+function addLocation(){
+  const name = document.getElementById('locationName').value.trim();
+  if(!name) return;
+  const list = getData('locations'); list.push(name); saveData('locations', list);
+  document.getElementById('locationName').value='';
+  renderLocationsModal(); renderLocationSelects();
+}
 
-importStudentsFile.addEventListener('change', async (e)=>{
-  const f = e.target.files[0]; if(!f) return;
-  try{ const parsed = await readJsonFromFileInput(f); if(!Array.isArray(parsed)){ alert('Students JSON must be an array'); e.target.value=''; return; } await handleImport(parsed, 'students'); }
-  catch(err){ alert('Invalid JSON'); }
-  e.target.value='';
-});
-importTestsFile.addEventListener('change', async (e)=>{
-  const f = e.target.files[0]; if(!f) return;
-  try{ const parsed = await readJsonFromFileInput(f); if(!Array.isArray(parsed)){ alert('Tests JSON must be an array'); e.target.value=''; return; } await handleImport(parsed, 'tests'); }
-  catch(err){ alert('Invalid JSON'); }
-  e.target.value='';
-});
-importAllFile.addEventListener('change', async (e)=>{
-  const f = e.target.files[0]; if(!f) return;
-  try{
-    const parsed = await readJsonFromFileInput(f);
-    const stArr = Array.isArray(parsed.students) ? parsed.students : [];
-    const tArr = Array.isArray(parsed.tests) ? parsed.tests : [];
-    await handleImport(stArr, 'students');
-    await handleImport(tArr, 'tests');
-    alert('Backup import finished.');
-  } catch(err){ alert('Invalid JSON'); }
-  e.target.value='';
-});
+/* ---------- Import single-type helper to reuse earlier logic ---------- */
+/* exports already defined above - handleImport used for students & tests */
 
-/* export buttons */
-document.getElementById('exportStudentsBtn').addEventListener('click', ()=> {
-  const s = getData('students').map(x=> ({ ...x, eligible: !!normalizeEligible(x.eligible) }));
-  downloadJSON('students.json', s);
-});
-document.getElementById('exportTestsBtn').addEventListener('click', ()=> {
-  downloadJSON('tests.json', getData('tests'));
-});
-document.getElementById('exportAllBtn').addEventListener('click', ()=>{
-  const payload = { students: getData('students').map(x=> ({ ...x, eligible: !!normalizeEligible(x.eligible) })), tests: getData('tests') };
-  downloadJSON('backup.json', payload);
-});
-function downloadJSON(name, obj){ const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; a.click(); URL.revokeObjectURL(url); }
+/* ---------- Print / Reset ---------- */
+printStudentsBtn.onclick = ()=> {
+  const w=window.open('','Print','width=900,height=700'); w.document.write('<html><head><title>Students</title></head><body>'+document.querySelector('.printable').outerHTML+'</body></html>'); w.document.close(); w.print(); w.close();
+};
+printTestsBtn.onclick = ()=> {
+  const w=window.open('','Print','width=900,height=700'); w.document.write('<html><head><title>Tests</title></head><body>'+document.getElementById('testsTable').outerHTML+'</body></html>'); w.document.close(); w.print(); w.close();
+};
+resetDemoBtn.onclick = ()=> {
+  if(!confirm('Reset demo data? This will erase students and tests.')) return;
+  localStorage.removeItem('students'); localStorage.removeItem('tests'); // keep instructors & locations optionally
+  location.reload();
+};
 
-/* ---------- initial render ---------- */
-renderStudents();
-renderTests();
+/* ---------- initialize ---------- */
+function init(){
+  renderInstructorSelects();
+  renderLocationSelects();
+  renderInstructorsModal();
+  renderLocationsModal();
+  renderStudents();
+  renderTests();
+  renderDashboard();
+}
+init();
 
 /* ---------- search ---------- */
-document.getElementById('searchInput').addEventListener('input', renderStudents);
+searchInput.addEventListener('input', ()=> renderStudents());
 
 </script>
 </body>
