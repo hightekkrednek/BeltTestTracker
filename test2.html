@@ -294,10 +294,11 @@ function populateBeltModal() {
             ul.querySelector('.selected')?.classList.remove('selected'); // remove previous selection
             li.classList.add('selected'); // select this one
         };
-        ul.appendChild(li); // append inside the loop
+        ul.appendChild(li);
     });
 }
 function addBelt(){const name=document.getElementById('newBeltName').value.trim(); if(name){belts.push(name); document.getElementById('newBeltName').value=''; saveAllData(); populateBeltModal(); populateTables();}}
+
 function moveBeltUp(){const sel=document.querySelector('#beltList .selected'); if(!sel) return; const idx=parseInt(sel.dataset.index); if(idx===0) return; [belts[idx-1],belts[idx]]=[belts[idx],belts[idx-1]]; saveAllData(); populateBeltModal(); populateTables();}
 function moveBeltDown(){const sel=document.querySelector('#beltList .selected'); if(!sel) return; const idx=parseInt(sel.dataset.index); if(idx===belts.length-1) return; [belts[idx+1],belts[idx]]=[belts[idx],belts[idx+1]]; saveAllData(); populateBeltModal(); populateTables();}
 
@@ -314,8 +315,13 @@ function exportAll(){const data={students, beltTests, instructors, locations, be
 function importAll(){const input=document.createElement('input'); input.type='file'; input.accept='.json'; input.onchange=()=>{const file=input.files[0]; const reader=new FileReader(); reader.onload=function(e){try{const data=JSON.parse(e.target.result); if(data.students) students=data.students; if(data.beltTests) beltTests=data.beltTests; if(data.instructors) instructors=data.instructors; if(data.locations) locations=data.locations; if(data.belts) belts=data.belts; nextStudentId=Math.max(...students.map(s=>s.id),1000)+1; saveAllData(); populateTables(); alert('Data imported successfully.');}catch(err){alert('Invalid JSON file.');}}; reader.readAsText(file);}; input.click();}
 function resetData(){if(confirm('Reset all data?')){students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables();}}
 
+// --- Event Listeners for Save Buttons ---
+document.getElementById('saveStudentBtn').onclick=saveStudent;
+document.getElementById('saveBeltTestBtn').onclick=saveBeltTest;
+
 // --- Initialize ---
 loadAllData(); populateTables(); populateStudentModal(); populateTestModal(); populateBeltModal(); populateInstructorModal(); populateLocationModal();
+
 });
 </script>
 
