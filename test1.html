@@ -41,33 +41,39 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </head>
 <body>
 
-<h1>Impact Martian Arts Belt Tracker</h1>
+<!-- TOP BANNER -->
+<header style="text-align:center; background:#6c63ff; color:#fff; padding:15px 0; font-family:Arial, sans-serif;">
+  <h1>Impact Martian Arts Belt Tracker</h1>
+</header>
 
 <section id="dashboard">
 <h2>Dashboard</h2>
 <div id="beltCounts">No students yet.</div>
 </section>
 
+<!-- STUDENTS SECTION -->
 <section id="studentsSection">
-<h2>Students</h2>
-<table id="studentsTable">
-<thead>
-<tr>
-<th>ID</th>
-<th>Name</th>
-<th>Birthdate</th>
-<th>Age</th>
-<th>Belt</th>
-<th>Instructor</th>
-<th>Location</th>
-<th>Eligible</th>
-<th>Active</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-<button onclick="openStudentModal()">Add Student</button>
+  <h2>Students</h2>
+  <div style="overflow-x:auto;">
+    <table id="studentsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Birthdate</th>
+          <th>Age</th>
+          <th>Belt</th>
+          <th>Instructor</th>
+          <th>Location</th>
+          <th>Eligible</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <button onclick="openStudentModal()">Add Student</button>
 </section>
 
 <section id="beltTestsSection">
