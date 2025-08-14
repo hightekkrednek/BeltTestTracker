@@ -21,6 +21,20 @@ select[multiple] { height:60px; }
 .modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:90%; }
 .modal-header { font-weight:bold; margin-bottom:10px; }
 .modal-footer { text-align:right; margin-top:10px; }
+
+/* Belt colors */
+.belt-White{background:#ffffff;}
+.belt-White\ Stripe{background:#f9f9f9;}
+.belt-Yellow{background:#fffacd;}
+.belt-Yellow\ Stripe{background:#fff8b0;}
+.belt-Green{background:#90ee90;}
+.belt-Green\ Stripe{background:#a0f0a0;}
+.belt-Blue{background:#add8e6;}
+.belt-Blue\ Stripe{background:#b7dfee;}
+.belt-Red{background:#ff7f7f;}
+.belt-Red\ Stripe{background:#ff9999;}
+.belt-Black{background:#333333; color:#fff;}
+.student-active{background:#e6ffe6;}
 </style>
 </head>
 <body>
@@ -154,8 +168,6 @@ select[multiple] { height:60px; }
 // DATA
 let students=[], beltTests=[], instructors=[], locations=[], nextStudentId=1000;
 let editingStudent=null, editingTest=null;
-
-// BELTS ORDER
 const beltOptions=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"];
 
 // LOCALSTORAGE
@@ -221,11 +233,13 @@ function saveStudent(){
 function addStudentRowToTable(s){
   const tbody=document.querySelector('#studentsTable tbody');
   const row=document.createElement('tr');
+  if(s.active) row.classList.add('student-active');
+  const beltClass='belt-'+s.belt.replace(' ','\\ ');
   row.innerHTML=`
     <td>${s.id}</td>
     <td>${s.name}</td>
     <td>${s.birthdate}</td>
-    <td>${s.belt}</td>
+    <td class="${beltClass}">${s.belt}</td>
     <td>${s.instructors.join(',')}</td>
     <td>${s.location}</td>
     <td>${s.eligible?'✔':''}</td>
@@ -267,9 +281,10 @@ function addTestRowToTable(t){
   const s=students.find(st=>st.id===t.studentId);
   const studentName=s?s.name+' ('+s.id+')':'Unknown';
   const row=document.createElement('tr');
+  const beltClass='belt-'+t.belt.replace(' ','\\ ');
   row.innerHTML=`
     <td>${studentName}</td>
-    <td>${t.belt}</td>
+    <td class="${beltClass}">${t.belt}</td>
     <td>${t.date}</td>
     <td>${t.instructors.join(',')}</td>
     <td>${t.location}</td>
