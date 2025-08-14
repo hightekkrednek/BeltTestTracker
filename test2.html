@@ -5,60 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Taekwondo Tracker</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f4f4f9;
-    color: #333;
-}
-h2 { margin-top: 0; }
-section {
-    background: #fff;
-    margin: 20px auto;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    max-width: 1000px;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-th, td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    text-align: left;
-    font-size: 14px;
-}
-th { background: #e2e2f1; }
-input[type="text"], input[type="number"], select {
-    width: 95%;
-    padding: 6px;
-    box-sizing: border-box;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
-input[type="checkbox"] { width: 20px; height: 20px; }
-button {
-    margin: 5px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    border: none;
-    background: #6c63ff;
-    color: #fff;
-    cursor: pointer;
-    font-size: 14px;
-}
-button:hover { background: #534fd1; }
-.control-panel {
-    background: #e8e8f8;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 20px auto;
-    max-width: 1000px;
-}
-select[multiple] { height: 60px; }
+body { font-family: Arial, sans-serif; margin:0; background:#f4f4f9; color:#333; }
+h2 { margin-top:0; }
+section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:1000px; }
+table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+th,td { padding:10px; border:1px solid #ddd; text-align:left; font-size:14px; }
+th { background:#e2e2f1; }
+input[type="text"], input[type="number"], select { width:95%; padding:6px; box-sizing:border-box; border-radius:4px; border:1px solid #ccc; }
+input[type="checkbox"] { width:20px; height:20px; }
+button { margin:5px; padding:8px 12px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:14px; }
+button:hover { background:#534fd1; }
+.control-panel { background:#e8e8f8; padding:20px; border-radius:8px; margin:20px auto; max-width:1000px; }
+select[multiple] { height:60px; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+.modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:90%; }
+.modal-header { font-weight:bold; margin-bottom:10px; }
+.modal-footer { text-align:right; margin-top:10px; }
 </style>
 </head>
 <body>
@@ -83,7 +45,7 @@ select[multiple] { height: 60px; }
 </thead>
 <tbody></tbody>
 </table>
-<button onclick="addStudentRow()">Add Student</button>
+<button onclick="openStudentModal()">Add Student</button>
 </section>
 
 <section id="beltTestsSection">
@@ -101,7 +63,7 @@ select[multiple] { height: 60px; }
 </thead>
 <tbody></tbody>
 </table>
-<button onclick="addBeltTestRow()">Add Belt Test</button>
+<button onclick="openTestModal()">Add Belt Test</button>
 </section>
 
 <section class="control-panel">
@@ -119,185 +81,157 @@ select[multiple] { height: 60px; }
 </div>
 </section>
 
+<!-- STUDENT MODAL -->
+<div class="modal" id="studentModal">
+<div class="modal-content">
+<div class="modal-header">Add/Edit Student</div>
+<div class="modal-body">
+<label>Name: <input type="text" id="studentName"></label><br><br>
+<label>Instructor: <select id="studentInstructor"></select></label><br><br>
+<label>Location: <select id="studentLocation"></select></label><br><br>
+<label>Eligible: <input type="checkbox" id="studentEligible"></label>
+</div>
+<div class="modal-footer">
+<button onclick="closeStudentModal()">Cancel</button>
+<button onclick="saveStudent()">Save</button>
+</div>
+</div>
+</div>
+
+<!-- BELT TEST MODAL -->
+<div class="modal" id="testModal">
+<div class="modal-content">
+<div class="modal-header">Add/Edit Belt Test</div>
+<div class="modal-body">
+<label>Student ID: <input type="number" id="testStudentId"></label><br><br>
+<label>Belt: <input type="text" id="testBelt"></label><br><br>
+<label>Date: <input type="text" id="testDate" placeholder="YYYY-MM-DD"></label><br><br>
+<label>Instructor(s): <select id="testInstructors" multiple></select></label><br><br>
+<label>Location: <select id="testLocation"></select></label>
+</div>
+<div class="modal-footer">
+<button onclick="closeTestModal()">Cancel</button>
+<button onclick="saveTest()">Save</button>
+</div>
+</div>
+</div>
+
 <script>
-// DATA STORAGE
-let students = [];
-let beltTests = [];
-let instructors = [];
-let locations = [];
-let nextStudentId = 1000;
+// DATA
+let students=[], beltTests=[], instructors=[], locations=[], nextStudentId=1000;
+let editingStudent=null, editingTest=null;
 
-// LOCALSTORAGE UTILITIES
-function saveAllData() {
-    localStorage.setItem('students', JSON.stringify(students));
-    localStorage.setItem('beltTests', JSON.stringify(beltTests));
-    localStorage.setItem('instructors', JSON.stringify(instructors));
-    localStorage.setItem('locations', JSON.stringify(locations));
-    localStorage.setItem('nextStudentId', nextStudentId);
+// LOCALSTORAGE
+function saveAllData(){ localStorage.setItem('students',JSON.stringify(students)); localStorage.setItem('beltTests',JSON.stringify(beltTests)); localStorage.setItem('instructors',JSON.stringify(instructors)); localStorage.setItem('locations',JSON.stringify(locations)); localStorage.setItem('nextStudentId',nextStudentId);}
+function loadAllData(){ students=JSON.parse(localStorage.getItem('students')||'[]'); beltTests=JSON.parse(localStorage.getItem('beltTests')||'[]'); instructors=JSON.parse(localStorage.getItem('instructors')||'[]'); locations=JSON.parse(localStorage.getItem('locations')||'[]'); nextStudentId=parseInt(localStorage.getItem('nextStudentId')||'1000'); }
+function populateTables(){
+  const tbodyS=document.querySelector('#studentsTable tbody'); tbodyS.innerHTML='';
+  students.forEach(s=>{ addStudentRowToTable(s); });
+  const tbodyT=document.querySelector('#beltTestsTable tbody'); tbodyT.innerHTML='';
+  beltTests.forEach(t=>{ addTestRowToTable(t); });
+  updateBeltCounts();
 }
-function loadAllData() {
-    students = JSON.parse(localStorage.getItem('students')||'[]');
-    beltTests = JSON.parse(localStorage.getItem('beltTests')||'[]');
-    instructors = JSON.parse(localStorage.getItem('instructors')||'[]');
-    locations = JSON.parse(localStorage.getItem('locations')||'[]');
-    nextStudentId = parseInt(localStorage.getItem('nextStudentId')||'1000');
-}
-function populateTables() {
-    document.querySelector('#studentsTable tbody').innerHTML='';
-    students.forEach(s=>addStudentRowFromImport(s));
-    document.querySelector('#beltTestsTable tbody').innerHTML='';
-    beltTests.forEach(t=>addBeltTestRowFromImport(t));
-    updateBeltCounts();
+function updateBeltCounts(){
+  if(beltTests.length===0){document.getElementById('beltCounts').innerText="No belt tests yet.";return;}
+  let counts={}; beltTests.forEach(t=>{ counts[t.belt]=(counts[t.belt]||0)+1; });
+  document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
 }
 
-// BELT COUNTS DASHBOARD
-function updateBeltCounts() {
-    if(beltTests.length===0){document.getElementById('beltCounts').innerText="No belt tests yet.";return;}
-    let counts={};
-    beltTests.forEach(t=>{
-        counts[t.belt] = (counts[t.belt]||0)+1;
-    });
-    let html = Object.entries(counts).map(([belt,n])=>`${belt}: ${n}`).join(', ');
-    document.getElementById('beltCounts').innerText=html;
+// STUDENT MODAL
+function openStudentModal(s=null){
+  editingStudent=s;
+  document.getElementById('studentName').value=s?s.name:'';
+  document.getElementById('studentEligible').checked=s?s.eligible:false;
+  const instSel=document.getElementById('studentInstructor'); instSel.innerHTML='';
+  instructors.forEach(i=>{const o=document.createElement('option');o.value=i;o.text=i;if(s&&s.instructors.includes(i)) o.selected=true; instSel.add(o);});
+  const locSel=document.getElementById('studentLocation'); locSel.innerHTML='';
+  locations.forEach(l=>{const o=document.createElement('option');o.value=l;o.text=l;if(s&&s.location===l) o.selected=true; locSel.add(o);});
+  document.getElementById('studentModal').style.display='flex';
 }
-
-// STUDENTS
-function generateStudentId() { return nextStudentId++; }
-
-function addStudentRow() {
-    const id = generateStudentId();
-    const s = {id,name:'', instructors:[], location:'', eligible:false};
-    students.push(s);
-    addStudentRowFromImport(s);
-    saveAllData();
+function closeStudentModal(){ document.getElementById('studentModal').style.display='none'; editingStudent=null; }
+function saveStudent(){
+  const name=document.getElementById('studentName').value.trim();
+  if(name===''){alert('Name required'); return;}
+  const instructor=[document.getElementById('studentInstructor').value];
+  const location=document.getElementById('studentLocation').value;
+  const eligible=document.getElementById('studentEligible').checked;
+  if(editingStudent){
+    editingStudent.name=name; editingStudent.instructors=instructor; editingStudent.location=location; editingStudent.eligible=eligible;
+  } else {
+    const s={id:nextStudentId++, name, instructors:instructor, location, eligible}; students.push(s);
+  }
+  saveAllData(); populateTables(); closeStudentModal();
 }
-
-function addStudentRowFromImport(s){
-    const tbody = document.querySelector('#studentsTable tbody');
-    const row=document.createElement('tr');
-    row.innerHTML=`
+function addStudentRowToTable(s){
+  const tbody=document.querySelector('#studentsTable tbody');
+  const row=document.createElement('tr');
+  row.innerHTML=`
     <td>${s.id}</td>
-    <td contenteditable="true" oninput="updateStudentName(${s.id}, this.innerText)">${s.name}</td>
-    <td>
-        <select id="inst-${s.id}" onchange="updateStudentInstructor(${s.id}, this.value)">
-            ${instructors.map(ins=>`<option value="${ins}" ${s.instructors.includes(ins)?'selected':''}>${ins}</option>`).join('')}
-        </select>
-    </td>
-    <td>
-        <select id="loc-${s.id}" onchange="updateStudentLocation(${s.id}, this.value)">
-            ${locations.map(loc=>`<option value="${loc}" ${loc===s.location?'selected':''}>${loc}</option>`).join('')}
-        </select>
-    </td>
-    <td><input type="checkbox" ${s.eligible?'checked':''} onchange="updateEligibility(${s.id}, this.checked)"></td>
-    <td><button onclick="deleteStudent(this)">Delete</button></td>
-    `;
-    tbody.appendChild(row);
+    <td>${s.name}</td>
+    <td>${s.instructors.join(',')}</td>
+    <td>${s.location}</td>
+    <td>${s.eligible?'✔':''}</td>
+    <td><button onclick="editStudent(${s.id})">Edit</button><button onclick="deleteStudent(${s.id})">Delete</button></td>
+  `;
+  tbody.appendChild(row);
 }
+function editStudent(id){ const s=students.find(x=>x.id===id); if(s) openStudentModal(s);}
+function deleteStudent(id){ if(confirm('Delete student?')){students=students.filter(x=>x.id!==id); saveAllData(); populateTables();}}
 
-function updateStudentName(id, name){ const s=students.find(st=>st.id===id); if(s){s.name=name; saveAllData();} }
-function updateStudentInstructor(id, value){ const s=students.find(st=>st.id===id); if(s){s.instructors=[value]; saveAllData();} }
-function updateStudentLocation(id, value){ const s=students.find(st=>st.id===id); if(s){s.location=value; saveAllData();} }
-function updateEligibility(id, checked){ const s=students.find(st=>st.id===id); if(s){s.eligible=checked; saveAllData();} }
-
-function deleteStudent(btn){
-    const row=btn.closest('tr');
-    const id=parseInt(row.cells[0].innerText);
-    students=students.filter(s=>s.id!==id);
-    row.remove();
-    saveAllData();
+// BELT TEST MODAL
+function openTestModal(t=null){
+  editingTest=t;
+  document.getElementById('testStudentId').value=t?t.studentId:'';
+  document.getElementById('testBelt').value=t?t.belt:'';
+  document.getElementById('testDate').value=t?t.date:'';
+  const selI=document.getElementById('testInstructors'); selI.innerHTML='';
+  instructors.forEach(i=>{const o=document.createElement('option'); o.value=i; o.text=i; if(t&&t.instructors.includes(i)) o.selected=true; selI.add(o);});
+  const selL=document.getElementById('testLocation'); selL.innerHTML='';
+  locations.forEach(l=>{const o=document.createElement('option'); o.value=l; o.text=l; if(t&&t.location===l) o.selected=true; selL.add(o);});
+  document.getElementById('testModal').style.display='flex';
 }
-
-// BELT TESTS
-function addBeltTestRow(){
-    const t={studentId:'', belt:'', date:'', instructors:[], location:''};
-    beltTests.push(t);
-    addBeltTestRowFromImport(t);
-    saveAllData();
+function closeTestModal(){ document.getElementById('testModal').style.display='none'; editingTest=null; }
+function saveTest(){
+  const studentId=parseInt(document.getElementById('testStudentId').value);
+  const belt=document.getElementById('testBelt').value.trim();
+  const date=document.getElementById('testDate').value.trim();
+  if(isNaN(studentId)||!belt||!date){alert('Student ID, Belt, and Date required'); return;}
+  const instructorsSelected=[...document.getElementById('testInstructors').selectedOptions].map(o=>o.value);
+  const location=document.getElementById('testLocation').value;
+  if(editingTest){ editingTest.studentId=studentId; editingTest.belt=belt; editingTest.date=date; editingTest.instructors=instructorsSelected; editingTest.location=location;}
+  else{ beltTests.push({studentId,belt,date,instructors:instructorsSelected,location}); }
+  saveAllData(); populateTables(); closeTestModal();
 }
-function addBeltTestRowFromImport(t){
-    const tbody=document.querySelector('#beltTestsTable tbody');
-    const row=document.createElement('tr');
-    row.innerHTML=`
-    <td contenteditable="true" oninput="t.studentId=this.innerText; saveAllData()">${t.studentId}</td>
-    <td contenteditable="true" oninput="t.belt=this.innerText; updateBeltCounts(); saveAllData()">${t.belt}</td>
-    <td contenteditable="true" oninput="t.date=this.innerText; saveAllData()">${t.date}</td>
-    <td>
-        <select multiple onchange="t.instructors=[...this.selectedOptions].map(o=>o.value); saveAllData()">
-            ${instructors.map(ins=>`<option value="${ins}" ${t.instructors.includes(ins)?'selected':''}>${ins}</option>`).join('')}
-        </select>
-    </td>
-    <td>
-        <select onchange="t.location=this.value; saveAllData()">
-            ${locations.map(loc=>`<option value="${loc}" ${loc===t.location?'selected':''}>${loc}</option>`).join('')}
-        </select>
-    </td>
-    <td><button onclick="deleteBeltTest(this)">Delete</button></td>
-    `;
-    tbody.appendChild(row);
+function addTestRowToTable(t){
+  const tbody=document.querySelector('#beltTestsTable tbody');
+  const row=document.createElement('tr');
+  row.innerHTML=`
+    <td>${t.studentId}</td>
+    <td>${t.belt}</td>
+    <td>${t.date}</td>
+    <td>${t.instructors.join(',')}</td>
+    <td>${t.location}</td>
+    <td><button onclick="editTest(${beltTests.indexOf(t)})">Edit</button><button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button></td>
+  `;
+  tbody.appendChild(row);
 }
-function deleteBeltTest(btn){
-    const row=btn.closest('tr');
-    const index=[...row.parentNode.children].indexOf(row);
-    beltTests.splice(index,1);
-    row.remove();
-    updateBeltCounts();
-    saveAllData();
-}
+function editTest(index){ openTestModal(beltTests[index]); }
+function deleteTest(index){ if(confirm('Delete this test?')){ beltTests.splice(index,1); saveAllData(); populateTables(); } }
 
 // INSTRUCTORS & LOCATIONS
-function manageInstructors(){
-    const newIns=prompt("Enter comma-separated instructors", instructors.join(','));
-    if(newIns!==null){ instructors=newIns.split(',').map(s=>s.trim()).filter(s=>s); updateInstructorSelects(); saveAllData(); }
-}
-function manageLocations(){
-    const newLoc=prompt("Enter comma-separated locations", locations.join(','));
-    if(newLoc!==null){ locations=newLoc.split(',').map(s=>s.trim()).filter(s=>s); updateLocationSelects(); saveAllData(); }
-}
-function updateInstructorSelects(){
-    students.forEach(s=>{const sel=document.getElementById(`inst-${s.id}`); if(sel){sel.innerHTML=instructors.map(ins=>`<option value="${ins}" ${s.instructors.includes(ins)?'selected':''}>${ins}</option>`).join('');}});
-    document.querySelectorAll('#beltTestsTable select[multiple]').forEach(sel=>{sel.innerHTML=instructors.map(ins=>`<option value="${ins}">${ins}</option>`).join('');});
-}
-function updateLocationSelects(){
-    students.forEach(s=>{const sel=document.getElementById(`loc-${s.id}`); if(sel){sel.innerHTML=locations.map(loc=>`<option value="${loc}" ${loc===s.location?'selected':''}>${loc}</option>`).join('');}});
-    document.querySelectorAll('#beltTestsTable select:not([multiple])').forEach(sel=>{sel.innerHTML=locations.map(loc=>`<option value="${loc}">${loc}</option>`).join('');});
-}
+function manageInstructors(){ const val=prompt('Comma-separated instructors', instructors.join(',')); if(val!==null){ instructors=val.split(',').map(x=>x.trim()).filter(x=>x); saveAllData(); populateTables(); } }
+function manageLocations(){ const val=prompt('Comma-separated locations', locations.join(',')); if(val!==null){ locations=val.split(',').map(x=>x.trim()).filter(x=>x); saveAllData(); populateTables(); } }
 
-// IMPORT / EXPORT JSON
-function importStudents(){ const fi=document.createElement('input'); fi.type='file'; fi.accept='.json'; fi.onchange=e=>{ const file=e.target.files[0]; const reader=new FileReader(); reader.onload=ev=>{ const imported=JSON.parse(ev.target.result); mergeStudents(imported); }; reader.readAsText(file); }; fi.click(); }
-function exportStudents(){ const blob=new Blob([JSON.stringify(students,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='students.json'; a.click(); URL.revokeObjectURL(url); }
-function importTests(){ const fi=document.createElement('input'); fi.type='file'; fi.accept='.json'; fi.onchange=e=>{ const file=e.target.files[0]; const reader=new FileReader(); reader.onload=ev=>{ const imported=JSON.parse(ev.target.result); beltTests.push(...imported); populateTables(); alert('Tests imported'); }; reader.readAsText(file); }; fi.click(); }
+// IMPORT/EXPORT JSON
+function importStudents(){ const f=document.createElement('input'); f.type='file'; f.accept='.json'; f.onchange=e=>{ const reader=new FileReader(); reader.onload=ev=>{ const imported=JSON.parse(ev.target.result); imported.forEach(s=>{ if(!students.find(x=>x.id===s.id)) students.push(s); }); saveAllData(); populateTables(); }; reader.readAsText(e.target.files[0]); }; f.click(); }
+function exportStudents(){ const blob=new Blob([JSON.stringify(students,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='students.json'; a.click(); URL.revokeObjectURL(url);}
+function importTests(){ const f=document.createElement('input'); f.type='file'; f.accept='.json'; f.onchange=e=>{ const reader=new FileReader(); reader.onload=ev=>{ const imported=JSON.parse(ev.target.result); imported.forEach(t=>{ beltTests.push(t); }); saveAllData(); populateTables(); }; reader.readAsText(e.target.files[0]); }; f.click();}
 function exportTests(){ const blob=new Blob([JSON.stringify(beltTests,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='beltTests.json'; a.click(); URL.revokeObjectURL(url); }
 
-function mergeStudents(imported){
-    imported.forEach(s=>{
-        const existing=students.find(st=>st.id===s.id);
-        if(existing){
-            let changes=[];
-            if(existing.name!==s.name) changes.push(`Name: "${existing.name}" -> "${s.name}"`);
-            if(existing.location!==s.location) changes.push(`Location: "${existing.location}" -> "${s.location}"`);
-            if(existing.instructors.join(',')!==s.instructors.join(',')) changes.push(`Instructors: "${existing.instructors.join(',')}" -> "${s.instructors.join(',')}"`);
-            if(changes.length>0){
-                if(confirm(`Differences for student ID ${s.id}:\n${changes.join('\n')}\nApply updates?`)){
-                    existing.name=s.name;
-                    existing.location=s.location;
-                    existing.instructors=s.instructors;
-                    existing.eligible=s.eligible;
-                }
-            }
-        } else { students.push(s); addStudentRowFromImport(s);}
-    });
-    populateTables(); saveAllData(); alert('Students imported.');
-}
-
 // RESET
-function resetData(){
-    if(confirm("Reset all data?")){
-        students=[]; beltTests=[]; instructors=[]; locations=[]; nextStudentId=1000;
-        populateTables(); saveAllData();
-    }
-}
+function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[]; instructors=[]; locations=[]; nextStudentId=1000; saveAllData(); populateTables();}}
 
-// INITIALIZE
+// INIT
 loadAllData(); populateTables();
 </script>
 </body>
