@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Taekwondo Student & Belt Tracker v1</title>
+<title>Taekwondo Tracker v1</title>
 <style>
 body { font-family: Arial, sans-serif; background:#f0f0f0; margin:0; padding:0; }
-.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 10px; box-sizing: border-box; }
+.container { width:100%; max-width:1200px; margin:0 auto; padding:10px; box-sizing:border-box; }
 section { background:#fff; border-radius:8px; padding:20px; margin:20px 10px; box-shadow:0 0 10px rgba(0,0,0,0.05); overflow-x:auto; }
 table { width:100%; border-collapse: collapse; table-layout:auto; }
 th, td { border:1px solid #ccc; padding:5px; text-align:left; }
@@ -22,7 +22,7 @@ th { background:#eee; }
 .belt-Blue-Stripe{background:#b7dfee; color:#000; border:1px solid #ccc;}
 .belt-Red{background:#ff7f7f; color:#000; border:1px solid #ccc;}
 .belt-Red-Stripe{background:#ff9999; color:#000; border:1px solid #ccc;}
-.belt-Black{background:#333333; color:#fff; border:1px solid #000;}
+.belt-Black{background:#333; color:#fff; border:1px solid #000;}
 #versionLabel { font-size:12px; color:#555; margin-top:10px; text-align:right; }
 button { padding:5px 10px; margin:2px; }
 .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; }
@@ -136,6 +136,7 @@ button { padding:5px 10px; margin:2px; }
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
 let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
+let editingStudentId=null, editingTestId=null;
 
 // --- Load/Save ---
 function saveAllData(){
@@ -184,19 +185,19 @@ function populateTables(){
   });
 }
 
-// --- Modals Open/Close ---
-window.openStudentModal=()=>{document.getElementById('studentModal').style.display='flex';populateStudentModal();}
-window.closeStudentModal=()=>{document.getElementById('studentModal').style.display='none';}
-window.openBeltTestModal=()=>{document.getElementById('beltTestModal').style.display='flex';populateTestModal();}
-window.closeBeltTestModal=()=>{document.getElementById('beltTestModal').style.display='none';}
-window.openInstructorModal=()=>{document.getElementById('instructorModal').style.display='flex';populateInstructorModal();}
-window.closeInstructorModal=()=>{document.getElementById('instructorModal').style.display='none';}
-window.openLocationModal=()=>{document.getElementById('locationModal').style.display='flex';populateLocationModal();}
-window.closeLocationModal=()=>{document.getElementById('locationModal').style.display='none';}
-window.openBeltModal=()=>{document.getElementById('beltModal').style.display='flex';populateBeltModal();}
-window.closeBeltModal=()=>{document.getElementById('beltModal').style.display='none';}
+// --- Modal Helpers ---
+function openStudentModal(){document.getElementById('studentModal').style.display='flex'; populateStudentModal();}
+function closeStudentModal(){document.getElementById('studentModal').style.display='none'; editingStudentId=null;}
+function openBeltTestModal(){document.getElementById('beltTestModal').style.display='flex'; populateTestModal();}
+function closeBeltTestModal(){document.getElementById('beltTestModal').style.display='none'; editingTestId=null;}
+function openInstructorModal(){document.getElementById('instructorModal').style.display='flex'; populateInstructorModal();}
+function closeInstructorModal(){document.getElementById('instructorModal').style.display='none';}
+function openLocationModal(){document.getElementById('locationModal').style.display='flex'; populateLocationModal();}
+function closeLocationModal(){document.getElementById('locationModal').style.display='none';}
+function openBeltModal(){document.getElementById('beltModal').style.display='flex'; populateBeltModal();}
+function closeBeltModal(){document.getElementById('beltModal').style.display='none';}
 
-// --- Populate Modals ---
+// --- Populate Modal Options ---
 function populateStudentModal(){
   const beltSelect=document.getElementById('studentBelt'); beltSelect.innerHTML=''; belts.forEach(b=>beltSelect.appendChild(new Option(b,b)));
   const instrSelect=document.getElementById('studentInstructors'); instrSelect.innerHTML=''; instructors.forEach(i=>instrSelect.appendChild(new Option(i,i)));
@@ -212,8 +213,6 @@ function populateTestModal(){
 }
 
 // --- CRUD Functions ---
-let editingStudentId=null, editingTestId=null;
-
 function saveStudent(){
   const sName=document.getElementById('studentName').value;
   const sBelt=document.getElementById('studentBelt').value;
@@ -254,14 +253,16 @@ function saveBeltTest(){
   const newB=document.getElementById('testNewBelt').value;
   const instr=Array.from(document.getElementById('testInstructors').selectedOptions).map(o=>o.value);
   const loc=document.getElementById('testLocation').value;
+  const date=document.getElementById('testDate').value;
+
   if(editingTestId!==null){
     const t=beltTests.find(bt=>bt.id===editingTestId);
-    t.studentId=sId; t.date=document.getElementById('testDate').value; t.prevBelt=prevB; t.newBelt=newB; t.instructors=instr; t.location=loc;
+    t.studentId=sId; t.date=date; t.prevBelt=prevB; t.newBelt=newB; t.instructors=instr; t.location=loc;
     const stu=students.find(s=>s.id==sId); if(stu) stu.belt=newB;
     editingTestId=null;
   }else{
     const tId=Date.now();
-    beltTests.push({id:tId,studentId:sId,date:document.getElementById('testDate').value,prevBelt:prevB,newBelt:newB,instructors:instr,location:loc});
+    beltTests.push({id:tId,studentId:sId,date:date,prevBelt:prevB,newBelt:newB,instructors:instr,location:loc});
     const stu=students.find(s=>s.id==sId); if(stu) stu.belt=newB;
   }
   saveAllData(); populateTables(); closeBeltTestModal();
@@ -281,22 +282,21 @@ function editTest(id){
 
 function deleteTest(id){if(confirm('Delete this test?')){beltTests=beltTests.filter(t=>t.id!==id); saveAllData(); populateTables();}}
 
-// --- Import/Export/Reset ---
-function exportAll(){const data={students,beltTests,instructors,locations,belts}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='taekwondo_data.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);}
-function importAll(){const input=document.createElement('input'); input.type='file'; input.accept='.json'; input.onchange=()=>{const file=input.files[0]; const reader=new FileReader();
-reader.onload=function(e){try{const data=JSON.parse(e.target.result);
-if(data.students) students=data.students;
-if(data.beltTests) beltTests=data.beltTests;
-if(data.instructors) instructors=data.instructors;
-if(data.locations) locations=data.locations;
-if(data.belts) belts=data.belts;
-nextStudentId=Math.max(...students.map(s=>s.id),1000)+1;
-saveAllData(); populateTables();
-alert('Data imported successfully.');}catch(err){alert('Invalid JSON file.');}}; reader.readAsText(file);}; input.click();}
-function resetData(){if(confirm('Reset all data?')){students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables();}}
-
 // --- Belt Modal Functions ---
-function populateBeltModal(){const ul=document.getElementById('beltList'); ul.innerHTML=''; belts.forEach((b,i)=>{const li=document.createElement('li'); li.textContent=b; li.dataset.index=i; li.onclick=()=>li.classList.toggle('selected'); ul.appendChild(li);});}
+function populateBeltModal() {
+    const ul = document.getElementById('beltList');
+    ul.innerHTML = '';
+    belts.forEach((b, i) => {
+        const li = document.createElement('li');
+        li.textContent = b;
+        li.dataset.index = i;
+        li.onclick = () => {
+            ul.querySelector('.selected')?.classList.remove('selected'); // remove previous selection
+            li.classList.add('selected'); // select this one
+        };
+        ul.appendChild(li); // append inside the loop
+    });
+}
 function addBelt(){const name=document.getElementById('newBeltName').value.trim(); if(name){belts.push(name); document.getElementById('newBeltName').value=''; saveAllData(); populateBeltModal(); populateTables();}}
 function moveBeltUp(){const sel=document.querySelector('#beltList .selected'); if(!sel) return; const idx=parseInt(sel.dataset.index); if(idx===0) return; [belts[idx-1],belts[idx]]=[belts[idx],belts[idx-1]]; saveAllData(); populateBeltModal(); populateTables();}
 function moveBeltDown(){const sel=document.querySelector('#beltList .selected'); if(!sel) return; const idx=parseInt(sel.dataset.index); if(idx===belts.length-1) return; [belts[idx+1],belts[idx]]=[belts[idx],belts[idx+1]]; saveAllData(); populateBeltModal(); populateTables();}
@@ -309,13 +309,13 @@ function addInstructor(){const name=document.getElementById('newInstructorName')
 function populateLocationModal(){const ul=document.getElementById('locationList'); ul.innerHTML=''; locations.forEach((l,idx)=>{const li=document.createElement('li'); li.textContent=l; li.onclick=()=>{if(confirm('Delete this location?')){locations.splice(idx,1); saveAllData(); populateLocationModal(); populateTables();}}; ul.appendChild(li);});}
 function addLocation(){const name=document.getElementById('newLocationName').value.trim(); if(name){locations.push(name); document.getElementById('newLocationName').value=''; saveAllData(); populateLocationModal(); populateTables();}}
 
-// --- Button Event Listeners ---
-document.getElementById('saveStudentBtn').addEventListener('click',saveStudent);
-document.getElementById('saveBeltTestBtn').addEventListener('click',saveBeltTest);
+// --- Import / Export ---
+function exportAll(){const data={students, beltTests, instructors, locations, belts}; const blob=new Blob([JSON.stringify(data, null, 2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='tkdata.json'; a.click(); URL.revokeObjectURL(url);}
+function importAll(){const input=document.createElement('input'); input.type='file'; input.accept='.json'; input.onchange=()=>{const file=input.files[0]; const reader=new FileReader(); reader.onload=function(e){try{const data=JSON.parse(e.target.result); if(data.students) students=data.students; if(data.beltTests) beltTests=data.beltTests; if(data.instructors) instructors=data.instructors; if(data.locations) locations=data.locations; if(data.belts) belts=data.belts; nextStudentId=Math.max(...students.map(s=>s.id),1000)+1; saveAllData(); populateTables(); alert('Data imported successfully.');}catch(err){alert('Invalid JSON file.');}}; reader.readAsText(file);}; input.click();}
+function resetData(){if(confirm('Reset all data?')){students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables();}}
 
 // --- Initialize ---
-loadAllData(); populateTables();
-
+loadAllData(); populateTables(); populateStudentModal(); populateTestModal(); populateBeltModal(); populateInstructorModal(); populateLocationModal();
 });
 </script>
 
