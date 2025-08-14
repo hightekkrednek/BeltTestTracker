@@ -1,19 +1,335 @@
-function generateStudentId() {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taekwondo Belt Tracker</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; }
+.container { max-width: 1200px; margin: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+input, select, textarea, button { margin: 5px 0; padding: 5px; }
+textarea { width: 100%; }
+.dashboard { display: flex; justify-content: space-around; background-color: #eceff1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+.dashboard div { text-align: center; font-weight: bold; cursor: pointer; padding: 5px 10px; border-radius: 5px; }
+.dashboard div:hover { background-color: #cfd8dc; }
+.belt-White { background-color: #fff; color: #000; }
+.belt-Yellow { background-color: #fff59d; color: #000; }
+.belt-Green { background-color: #a5d6a7; color: #000; }
+.belt-Blue { background-color: #81d4fa; color: #000; }
+.belt-Red { background-color: #ef9a9a; color: #000; }
+.belt-Black { background-color: #000000; color: #fff; }
+.next-test-soon { font-weight: bold; color: #d84315; }
+#calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
+.calendar-day { border: 1px solid #ccc; min-height: 80px; padding: 5px; border-radius: 5px; background-color: #f5f5f5; }
+.calendar-day h4 { margin: 0 0 5px 0; font-size: 14px; text-align: center; }
+.test-entry { font-size: 12px; margin: 2px 0; padding: 2px 4px; border-radius: 3px; cursor: pointer; }
+.test-entry:hover { opacity: 0.8; text-decoration: underline; }
+@media print {
+    body * { visibility: hidden; }
+    .printable, .printable * { visibility: visible; }
+    .printable { position: absolute; left: 0; top: 0; width: 100%; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; }
+    table, th, td { border: 1px solid black; }
+    th, td { padding: 4px; text-align: left; }
+    #calendar { display: block; }
+    .calendar-day { border: 1px solid #000; margin-bottom: 5px; padding: 5px; page-break-inside: avoid; }
+    .test-entry { font-size: 10px; padding: 2px; }
+    button { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Taekwondo Belt Tracker</h1>
+
+<div id="dashboard" class="dashboard">
+<div id="beltCounts"></div>
+<div id="upcomingTests"></div>
+<div id="testSummary"></div>
+</div>
+
+<input type="text" id="searchInput" placeholder="Search by student name or belt...">
+
+<h2>Add New Student</h2>
+<form id="studentForm">
+<input type="text" id="firstName" placeholder="First Name" required>
+<input type="text" id="lastName" placeholder="Last Name" required>
+<input type="date" id="dob" placeholder="Date of Birth" required>
+<select id="currentBelt" required>
+<option value="">Select Belt</option>
+<option value="White">White</option>
+<option value="Yellow">Yellow</option>
+<option value="Green">Green</option>
+<option value="Blue">Blue</option>
+<option value="Red">Red</option>
+<option value="Black">Black</option>
+</select>
+<button type="submit">Add Student</button>
+</form>
+
+<button id="exportStudentsBtn">Export Students CSV</button>
+<button onclick="printSection('studentsTable')">Print Student List</button>
+<button id="resetDemoBtn" style="background-color:#f44336; color:#fff;">Reset Demo Data</button>
+
+<h2>Students</h2>
+<table id="studentsTable">
+<thead><tr><th>ID</th><th>Name</th><th>DOB</th><th>Current Belt</th><th>Next Eligible Test</th><th>Actions</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<h2>Record Belt Test</h2>
+<form id="testForm">
+<select id="studentSelect" required>
+<option value="">Select Student</option>
+</select>
+<select id="beltTestedFor" required>
+<option value="">Belt Tested For</option>
+<option value="Yellow">Yellow</option>
+<option value="Green">Green</option>
+<option value="Blue">Blue</option>
+<option value="Red">Red</option>
+<option value="Black">Black</option>
+</select>
+<input type="date" id="testDate" required>
+<select id="testResult" required>
+<option value="">Result</option>
+<option value="Pass">Pass</option>
+<option value="Fail">Fail</option>
+</select>
+<textarea id="comments" placeholder="Comments"></textarea>
+<button type="submit">Record Test</button>
+</form>
+
+<button id="exportTestsBtn">Export Tests CSV</button>
+<button onclick="printSection('testsTable')">Print Test Records</button>
+
+<h2>Belt Test Records</h2>
+<table id="testsTable">
+<thead><tr><th>Student</th><th>Belt Tested For</th><th>Date</th><th>Result</th><th>Comments</th><th>Actions</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<div id="calendarControls" style="text-align:center; margin:20px 0;">
+<button id="prevMonthBtn">&lt; Previous Month</button>
+<span id="calendarMonthYear" style="font-weight:bold; margin:0 15px;"></span>
+<button id="nextMonthBtn">Next Month &gt;</button>
+</div>
+<button onclick="printSection('calendar')">Print Calendar</button>
+
+<h2>Upcoming Tests Calendar</h2>
+<div id="calendar"></div>
+</div>
+
+<script>
+// --- Utility ---
+function getData(key){ return JSON.parse(localStorage.getItem(key))||[]; }
+function saveData(key,data){ localStorage.setItem(key, JSON.stringify(data)); }
+const beltColors={White:"#fff",Yellow:"#fff59d",Green:"#a5d6a7",Blue:"#81d4fa",Red:"#ef9a9a",Black:"#000"};
+
+// --- Generate sequential 4-digit ID ---
+function generateStudentId(){
     const students = getData('students');
-    if(students.length === 0) return 1000; // start at 1000 if no students
-
-    // Find the highest existing ID
-    const maxId = students.reduce((max, s) => s.id > max ? s.id : max, 1000);
-
-    // Next ID (max + 1), ensure it does not exceed 9999
-    if(maxId >= 9999){
-        alert("Maximum number of students reached (ID limit 9999).");
-        return null;
-    }
-
+    if(students.length === 0) return 1000;
+    const maxId = students.reduce((max,s)=>s.id>max?s.id:max,1000);
+    if(maxId >= 9999){ alert("Maximum number of students reached (ID limit 9999)."); return null; }
     return maxId + 1;
 }
-'Pass',comments:'Needs more flexibility.'}
+
+// --- Demo Data Initialization ---
+if(!localStorage.getItem('students')){
+    const demoStudents=[
+        {id:1000,firstName:'Ethan',lastName:'Lee',dob:'2015-04-10',currentBelt:'White',nextTestDate:'2025-09-01'},
+        {id:1001,firstName:'Evelyn',lastName:'Kim',dob:'2016-07-22',currentBelt:'Yellow',nextTestDate:'2025-09-15'},
+        {id:1002,firstName:'Liam',lastName:'Chen',dob:'2014-11-05',currentBelt:'Green',nextTestDate:'2025-10-05'}
+    ];
+    saveData('students',demoStudents);
+}
+if(!localStorage.getItem('tests')){
+    const demoTests=[
+        {studentId:1000,studentName:'Ethan Lee',beltTestedFor:'White',testDate:'2025-08-01',result:'Pass',comments:'Great start!'},
+        {studentId:1001,studentName:'Evelyn Kim',beltTestedFor:'Yellow',testDate:'2025-07-15',result:'Pass',comments:'Good techniques.'},
+        {studentId:1002,studentName:'Liam Chen',beltTestedFor:'Green',testDate:'2025-06-20',result:'Pass',comments:'Needs more flexibility.'}
+    ];
+    saveData('tests',demoTests);
+}
+
+// --- DOM ---
+const studentForm=document.getElementById('studentForm');
+const studentsTableBody=document.querySelector('#studentsTable tbody');
+const studentSelect=document.getElementById('studentSelect');
+const searchInput=document.getElementById('searchInput');
+const testForm=document.getElementById('testForm');
+const testsTableBody=document.querySelector('#testsTable tbody');
+const exportStudentsBtn=document.getElementById('exportStudentsBtn');
+const exportTestsBtn=document.getElementById('exportTestsBtn');
+const resetDemoBtn = document.getElementById('resetDemoBtn');
+
+// --- Student Form ---
+studentForm.addEventListener('submit',e=>{
+    e.preventDefault();
+    const newId = generateStudentId();
+    if(newId === null) return;
+    const students=getData('students');
+    const newStudent={
+        id:newId,
+        firstName:document.getElementById('firstName').value,
+        lastName:document.getElementById('lastName').value,
+        dob:document.getElementById('dob').value,
+        currentBelt:document.getElementById('currentBelt').value,
+        nextTestDate:null
+    };
+    students.push(newStudent); saveData('students',students);
+    studentForm.reset(); renderStudents();
+});
+
+// --- Test Form ---
+testForm.addEventListener('submit',e=>{
+    e.preventDefault();
+    const tests=getData('tests'); const students=getData('students');
+    const studentId=parseInt(document.getElementById('studentSelect').value);
+    const student=students.find(s=>s.id===studentId);
+    const newTest={
+        studentId,
+        studentName:`${student.firstName} ${student.lastName}`,
+        beltTestedFor:document.getElementById('beltTestedFor').value,
+        testDate:document.getElementById('testDate').value,
+        result:document.getElementById('testResult').value,
+        comments:document.getElementById('comments').value
+    };
+    if(newTest.result==='Pass'){
+        student.currentBelt=newTest.beltTestedFor;
+        const nextDate=new Date(newTest.testDate);
+        nextDate.setMonth(nextDate.getMonth()+3);
+        student.nextTestDate=nextDate.toISOString().split('T')[0];
+        saveData('students',students);
+    }
+    tests.push(newTest); saveData('tests',tests);
+    testForm.reset(); renderTests(); renderStudents();
+});
+
+// --- Render Functions ---
+function renderStudents(){
+    const students=getData('students'); const filter=searchInput.value.toLowerCase();
+    studentsTableBody.innerHTML=''; studentSelect.innerHTML='<option value="">Select Student</option>';
+    const today=new Date(); const twoWeeksLater=new Date(); twoWeeksLater.setDate(today.getDate()+14);
+    students.forEach(s=>{
+        const name=`${s.firstName} ${s.lastName}`.toLowerCase();
+        if(filter && !name.includes(filter) && !s.currentBelt.toLowerCase().includes(filter)) return;
+        const beltClass=`belt-${s.currentBelt}`;
+        let nextClass=''; if(s.nextTestDate){ const nextDate=new Date(s.nextTestDate); if(nextDate>=today && nextDate<=twoWeeksLater) nextClass='next-test-soon'; }
+        const row=document.createElement('tr');
+        row.innerHTML=`<td>${s.id}</td><td>${s.firstName} ${s.lastName}</td><td>${s.dob}</td><td class="${beltClass}">${s.currentBelt}</td><td class="${nextClass}">${s.nextTestDate||'-'}</td><td><button onclick="deleteStudent(${s.id})">Delete</button></td>`;
+        studentsTableBody.appendChild(row);
+        const opt=document.createElement('option'); opt.value=s.id; opt.textContent=`${s.firstName} ${s.lastName}`; studentSelect.appendChild(opt);
+    });
+    renderDashboard(); renderCalendar();
+}
+
+function deleteStudent(id){ let students=getData('students'); students=students.filter(s=>s.id!==id); saveData('students',students); renderStudents(); }
+
+// --- Inline Editable Test Table ---
+function renderTests() {
+    const tests = getData('tests');
+    const filter = searchInput.value.toLowerCase();
+    testsTableBody.innerHTML = '';
+
+    tests.forEach((t, index) => {
+        if(filter && !t.studentName.toLowerCase().includes(filter) && !t.beltTestedFor.toLowerCase().includes(filter)) return;
+
+        const row = document.createElement('tr');
+
+        const studentCell = document.createElement('td'); studentCell.textContent = t.studentName;
+        const beltCell = document.createElement('td'); beltCell.textContent = t.beltTestedFor; beltCell.classList.add(`belt-${t.beltTestedFor}`); beltCell.contentEditable = true;
+        const dateCell = document.createElement('td'); dateCell.textContent = t.testDate; dateCell.contentEditable = true;
+        const resultCell = document.createElement('td'); resultCell.textContent = t.result; resultCell.contentEditable = true;
+        const commentsCell = document.createElement('td'); commentsCell.textContent = t.comments; commentsCell.contentEditable = true;
+
+        const actionsCell = document.createElement('td');
+        const saveBtn = document.createElement('button'); saveBtn.textContent = "Save";
+        saveBtn.addEventListener('click', () => saveTestEdit(index, beltCell, dateCell, resultCell, commentsCell));
+        const deleteBtn = document.createElement('button'); deleteBtn.textContent = "Delete"; deleteBtn.style.color='red';
+        deleteBtn.addEventListener('click', ()=>deleteTest(index));
+        actionsCell.appendChild(saveBtn); actionsCell.appendChild(deleteBtn);
+
+        row.appendChild(studentCell);
+        row.appendChild(beltCell);
+        row.appendChild(dateCell);
+        row.appendChild(resultCell);
+        row.appendChild(commentsCell);
+        row.appendChild(actionsCell);
+
+        testsTableBody.appendChild(row);
+    });
+}
+
+function saveTestEdit(index, beltCell, dateCell, resultCell, commentsCell) {
+    const tests = getData('tests');
+    const t = tests[index];
+    const newBelt = beltCell.textContent.trim();
+    const newDate = dateCell.textContent.trim();
+    const newResult = resultCell.textContent.trim();
+    const newComments = commentsCell.textContent.trim();
+    const validBelts = ['White','Yellow','Green','Blue','Red','Black'];
+    const validResults = ['Pass','Fail'];
+
+    if(!validBelts.includes(newBelt) || !validResults.includes(newResult) || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+        alert("Invalid data. Belt must be White/Yellow/Green/Blue/Red/Black, Result must be Pass/Fail, Date format YYYY-MM-DD.");
+        renderTests();
+        return;
+    }
+
+    t.beltTestedFor = newBelt; t.testDate = newDate; t.result = newResult; t.comments = newComments;
+
+    const students = getData('students'); const student = students.find(s=>s.id===t.studentId);
+    if(student && newResult==='Pass') {
+        student.currentBelt = newBelt;
+        const nextDate = new Date(newDate); nextDate.setMonth(nextDate.getMonth()+3);
+        student.nextTestDate = nextDate.toISOString().split('T')[0];
+    }
+
+    saveData('tests', tests); saveData('students', students);
+    renderTests(); renderStudents(); renderCalendar(); renderDashboard();
+}
+
+function deleteTest(index){
+    if(confirm("Are you sure you want to delete this test record?")){
+        const tests = getData('tests');
+        tests.splice(index,1);
+        saveData('tests', tests);
+        renderTests(); renderCalendar(); renderDashboard();
+    }
+}
+
+// --- Search ---
+searchInput.addEventListener('input',()=>{ renderStudents(); renderTests(); });
+
+// --- Export ---
+function exportToCSV(filename,rows){ const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n'); const link=document.createElement('a'); link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); link.download=filename; link.click();}
+exportStudentsBtn.addEventListener('click',()=>{
+    const students=getData('students'); const rows=[['ID','First Name','Last Name','DOB','Current Belt','Next Eligible Test']];
+    students.forEach(s=>rows.push([s.id,s.firstName,s.lastName,s.dob,s.currentBelt,s.nextTestDate||'-']));
+    exportToCSV('students.csv',rows);
+});
+exportTestsBtn.addEventListener('click',()=>{
+    const tests=getData('tests'); const rows=[['Student','Belt Tested For','Test Date','Result','Comments']];
+    tests.forEach(t=>rows.push([t.studentName,t.beltTestedFor,t.testDate,t.result,t.comments]));
+    exportToCSV('tests.csv',rows);
+});
+
+// --- Reset Demo Data ---
+resetDemoBtn.addEventListener('click', () => {
+    if (confirm("Are you sure you want to reset demo data? All current data will be lost.")) {
+        const demoStudents = [
+            {id:1000,firstName:'Ethan',lastName:'Lee',dob:'2015-04-10',currentBelt:'White',nextTestDate:'2025-09-01'},
+            {id:1001,firstName:'Evelyn',lastName:'Kim',dob:'2016-07-22',currentBelt:'Yellow',nextTestDate:'2025-09-15'},
+            {id:1002,firstName:'Liam',lastName:'Chen',dob:'2014-11-05',currentBelt:'Green',nextTestDate:'2025-10-05'}
+        ];
+        const demoTests = [
+            {studentId:1000,studentName:'Ethan Lee',beltTestedFor:'White',testDate:'2025-08-01',result:'Pass',comments:'Great start!'},
+            {studentId:1001,studentName:'Evelyn Kim',beltTestedFor:'Yellow',testDate:'2025-07-15',result:'Pass',comments:'Good techniques.'},
+            {studentId:1002,studentName:'Liam Chen',beltTestedFor:'Green',testDate:'2025-06-20',result:'Pass',comments:'Needs more flexibility.'}
         ];
         saveData('students', demoStudents);
         saveData('tests', demoTests);
@@ -73,24 +389,6 @@ function renderCalendar(){
             const testEntry=document.createElement('div');
             testEntry.classList.add('test-entry'); testEntry.classList.add(`belt-${t.beltTestedFor}`);
             testEntry.textContent=`${t.studentName} (${t.beltTestedFor}) - ${t.result}`;
-            testEntry.addEventListener('click',()=>{
-                const newResult=prompt("Update Result (Pass/Fail):", t.result);
-                if(newResult && (newResult==='Pass' || newResult==='Fail')){
-                    t.result=newResult;
-                    if(newResult==='Pass'){
-                        const students=getData('students');
-                        const student=students.find(s=>s.id===t.studentId);
-                        if(student){
-                            student.currentBelt=t.beltTestedFor;
-                            const nextDate=new Date(t.testDate); nextDate.setMonth(nextDate.getMonth()+3);
-                            student.nextTestDate=nextDate.toISOString().split('T')[0];
-                            saveData('students',students);
-                        }
-                    }
-                    saveData('tests',tests);
-                    renderStudents(); renderTests(); renderCalendar(); renderDashboard();
-                }
-            });
             dayDiv.appendChild(testEntry);
         });
         calendarDiv.appendChild(dayDiv);
