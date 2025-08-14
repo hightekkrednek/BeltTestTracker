@@ -11,7 +11,7 @@ section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; bo
 table { width:100%; border-collapse:collapse; margin-bottom:20px; }
 th,td { padding:10px; border:1px solid #ddd; text-align:left; font-size:14px; }
 th { background:#e2e2f1; }
-input[type="text"], input[type="number"], select { width:95%; padding:6px; box-sizing:border-box; border-radius:4px; border:1px solid #ccc; }
+input[type="text"], input[type="number"], input[type="date"], select { width:95%; padding:6px; box-sizing:border-box; border-radius:4px; border:1px solid #ccc; }
 input[type="checkbox"] { width:20px; height:20px; }
 button { margin:5px; padding:8px 12px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:14px; }
 button:hover { background:#534fd1; }
@@ -37,9 +37,12 @@ select[multiple] { height:60px; }
 <tr>
 <th>ID</th>
 <th>Name</th>
+<th>Birthdate</th>
+<th>Belt</th>
 <th>Instructor</th>
 <th>Location</th>
 <th>Eligible</th>
+<th>Active</th>
 <th>Actions</th>
 </tr>
 </thead>
@@ -53,7 +56,7 @@ select[multiple] { height:60px; }
 <table id="beltTestsTable">
 <thead>
 <tr>
-<th>Student ID</th>
+<th>Student</th>
 <th>Belt</th>
 <th>Date</th>
 <th>Instructor(s)</th>
@@ -87,9 +90,26 @@ select[multiple] { height:60px; }
 <div class="modal-header">Add/Edit Student</div>
 <div class="modal-body">
 <label>Name: <input type="text" id="studentName"></label><br><br>
+<label>Birthdate: <input type="date" id="studentBirthdate"></label><br><br>
+<label>Belt: 
+<select id="studentBelt">
+<option>White</option>
+<option>White Stripe</option>
+<option>Yellow</option>
+<option>Yellow Stripe</option>
+<option>Green</option>
+<option>Green Stripe</option>
+<option>Blue</option>
+<option>Blue Stripe</option>
+<option>Red</option>
+<option>Red Stripe</option>
+<option>Black</option>
+</select>
+</label><br><br>
 <label>Instructor: <select id="studentInstructor"></select></label><br><br>
 <label>Location: <select id="studentLocation"></select></label><br><br>
-<label>Eligible: <input type="checkbox" id="studentEligible"></label>
+<label>Eligible: <input type="checkbox" id="studentEligible"></label><br><br>
+<label>Active: <input type="checkbox" id="studentActive"></label>
 </div>
 <div class="modal-footer">
 <button onclick="closeStudentModal()">Cancel</button>
@@ -103,9 +123,23 @@ select[multiple] { height:60px; }
 <div class="modal-content">
 <div class="modal-header">Add/Edit Belt Test</div>
 <div class="modal-body">
-<label>Student ID: <input type="number" id="testStudentId"></label><br><br>
-<label>Belt: <input type="text" id="testBelt"></label><br><br>
-<label>Date: <input type="text" id="testDate" placeholder="YYYY-MM-DD"></label><br><br>
+<label>Student: <select id="testStudentId"></select></label><br><br>
+<label>Belt: 
+<select id="testBelt">
+<option>White</option>
+<option>White Stripe</option>
+<option>Yellow</option>
+<option>Yellow Stripe</option>
+<option>Green</option>
+<option>Green Stripe</option>
+<option>Blue</option>
+<option>Blue Stripe</option>
+<option>Red</option>
+<option>Red Stripe</option>
+<option>Black</option>
+</select>
+</label><br><br>
+<label>Date: <input type="date" id="testDate"></label><br><br>
 <label>Instructor(s): <select id="testInstructors" multiple></select></label><br><br>
 <label>Location: <select id="testLocation"></select></label>
 </div>
@@ -121,15 +155,30 @@ select[multiple] { height:60px; }
 let students=[], beltTests=[], instructors=[], locations=[], nextStudentId=1000;
 let editingStudent=null, editingTest=null;
 
+// BELTS ORDER
+const beltOptions=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"];
+
 // LOCALSTORAGE
-function saveAllData(){ localStorage.setItem('students',JSON.stringify(students)); localStorage.setItem('beltTests',JSON.stringify(beltTests)); localStorage.setItem('instructors',JSON.stringify(instructors)); localStorage.setItem('locations',JSON.stringify(locations)); localStorage.setItem('nextStudentId',nextStudentId);}
-function loadAllData(){ students=JSON.parse(localStorage.getItem('students')||'[]'); beltTests=JSON.parse(localStorage.getItem('beltTests')||'[]'); instructors=JSON.parse(localStorage.getItem('instructors')||'[]'); locations=JSON.parse(localStorage.getItem('locations')||'[]'); nextStudentId=parseInt(localStorage.getItem('nextStudentId')||'1000'); }
+function saveAllData(){ 
+    localStorage.setItem('students',JSON.stringify(students)); 
+    localStorage.setItem('beltTests',JSON.stringify(beltTests)); 
+    localStorage.setItem('instructors',JSON.stringify(instructors)); 
+    localStorage.setItem('locations',JSON.stringify(locations)); 
+    localStorage.setItem('nextStudentId',nextStudentId);
+}
+function loadAllData(){ 
+    students=JSON.parse(localStorage.getItem('students')||'[]'); 
+    beltTests=JSON.parse(localStorage.getItem('beltTests')||'[]'); 
+    instructors=JSON.parse(localStorage.getItem('instructors')||'[]'); 
+    locations=JSON.parse(localStorage.getItem('locations')||'[]'); 
+    nextStudentId=parseInt(localStorage.getItem('nextStudentId')||'1000'); 
+}
 function populateTables(){
-  const tbodyS=document.querySelector('#studentsTable tbody'); tbodyS.innerHTML='';
-  students.forEach(s=>{ addStudentRowToTable(s); });
-  const tbodyT=document.querySelector('#beltTestsTable tbody'); tbodyT.innerHTML='';
-  beltTests.forEach(t=>{ addTestRowToTable(t); });
-  updateBeltCounts();
+    const tbodyS=document.querySelector('#studentsTable tbody'); tbodyS.innerHTML='';
+    students.forEach(s=>{ addStudentRowToTable(s); });
+    const tbodyT=document.querySelector('#beltTestsTable tbody'); tbodyT.innerHTML='';
+    beltTests.forEach(t=>{ addTestRowToTable(t); });
+    updateBeltCounts();
 }
 function updateBeltCounts(){
   if(beltTests.length===0){document.getElementById('beltCounts').innerText="No belt tests yet.";return;}
@@ -141,7 +190,10 @@ function updateBeltCounts(){
 function openStudentModal(s=null){
   editingStudent=s;
   document.getElementById('studentName').value=s?s.name:'';
+  document.getElementById('studentBirthdate').value=s?s.birthdate:'';
+  document.getElementById('studentBelt').value=s?s.belt:'White';
   document.getElementById('studentEligible').checked=s?s.eligible:false;
+  document.getElementById('studentActive').checked=s?s.active:true;
   const instSel=document.getElementById('studentInstructor'); instSel.innerHTML='';
   instructors.forEach(i=>{const o=document.createElement('option');o.value=i;o.text=i;if(s&&s.instructors.includes(i)) o.selected=true; instSel.add(o);});
   const locSel=document.getElementById('studentLocation'); locSel.innerHTML='';
@@ -152,13 +204,17 @@ function closeStudentModal(){ document.getElementById('studentModal').style.disp
 function saveStudent(){
   const name=document.getElementById('studentName').value.trim();
   if(name===''){alert('Name required'); return;}
+  const birthdate=document.getElementById('studentBirthdate').value;
+  const belt=document.getElementById('studentBelt').value;
   const instructor=[document.getElementById('studentInstructor').value];
   const location=document.getElementById('studentLocation').value;
   const eligible=document.getElementById('studentEligible').checked;
+  const active=document.getElementById('studentActive').checked;
   if(editingStudent){
-    editingStudent.name=name; editingStudent.instructors=instructor; editingStudent.location=location; editingStudent.eligible=eligible;
+    editingStudent.name=name; editingStudent.birthdate=birthdate; editingStudent.belt=belt; editingStudent.instructors=instructor; editingStudent.location=location; editingStudent.eligible=eligible; editingStudent.active=active;
   } else {
-    const s={id:nextStudentId++, name, instructors:instructor, location, eligible}; students.push(s);
+    const s={id:nextStudentId++, name, birthdate, belt, instructors:instructor, location, eligible, active};
+    students.push(s);
   }
   saveAllData(); populateTables(); closeStudentModal();
 }
@@ -168,9 +224,12 @@ function addStudentRowToTable(s){
   row.innerHTML=`
     <td>${s.id}</td>
     <td>${s.name}</td>
+    <td>${s.birthdate}</td>
+    <td>${s.belt}</td>
     <td>${s.instructors.join(',')}</td>
     <td>${s.location}</td>
     <td>${s.eligible?'✔':''}</td>
+    <td>${s.active?'✔':''}</td>
     <td><button onclick="editStudent(${s.id})">Edit</button><button onclick="deleteStudent(${s.id})">Delete</button></td>
   `;
   tbody.appendChild(row);
@@ -181,8 +240,9 @@ function deleteStudent(id){ if(confirm('Delete student?')){students=students.fil
 // BELT TEST MODAL
 function openTestModal(t=null){
   editingTest=t;
-  document.getElementById('testStudentId').value=t?t.studentId:'';
-  document.getElementById('testBelt').value=t?t.belt:'';
+  const studentSel=document.getElementById('testStudentId'); studentSel.innerHTML='';
+  students.filter(s=>s.active && s.eligible).forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.text=`${s.name} (${s.id})`; if(t&&t.studentId===s.id) o.selected=true; studentSel.add(o); });
+  document.getElementById('testBelt').value=t?t.belt:'White';
   document.getElementById('testDate').value=t?t.date:'';
   const selI=document.getElementById('testInstructors'); selI.innerHTML='';
   instructors.forEach(i=>{const o=document.createElement('option'); o.value=i; o.text=i; if(t&&t.instructors.includes(i)) o.selected=true; selI.add(o);});
@@ -193,9 +253,9 @@ function openTestModal(t=null){
 function closeTestModal(){ document.getElementById('testModal').style.display='none'; editingTest=null; }
 function saveTest(){
   const studentId=parseInt(document.getElementById('testStudentId').value);
-  const belt=document.getElementById('testBelt').value.trim();
-  const date=document.getElementById('testDate').value.trim();
-  if(isNaN(studentId)||!belt||!date){alert('Student ID, Belt, and Date required'); return;}
+  const belt=document.getElementById('testBelt').value;
+  const date=document.getElementById('testDate').value;
+  if(isNaN(studentId)||!belt||!date){alert('Student, Belt, and Date required'); return;}
   const instructorsSelected=[...document.getElementById('testInstructors').selectedOptions].map(o=>o.value);
   const location=document.getElementById('testLocation').value;
   if(editingTest){ editingTest.studentId=studentId; editingTest.belt=belt; editingTest.date=date; editingTest.instructors=instructorsSelected; editingTest.location=location;}
@@ -204,9 +264,11 @@ function saveTest(){
 }
 function addTestRowToTable(t){
   const tbody=document.querySelector('#beltTestsTable tbody');
+  const s=students.find(st=>st.id===t.studentId);
+  const studentName=s?s.name+' ('+s.id+')':'Unknown';
   const row=document.createElement('tr');
   row.innerHTML=`
-    <td>${t.studentId}</td>
+    <td>${studentName}</td>
     <td>${t.belt}</td>
     <td>${t.date}</td>
     <td>${t.instructors.join(',')}</td>
