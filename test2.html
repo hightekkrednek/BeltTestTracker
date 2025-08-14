@@ -280,7 +280,7 @@ function addStudentRowToTable(s){
   row.innerHTML=`
     <td>${s.id}</td>
     <td>${s.name}</td>
-    <td>${student.birthdate ? calculateAge(student.birthdate) : ''}</td>
+    <td>${s.birthdate}</td>
     <td class="${beltClassName(s.belt)}">${s.belt}</td>
     <td>${s.instructors.join(',')}</td>
     <td>${s.location}</td>
@@ -469,17 +469,6 @@ function importAll() {
     reader.readAsText(file);
   };
   input.click();
-}
-
-function calculateAge(dob) {
-    const birthDate = new Date(dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
-    return age;
 }
 
 // RESET DATA
