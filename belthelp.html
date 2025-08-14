@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impact Martial Arts Belt Tracker - Instructions</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin:0;
+    background:#f4f4f9;
+    color:#333;
+}
+h1, h2 {
+    text-align:center;
+}
+h1 {
+    background-color: #222;
+    color: #fff;
+    padding: 20px 0;
+    margin:0;
+    border-bottom: 4px solid #ffcc00;
+}
+section {
+    background:#fff;
+    margin:20px auto;
+    padding:20px;
+    border-radius:8px;
+    box-shadow:0 0 10px rgba(0,0,0,0.05);
+    max-width:900px;
+}
+ol {
+    padding-left: 20px;
+}
+ul {
+    margin:0;
+    padding-left: 20px;
+}
+code {
+    background: #eee;
+    padding: 2px 4px;
+    border-radius:4px;
+}
+.button {
+    display:inline-block;
+    background:#6c63ff;
+    color:white;
+    padding:6px 12px;
+    border-radius:4px;
+    margin:2px 0;
+    text-decoration:none;
+    font-size:14px;
+}
+.button:hover {
+    background:#534fd1;
+}
+</style>
+</head>
+<body>
+
+<h1>Impact Martial Arts Belt Tracker - Instructions</h1>
+
+<section>
+<h2>Overview</h2>
+<p>The <strong>Impact Martial Arts Belt Tracker</strong> is designed to help instructors manage students, belt tests, and other key information in an organized way. Features include:</p>
+<ul>
+    <li>Adding, editing, and deleting students</li>
+    <li>Tracking belt tests and automatically updating student belts</li>
+    <li>Managing instructors, belts, and locations</li>
+    <li>Importing and exporting data for backup</li>
+    <li>Displaying student counts, active/inactive status, and eligibility for belt tests</li>
+</ul>
+</section>
+
+<section>
+<h2>Dashboard</h2>
+<p>The dashboard shows a summary of the number of students per belt.</p>
+<ul>
+    <li>Visit the top of the page to see counts per belt automatically updated.</li>
+</ul>
+</section>
+
+<section>
+<h2>Students</h2>
+<ol>
+    <li>Click <code>Add Student</code> to open the student modal.</li>
+    <li>Fill in <strong>Name</strong>, <strong>Birthdate</strong>, <strong>Belt</strong>, <strong>Instructor</strong>, <strong>Location</strong>, and check <strong>Eligible</strong> and <strong>Active</strong> if applicable.</li>
+    <li>Click <code>Save</code> to add or update the student.</li>
+    <li>The <strong>Students Table</strong> displays all students with their:
+        <ul>
+            <li>ID</li>
+            <li>Name</li>
+            <li>Birthdate</li>
+            <li>Age (calculated automatically)</li>
+            <li>Belt</li>
+            <li>Instructor</li>
+            <li>Location</li>
+            <li>Eligible status</li>
+            <li>Active status</li>
+        </ul>
+    </li>
+    <li>Edit a student by clicking <code>Edit</code> or remove with <code>Delete</code>.</li>
+    <li>Above the student table, you'll see counts of <strong>Active</strong> and <strong>Inactive</strong> students.</li>
+</ol>
+</section>
+
+<section>
+<h2>Belt Tests</h2>
+<ol>
+    <li>Click <code>Add Belt Test</code> to open the test modal.</li>
+    <li>Select a student (only <strong>Active</strong> and <strong>Eligible</strong> students appear).</li>
+    <li>Choose the <strong>Belt</strong> being tested for, <strong>Date</strong>, <strong>Instructor(s)</strong>, and <strong>Location</strong>.</li>
+    <li>Click <code>Save</code> to record the test. The student's belt will automatically update to the new belt.</li>
+    <li>The belt test table shows all test records with options to edit or delete.</li>
+    <li>Above the belt test table, you'll see a count of students eligible for belt tests.</li>
+</ol>
+</section>
+
+<section>
+<h2>Control Panel</h2>
+<p>Located below the tables, the Control Panel lets you manage global data:</p>
+<ul>
+    <li><code>Manage Belts</code> - Add, edit, or remove belt types</li>
+    <li><code>Manage Instructors</code> - Add or remove instructors</li>
+    <li><code>Manage Locations</code> - Add or remove training locations</li>
+    <li><code>Import Data</code> - Load data from a JSON file</li>
+    <li><code>Export Data</code> - Save current data to a JSON file</li>
+    <li><code>Reset Data</code> - Clear all data and restore default belts</li>
+</ul>
+</section>
+
+<section>
+<h2>Tips & Best Practices</h2>
+<ul>
+    <li>Always make sure students are marked <strong>Active</strong> to appear in belt test selections.</li>
+    <li>Use the import/export functions to backup your data regularly.</li>
+    <li>Keep belt names consistent to ensure proper tracking and dashboard accuracy.</li>
+    <li>Check the <strong>Dashboard</strong> for a quick visual of belt distribution.</li>
+</ul>
+</section>
+
+<section>
+<h2>Contact / Support</h2>
+<p>If you encounter issues or have questions about using the app, contact the developer or instructor team managing the tracker.</p>
+</section>
+
+</body>
+</html>
