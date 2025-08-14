@@ -67,9 +67,9 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 
 <section id="studentsSection">
   <h2>Students</h2>
-  <div class="count-display" id="studentCounts"></<label for="studentSearch">Search Students / Belt / Instructor / Location:</label>
- <label for="studentSearch">Search Students / Belt / Instructor / Location:</label>
-<input type="text" id="studentSearch" placeholder="Type to filter..." oninput="searchStudents()">
+  <div class="count-display" id="studentCounts"></div>
+  <label for="studentSearch">Search Students / Belt / Instructor / Location:</label>
+  <input type="text" id="studentSearch" placeholder="Type to filter..." oninput="searchStudents()">
   <div class="table-container">
     <table id="studentsTable">
       <thead>
@@ -199,6 +199,23 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 
 <script>
+
+function searchStudents() {
+  const query = document.getElementById('studentSearch').value.toLowerCase();
+  const tbody = document.querySelector('#studentsTable tbody');
+  tbody.innerHTML = ''; // clear table
+
+  students
+    .filter(s => {
+      const nameMatch = s.name.toLowerCase().includes(query);
+      const beltMatch = s.belt.toLowerCase().includes(query);
+      const instructorMatch = s.instructors.some(i => i.toLowerCase().includes(query));
+      const locationMatch = s.location.toLowerCase().includes(query);
+      return nameMatch || beltMatch || instructorMatch || locationMatch;
+    })
+    .forEach(s => addStudentRowToTable(s));
+}
+
 // DATA
 let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
 let editingStudent=null, editingTest=null;
@@ -228,6 +245,8 @@ function updateBeltCounts(){
   students.forEach(s=>{ counts[s.belt]=(counts[s.belt]||0)+1; });
   document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
 }
+
+
 
 // POPULATE TABLES
 function populateTables(){
@@ -393,23 +412,6 @@ function exportAll(){ const data={students, beltTests, instructors, locations, b
 function importAll(){ const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.onchange=e=>{ const file=e.target.files[0]; const reader=new FileReader(); reader.onload=ev=>{ try{ const data=JSON.parse(ev.target.result); students=data.students||[]; beltTests=data.beltTests||[]; instructors=data.instructors||[]; locations=data.locations||[]; belts=data.belts||[]; nextStudentId=data.nextStudentId||1000; saveAllData(); populateTables(); alert('Import successful'); }catch(err){ alert('Import failed'); } }; reader.readAsText(file); }; input.click(); }
 function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables(); } }
 
-//search student function 
-function searchStudents() {
-  const query = document.getElementById('studentSearch').value.toLowerCase();
-  const tbody = document.querySelector('#studentsTable tbody');
-  tbody.innerHTML = ''; // clear table
-
-  students
-    .filter(s => {
-      const nameMatch = s.name.toLowerCase().includes(query);
-      const beltMatch = s.belt.toLowerCase().includes(query);
-      const instructorMatch = s.instructors.some(i => i.toLowerCase().includes(query));
-      const locationMatch = s.location.toLowerCase().includes(query);
-      return nameMatch || beltMatch || instructorMatch || locationMatch;
-    })
-    .forEach(s => addStudentRowToTable(s));
-}
-
 // INIT
 window.onload=function(){ loadAllData(); populateTables(); };
 </script>
@@ -418,7 +420,6 @@ window.onload=function(){ loadAllData(); populateTables(); };
 <button onclick="window.location.href='belthelp.html'" class="button">Help / Instructions</button>
 
 <p>
-  v2.2
   <br>
 </body>
 </html>
