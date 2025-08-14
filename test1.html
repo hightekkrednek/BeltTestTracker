@@ -5,18 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Taekwondo Tracker</title>
 <style>
-body { font-family: Arial, sans-serif; margin:0; background:#f4f4f9; color:#333; }
-h1 { text-align:center; margin:20px 0; }
+body { font-family: Arial, sans-serif; margin:0; background:#f4f4f9; color:#333; overflow-x:hidden; }
 h2 { margin-top:0; }
-section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:1000px; }
-table { width:100%; border-collapse:collapse; margin-bottom:20px; overflow-x:auto; display:block; }
-th,td { padding:10px; border:1px solid #ddd; text-align:left; font-size:14px; white-space:nowrap; }
+section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:95%; }
+table { width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:auto; word-wrap:break-word; }
+
+
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+th,td { padding:10px; border:1px solid #ddd; text-align:left; font-size:14px; overflow-wrap: break-word; }
 th { background:#e2e2f1; }
 input[type="text"], input[type="number"], input[type="date"], select { width:95%; padding:6px; box-sizing:border-box; border-radius:4px; border:1px solid #ccc; }
 input[type="checkbox"] { width:20px; height:20px; }
-button { margin:5px; padding:6px 10px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:12px; }
+button { margin:5px; padding:8px 12px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:14px; }
 button:hover { background:#534fd1; }
-.control-panel { background:#e8e8f8; padding:20px; border-radius:8px; margin:20px auto; max-width:1000px; }
+.control-panel { background:#e8e8f8; padding:20px; border-radius:8px; margin:20px auto; max-width:95%; display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-start; }
 .belt-White{background:#ffffff;}
 .belt-White-Stripe{background:#f9f9f9;}
 .belt-Yellow{background:#fffacd;}
@@ -29,8 +36,8 @@ button:hover { background:#534fd1; }
 .belt-Red-Stripe{background:#ff9999;}
 .belt-Black{background:#333333; color:#fff;}
 .student-active{background:#e6ffe6;}
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000;}
-.modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:90%; max-height:90%; overflow-y:auto; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000; overflow:auto; padding:10px;}
+.modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:100%; max-height:90%; overflow-y:auto; }
 .modal-header { font-weight:bold; margin-bottom:10px; }
 .modal-footer { text-align:right; margin-top:10px; }
 select[multiple] { height:60px; }
@@ -41,7 +48,6 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </head>
 <body>
 
-<!-- TOP BANNER -->
 <h1 style="
     text-align: center;
     background-color: #222;
@@ -51,7 +57,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
     font-family: Arial, sans-serif;
     font-size: 2em;
     border-bottom: 4px solid #ffcc00;
-
+">
     Impact Martial Arts Belt Tracker
 </h1>
 
@@ -60,17 +66,15 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 <div id="beltCounts">No students yet.</div>
 </section>
 
-<!-- STUDENTS SECTION -->
 <section id="studentsSection">
   <h2>Students</h2>
-  <div style="overflow-x:auto;">
+  <div class="table-container">
     <table id="studentsTable">
       <thead>
         <tr>
           <th>ID</th>
           <th>Name</th>
           <th>Birthdate</th>
-          <th>Age</th>
           <th>Belt</th>
           <th>Instructor</th>
           <th>Location</th>
@@ -86,21 +90,23 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </section>
 
 <section id="beltTestsSection">
-<h2>Belt Tests</h2>
-<table id="beltTestsTable">
-<thead>
-<tr>
-<th>Student</th>
-<th>Belt</th>
-<th>Date</th>
-<th>Instructor(s)</th>
-<th>Location</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-<button onclick="openTestModal()">Add Belt Test</button>
+  <h2>Belt Tests</h2>
+  <div class="table-container">
+    <table id="beltTestsTable">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Belt</th>
+          <th>Date</th>
+          <th>Instructor(s)</th>
+          <th>Location</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <button onclick="openTestModal()">Add Belt Test</button>
 </section>
 
 <section class="control-panel">
@@ -109,12 +115,8 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 <button onclick="openBeltModal()">Manage Belts</button>
 <button onclick="openInstructorModal()">Manage Instructors</button>
 <button onclick="openLocationModal()">Manage Locations</button>
-</div>
-<div>
 <button onclick="importAll()">Import Data</button>
 <button onclick="exportAll()">Export Data</button>
-</div>
-<div>
 <button onclick="resetData()">Reset Data</button>
 </div>
 </section>
@@ -156,7 +158,41 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
-<!-- Belt, Instructor, Location modals remain unchanged -->
+<div class="modal" id="beltModal">
+<div class="modal-content">
+<div class="modal-header">Manage Belts</div>
+<div class="modal-body">
+<ul id="beltList"></ul>
+<input type="text" id="newBeltName" placeholder="New Belt Name">
+<button onclick="addBelt()">Add</button>
+</div>
+<div class="modal-footer"><button onclick="closeBeltModal()">Close</button></div>
+</div>
+</div>
+
+<div class="modal" id="instructorModal">
+<div class="modal-content">
+<div class="modal-header">Manage Instructors</div>
+<div class="modal-body">
+<ul id="instructorList"></ul>
+<input type="text" id="newInstructorName" placeholder="New Instructor Name">
+<button onclick="addInstructor()">Add</button>
+</div>
+<div class="modal-footer"><button onclick="closeInstructorModal()">Close</button></div>
+</div>
+</div>
+
+<div class="modal" id="locationModal">
+<div class="modal-content">
+<div class="modal-header">Manage Locations</div>
+<div class="modal-body">
+<ul id="locationList"></ul>
+<input type="text" id="newLocationName" placeholder="New Location Name">
+<button onclick="addLocation()">Add</button>
+</div>
+<div class="modal-footer"><button onclick="closeLocationModal()">Close</button></div>
+</div>
+</div>
 
 <script>
 // DATA
@@ -179,15 +215,6 @@ function loadAllData(){
   locations=JSON.parse(localStorage.getItem('locations')||'[]');
   belts=JSON.parse(localStorage.getItem('belts')||JSON.stringify(belts));
   nextStudentId=parseInt(localStorage.getItem('nextStudentId')||'1000');
-}
-
-// UTILITY: Calculate age
-function calculateAge(dob){
-  if(!dob) return '';
-  const birth = new Date(dob);
-  const diffMs = Date.now() - birth.getTime();
-  const ageDt = new Date(diffMs);
-  return Math.abs(ageDt.getUTCFullYear() - 1970);
 }
 
 // DASHBOARD
@@ -216,6 +243,37 @@ function populateBeltSelector(){
 }
 
 // STUDENTS
+function openStudentModal(s=null){
+  editingStudent=s;
+  document.getElementById('studentName').value=s?s.name:'';
+  document.getElementById('studentBirthdate').value=s?s.birthdate:'';
+  document.getElementById('studentBelt').value=s?s.belt:belts[0];
+  document.getElementById('studentEligible').checked=s?s.eligible:false;
+  document.getElementById('studentActive').checked=s?s.active:true;
+  const instSel=document.getElementById('studentInstructor'); instSel.innerHTML='';
+  instructors.forEach(i=>{ const o=document.createElement('option'); o.value=i; o.text=i; if(s&&s.instructors.includes(i)) o.selected=true; instSel.add(o); });
+  const locSel=document.getElementById('studentLocation'); locSel.innerHTML='';
+  locations.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.text=l; if(s&&s.location===l) o.selected=true; locSel.add(o); });
+  document.getElementById('studentModal').style.display='flex';
+}
+function closeStudentModal(){ document.getElementById('studentModal').style.display='none'; editingStudent=null; }
+function saveStudent(){
+  const name=document.getElementById('studentName').value.trim();
+  if(!name){ alert('Name required'); return;}
+  const birthdate=document.getElementById('studentBirthdate').value;
+  const belt=document.getElementById('studentBelt').value;
+  const instructor=[document.getElementById('studentInstructor').value];
+  const location=document.getElementById('studentLocation').value;
+  const eligible=document.getElementById('studentEligible').checked;
+  const active=document.getElementById('studentActive').checked;
+  if(editingStudent){
+    editingStudent.name=name; editingStudent.birthdate=birthdate; editingStudent.belt=belt;
+    editingStudent.instructors=instructor; editingStudent.location=location; editingStudent.eligible=eligible; editingStudent.active=active;
+  } else {
+    students.push({id:nextStudentId++, name, birthdate, belt, instructors:instructor, location, eligible, active});
+  }
+  saveAllData(); populateTables(); closeStudentModal();
+}
 function addStudentRowToTable(s){
   const tbody=document.querySelector('#studentsTable tbody');
   const row=document.createElement('tr'); if(s.active) row.classList.add('student-active');
@@ -223,7 +281,6 @@ function addStudentRowToTable(s){
     <td>${s.id}</td>
     <td>${s.name}</td>
     <td>${s.birthdate}</td>
-    <td>${calculateAge(s.birthdate)}</td>
     <td class="${beltClassName(s.belt)}">${s.belt}</td>
     <td>${s.instructors.join(',')}</td>
     <td>${s.location}</td>
