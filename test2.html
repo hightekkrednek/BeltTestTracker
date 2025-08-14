@@ -18,6 +18,11 @@ table button {
   min-width: 40px;
 }
 
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
 th,td { padding:10px; border:1px solid #ddd; text-align:left; font-size:14px; overflow-wrap: break-word; }
 th { background:#e2e2f1; }
 input[type="text"], input[type="number"], input[type="date"], select { width:95%; padding:6px; box-sizing:border-box; border-radius:4px; border:1px solid #ccc; }
@@ -55,42 +60,46 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </section>
 
 <section id="studentsSection">
-<h2>Students</h2>
-<table id="studentsTable">
-<thead>
-<tr>
-<th>ID</th>
-<th>Name</th>
-<th>Birthdate</th>
-<th>Belt</th>
-<th>Instructor</th>
-<th>Location</th>
-<th>Eligible</th>
-<th>Active</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-<button onclick="openStudentModal()">Add Student</button>
+  <h2>Students</h2>
+  <div class="table-container">
+    <table id="studentsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Birthdate</th>
+          <th>Belt</th>
+          <th>Instructor</th>
+          <th>Location</th>
+          <th>Eligible</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <button onclick="openStudentModal()">Add Student</button>
 </section>
 
 <section id="beltTestsSection">
-<h2>Belt Tests</h2>
-<table id="beltTestsTable">
-<thead>
-<tr>
-<th>Student</th>
-<th>Belt</th>
-<th>Date</th>
-<th>Instructor(s)</th>
-<th>Location</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-<button onclick="openTestModal()">Add Belt Test</button>
+  <h2>Belt Tests</h2>
+  <div class="table-container">
+    <table id="beltTestsTable">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Belt</th>
+          <th>Date</th>
+          <th>Instructor(s)</th>
+          <th>Location</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <button onclick="openTestModal()">Add Belt Test</button>
 </section>
 
 <section class="control-panel">
