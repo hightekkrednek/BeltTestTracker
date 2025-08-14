@@ -5,133 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Taekwondo Tracker</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        background: #f4f4f9;
-        color: #333;
-    }
-    h2 {
-        margin-top: 0;
-    }
-    section {
-        background: #fff;
-        margin: 20px auto;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.05);
-        max-width: 1000px;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-    }
-    th, td {
-        padding: 10px;
-        border: 1px solid #ddd;
-        text-align: left;
-        font-size: 14px;
-    }
-    th {
-        background: #e2e2f1;
-    }
-    input[type="text"], input[type="number"], select {
-        width: 95%;
-        padding: 6px;
-        box-sizing: border-box;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-    }
-    input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-    }
-    button {
-        margin: 5px;
-        padding: 8px 12px;
-        border-radius: 4px;
-        border: none;
-        background: #6c63ff;
-        color: #fff;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    button:hover {
-        background: #534fd1;
-    }
-    .control-panel {
-        background: #e8e8f8;
-        padding: 20px;
-        border-radius: 8px;
-        margin: 20px auto;
-        max-width: 1000px;
-    }
-    select[multiple] {
-        height: 60px;
-    }
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f4f9;
+    color: #333;
+}
+h2 { margin-top: 0; }
+section {
+    background: #fff;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    max-width: 1000px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+    font-size: 14px;
+}
+th { background: #e2e2f1; }
+input[type="text"], input[type="number"], select {
+    width: 95%;
+    padding: 6px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+input[type="checkbox"] { width: 20px; height: 20px; }
+button {
+    margin: 5px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    background: #6c63ff;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+}
+button:hover { background: #534fd1; }
+.control-panel {
+    background: #e8e8f8;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px auto;
+    max-width: 1000px;
+}
+select[multiple] { height: 60px; }
 </style>
 </head>
 <body>
 
 <section id="dashboard">
-    <h2>Dashboard</h2>
-    <div id="beltCounts">
-        <!-- Belt counts will be updated dynamically -->
-    </div>
+<h2>Dashboard</h2>
+<div id="beltCounts">No belt tests yet.</div>
 </section>
 
 <section id="studentsSection">
-    <h2>Students</h2>
-    <table id="studentsTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Instructor</th>
-                <th>Location</th>
-                <th>Eligible</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-    <button onclick="addStudentRow()">Add Student</button>
+<h2>Students</h2>
+<table id="studentsTable">
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Instructor</th>
+<th>Location</th>
+<th>Eligible</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+<button onclick="addStudentRow()">Add Student</button>
 </section>
 
 <section id="beltTestsSection">
-    <h2>Belt Tests</h2>
-    <table id="beltTestsTable">
-        <thead>
-            <tr>
-                <th>Student ID</th>
-                <th>Belt</th>
-                <th>Date</th>
-                <th>Instructor(s)</th>
-                <th>Location</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-    <button onclick="addBeltTestRow()">Add Belt Test</button>
+<h2>Belt Tests</h2>
+<table id="beltTestsTable">
+<thead>
+<tr>
+<th>Student ID</th>
+<th>Belt</th>
+<th>Date</th>
+<th>Instructor(s)</th>
+<th>Location</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+<button onclick="addBeltTestRow()">Add Belt Test</button>
 </section>
 
 <section class="control-panel">
-    <h2>Control Panel</h2>
-    <div>
-        <button onclick="importStudents()">Import Students</button>
-        <button onclick="exportStudents()">Export Students</button>
-        <button onclick="importTests()">Import Tests</button>
-        <button onclick="exportTests()">Export Tests</button>
-    </div>
-    <div>
-        <button onclick="manageInstructors()">Manage Instructors</button>
-        <button onclick="manageLocations()">Manage Locations</button>
-        <button onclick="resetData()">Reset Data</button>
-    </div>
+<h2>Control Panel</h2>
+<div>
+<button onclick="importStudents()">Import Students</button>
+<button onclick="exportStudents()">Export Students</button>
+<button onclick="importTests()">Import Tests</button>
+<button onclick="exportTests()">Export Tests</button>
+</div>
+<div>
+<button onclick="manageInstructors()">Manage Instructors</button>
+<button onclick="manageLocations()">Manage Locations</button>
+<button onclick="resetData()">Reset Data</button>
+</div>
 </section>
 
 <script>
@@ -142,227 +127,178 @@ let instructors = [];
 let locations = [];
 let nextStudentId = 1000;
 
+// LOCALSTORAGE UTILITIES
+function saveAllData() {
+    localStorage.setItem('students', JSON.stringify(students));
+    localStorage.setItem('beltTests', JSON.stringify(beltTests));
+    localStorage.setItem('instructors', JSON.stringify(instructors));
+    localStorage.setItem('locations', JSON.stringify(locations));
+    localStorage.setItem('nextStudentId', nextStudentId);
+}
+function loadAllData() {
+    students = JSON.parse(localStorage.getItem('students')||'[]');
+    beltTests = JSON.parse(localStorage.getItem('beltTests')||'[]');
+    instructors = JSON.parse(localStorage.getItem('instructors')||'[]');
+    locations = JSON.parse(localStorage.getItem('locations')||'[]');
+    nextStudentId = parseInt(localStorage.getItem('nextStudentId')||'1000');
+}
+function populateTables() {
+    document.querySelector('#studentsTable tbody').innerHTML='';
+    students.forEach(s=>addStudentRowFromImport(s));
+    document.querySelector('#beltTestsTable tbody').innerHTML='';
+    beltTests.forEach(t=>addBeltTestRowFromImport(t));
+    updateBeltCounts();
+}
+
+// BELT COUNTS DASHBOARD
+function updateBeltCounts() {
+    if(beltTests.length===0){document.getElementById('beltCounts').innerText="No belt tests yet.";return;}
+    let counts={};
+    beltTests.forEach(t=>{
+        counts[t.belt] = (counts[t.belt]||0)+1;
+    });
+    let html = Object.entries(counts).map(([belt,n])=>`${belt}: ${n}`).join(', ');
+    document.getElementById('beltCounts').innerText=html;
+}
+
 // STUDENTS
 function generateStudentId() { return nextStudentId++; }
 
 function addStudentRow() {
     const id = generateStudentId();
+    const s = {id,name:'', instructors:[], location:'', eligible:false};
+    students.push(s);
+    addStudentRowFromImport(s);
+    saveAllData();
+}
+
+function addStudentRowFromImport(s){
     const tbody = document.querySelector('#studentsTable tbody');
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${id}</td>
-        <td contenteditable="true"></td>
-        <td>
-            <select id="inst-${id}">
-                ${instructors.map(ins => `<option value="${ins}">${ins}</option>`).join('')}
-            </select>
-        </td>
-        <td>
-            <select id="loc-${id}">
-                ${locations.map(loc => `<option value="${loc}">${loc}</option>`).join('')}
-            </select>
-        </td>
-        <td><input type="checkbox" onchange="updateEligibility(${id}, this.checked)"></td>
-        <td><button onclick="deleteStudent(this)">Delete</button></td>
+    const row=document.createElement('tr');
+    row.innerHTML=`
+    <td>${s.id}</td>
+    <td contenteditable="true" oninput="updateStudentName(${s.id}, this.innerText)">${s.name}</td>
+    <td>
+        <select id="inst-${s.id}" onchange="updateStudentInstructor(${s.id}, this.value)">
+            ${instructors.map(ins=>`<option value="${ins}" ${s.instructors.includes(ins)?'selected':''}>${ins}</option>`).join('')}
+        </select>
+    </td>
+    <td>
+        <select id="loc-${s.id}" onchange="updateStudentLocation(${s.id}, this.value)">
+            ${locations.map(loc=>`<option value="${loc}" ${loc===s.location?'selected':''}>${loc}</option>`).join('')}
+        </select>
+    </td>
+    <td><input type="checkbox" ${s.eligible?'checked':''} onchange="updateEligibility(${s.id}, this.checked)"></td>
+    <td><button onclick="deleteStudent(this)">Delete</button></td>
     `;
     tbody.appendChild(row);
-    students.push({id, name:'', instructors:[], location:'', eligible:false});
 }
 
-function updateEligibility(id, checked) {
-    const s = students.find(st => st.id === id);
-    if(s) s.eligible = checked;
-}
+function updateStudentName(id, name){ const s=students.find(st=>st.id===id); if(s){s.name=name; saveAllData();} }
+function updateStudentInstructor(id, value){ const s=students.find(st=>st.id===id); if(s){s.instructors=[value]; saveAllData();} }
+function updateStudentLocation(id, value){ const s=students.find(st=>st.id===id); if(s){s.location=value; saveAllData();} }
+function updateEligibility(id, checked){ const s=students.find(st=>st.id===id); if(s){s.eligible=checked; saveAllData();} }
 
-function deleteStudent(btn) {
-    const row = btn.closest('tr');
-    const id = parseInt(row.cells[0].innerText);
-    students = students.filter(s => s.id !== id);
+function deleteStudent(btn){
+    const row=btn.closest('tr');
+    const id=parseInt(row.cells[0].innerText);
+    students=students.filter(s=>s.id!==id);
     row.remove();
+    saveAllData();
 }
 
 // BELT TESTS
-function addBeltTestRow() {
-    const tbody = document.querySelector('#beltTestsTable tbody');
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-        <td>
-            <select multiple>
-                ${instructors.map(ins => `<option value="${ins}">${ins}</option>`).join('')}
-            </select>
-        </td>
-        <td>
-            <select>
-                ${locations.map(loc => `<option value="${loc}">${loc}</option>`).join('')}
-            </select>
-        </td>
-        <td><button onclick="deleteBeltTest(this)">Delete</button></td>
+function addBeltTestRow(){
+    const t={studentId:'', belt:'', date:'', instructors:[], location:''};
+    beltTests.push(t);
+    addBeltTestRowFromImport(t);
+    saveAllData();
+}
+function addBeltTestRowFromImport(t){
+    const tbody=document.querySelector('#beltTestsTable tbody');
+    const row=document.createElement('tr');
+    row.innerHTML=`
+    <td contenteditable="true" oninput="t.studentId=this.innerText; saveAllData()">${t.studentId}</td>
+    <td contenteditable="true" oninput="t.belt=this.innerText; updateBeltCounts(); saveAllData()">${t.belt}</td>
+    <td contenteditable="true" oninput="t.date=this.innerText; saveAllData()">${t.date}</td>
+    <td>
+        <select multiple onchange="t.instructors=[...this.selectedOptions].map(o=>o.value); saveAllData()">
+            ${instructors.map(ins=>`<option value="${ins}" ${t.instructors.includes(ins)?'selected':''}>${ins}</option>`).join('')}
+        </select>
+    </td>
+    <td>
+        <select onchange="t.location=this.value; saveAllData()">
+            ${locations.map(loc=>`<option value="${loc}" ${loc===t.location?'selected':''}>${loc}</option>`).join('')}
+        </select>
+    </td>
+    <td><button onclick="deleteBeltTest(this)">Delete</button></td>
     `;
     tbody.appendChild(row);
 }
-
-function deleteBeltTest(btn) {
-    const row = btn.closest('tr');
+function deleteBeltTest(btn){
+    const row=btn.closest('tr');
+    const index=[...row.parentNode.children].indexOf(row);
+    beltTests.splice(index,1);
     row.remove();
+    updateBeltCounts();
+    saveAllData();
 }
 
 // INSTRUCTORS & LOCATIONS
-function manageInstructors() {
-    const newIns = prompt("Enter comma-separated instructors", instructors.join(','));
-    if(newIns!==null) {
-        instructors = newIns.split(',').map(s => s.trim()).filter(s=>s);
-        updateInstructorSelects();
-    }
+function manageInstructors(){
+    const newIns=prompt("Enter comma-separated instructors", instructors.join(','));
+    if(newIns!==null){ instructors=newIns.split(',').map(s=>s.trim()).filter(s=>s); updateInstructorSelects(); saveAllData(); }
 }
-function manageLocations() {
-    const newLoc = prompt("Enter comma-separated locations", locations.join(','));
-    if(newLoc!==null) {
-        locations = newLoc.split(',').map(s => s.trim()).filter(s=>s);
-        updateLocationSelects();
-    }
+function manageLocations(){
+    const newLoc=prompt("Enter comma-separated locations", locations.join(','));
+    if(newLoc!==null){ locations=newLoc.split(',').map(s=>s.trim()).filter(s=>s); updateLocationSelects(); saveAllData(); }
 }
-function updateInstructorSelects() {
-    students.forEach(s => {
-        const sel = document.getElementById(`inst-${s.id}`);
-        if(sel) {
-            sel.innerHTML = instructors.map(ins=>`<option value="${ins}">${ins}</option>`).join('');
-        }
-    });
-    document.querySelectorAll('#beltTestsTable select[multiple]').forEach(sel=>{
-        sel.innerHTML = instructors.map(ins=>`<option value="${ins}">${ins}</option>`).join('');
-    });
+function updateInstructorSelects(){
+    students.forEach(s=>{const sel=document.getElementById(`inst-${s.id}`); if(sel){sel.innerHTML=instructors.map(ins=>`<option value="${ins}" ${s.instructors.includes(ins)?'selected':''}>${ins}</option>`).join('');}});
+    document.querySelectorAll('#beltTestsTable select[multiple]').forEach(sel=>{sel.innerHTML=instructors.map(ins=>`<option value="${ins}">${ins}</option>`).join('');});
 }
-function updateLocationSelects() {
-    students.forEach(s => {
-        const sel = document.getElementById(`loc-${s.id}`);
-        if(sel) sel.innerHTML = locations.map(loc=>`<option value="${loc}">${loc}</option>`).join('');
-    });
-    document.querySelectorAll('#beltTestsTable select:not([multiple])').forEach(sel=>{
-        sel.innerHTML = locations.map(loc=>`<option value="${loc}">${loc}</option>`).join('');
-    });
+function updateLocationSelects(){
+    students.forEach(s=>{const sel=document.getElementById(`loc-${s.id}`); if(sel){sel.innerHTML=locations.map(loc=>`<option value="${loc}" ${loc===s.location?'selected':''}>${loc}</option>`).join('');}});
+    document.querySelectorAll('#beltTestsTable select:not([multiple])').forEach(sel=>{sel.innerHTML=locations.map(loc=>`<option value="${loc}">${loc}</option>`).join('');});
 }
 
 // IMPORT / EXPORT JSON
-function importStudents() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.json';
-    fileInput.onchange = e=>{
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = ev=>{
-            const imported = JSON.parse(ev.target.result);
-            mergeStudents(imported);
-        };
-        reader.readAsText(file);
-    };
-    fileInput.click();
-}
-function exportStudents() {
-    const blob = new Blob([JSON.stringify(students, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'students.json';
-    a.click();
-    URL.revokeObjectURL(url);
-}
+function importStudents(){ const fi=document.createElement('input'); fi.type='file'; fi.accept='.json'; fi.onchange=e=>{ const file=e.target.files[0]; const reader=new FileReader(); reader.onload=ev=>{ const imported=JSON.parse(ev.target.result); mergeStudents(imported); }; reader.readAsText(file); }; fi.click(); }
+function exportStudents(){ const blob=new Blob([JSON.stringify(students,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='students.json'; a.click(); URL.revokeObjectURL(url); }
+function importTests(){ const fi=document.createElement('input'); fi.type='file'; fi.accept='.json'; fi.onchange=e=>{ const file=e.target.files[0]; const reader=new FileReader(); reader.onload=ev=>{ const imported=JSON.parse(ev.target.result); beltTests.push(...imported); populateTables(); alert('Tests imported'); }; reader.readAsText(file); }; fi.click(); }
+function exportTests(){ const blob=new Blob([JSON.stringify(beltTests,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='beltTests.json'; a.click(); URL.revokeObjectURL(url); }
 
-function importTests() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.json';
-    fileInput.onchange = e=>{
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = ev=>{
-            const imported = JSON.parse(ev.target.result);
-            beltTests.push(...imported); // simple merge, could add smart diff later
-            alert('Tests imported.');
-        };
-        reader.readAsText(file);
-    };
-    fileInput.click();
-}
-function exportTests() {
-    const blob = new Blob([JSON.stringify(beltTests, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'beltTests.json';
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-// SIMPLE MERGE EXAMPLE FOR STUDENTS
-function mergeStudents(imported) {
+function mergeStudents(imported){
     imported.forEach(s=>{
-        const existing = students.find(st=>st.id===s.id);
-        if(existing) {
-            // Prompt for differences
-            let changes = [];
+        const existing=students.find(st=>st.id===s.id);
+        if(existing){
+            let changes=[];
             if(existing.name!==s.name) changes.push(`Name: "${existing.name}" -> "${s.name}"`);
             if(existing.location!==s.location) changes.push(`Location: "${existing.location}" -> "${s.location}"`);
             if(existing.instructors.join(',')!==s.instructors.join(',')) changes.push(`Instructors: "${existing.instructors.join(',')}" -> "${s.instructors.join(',')}"`);
             if(changes.length>0){
-                if(confirm(`Differences found for student ID ${s.id}:\n${changes.join('\n')}\nApply updates?`)) {
-                    existing.name = s.name;
-                    existing.location = s.location;
-                    existing.instructors = s.instructors;
-                    existing.eligible = s.eligible;
+                if(confirm(`Differences for student ID ${s.id}:\n${changes.join('\n')}\nApply updates?`)){
+                    existing.name=s.name;
+                    existing.location=s.location;
+                    existing.instructors=s.instructors;
+                    existing.eligible=s.eligible;
                 }
             }
-        } else {
-            students.push(s);
-            addStudentRowFromImport(s);
-        }
+        } else { students.push(s); addStudentRowFromImport(s);}
     });
-    alert('Students imported.');
-}
-
-function addStudentRowFromImport(s) {
-    const tbody = document.querySelector('#studentsTable tbody');
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${s.id}</td>
-        <td contenteditable="true">${s.name}</td>
-        <td>
-            <select id="inst-${s.id}">
-                ${instructors.map(ins=>`<option value="${ins}" ${s.instructors.includes(ins)?'selected':''}>${ins}</option>`).join('')}
-            </select>
-        </td>
-        <td>
-            <select id="loc-${s.id}">
-                ${locations.map(loc=>`<option value="${loc}" ${loc===s.location?'selected':''}>${loc}</option>`).join('')}
-            </select>
-        </td>
-        <td><input type="checkbox" ${s.eligible?'checked':''} onchange="updateEligibility(${s.id}, this.checked)"></td>
-        <td><button onclick="deleteStudent(this)">Delete</button></td>
-    `;
-    tbody.appendChild(row);
-    if(s.id>=nextStudentId) nextStudentId = s.id+1;
+    populateTables(); saveAllData(); alert('Students imported.');
 }
 
 // RESET
-function resetData() {
-    if(confirm("Are you sure you want to reset all data?")){
-        students = [];
-        beltTests = [];
-        instructors = [];
-        locations = [];
-        nextStudentId = 1000;
-        document.querySelector('#studentsTable tbody').innerHTML = '';
-        document.querySelector('#beltTestsTable tbody').innerHTML = '';
-        updateBeltCounts();
+function resetData(){
+    if(confirm("Reset all data?")){
+        students=[]; beltTests=[]; instructors=[]; locations=[]; nextStudentId=1000;
+        populateTables(); saveAllData();
     }
 }
 
 // INITIALIZE
-updateBeltCounts();
+loadAllData(); populateTables();
 </script>
-
 </body>
 </html>
