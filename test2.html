@@ -16,11 +16,6 @@ input[type="checkbox"] { width:20px; height:20px; }
 button { margin:5px; padding:8px 12px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:14px; }
 button:hover { background:#534fd1; }
 .control-panel { background:#e8e8f8; padding:20px; border-radius:8px; margin:20px auto; max-width:1000px; }
-select[multiple] { height:60px; }
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; }
-.modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:90%; }
-.modal-header { font-weight:bold; margin-bottom:10px; }
-.modal-footer { text-align:right; margin-top:10px; }
 
 /* Belt colors */
 .belt-White{background:#ffffff;}
@@ -35,6 +30,13 @@ select[multiple] { height:60px; }
 .belt-Red\ Stripe{background:#ff9999;}
 .belt-Black{background:#333333; color:#fff;}
 .student-active{background:#e6ffe6;}
+
+/* Modal styles */
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+.modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:90%; }
+.modal-header { font-weight:bold; margin-bottom:10px; }
+.modal-footer { text-align:right; margin-top:10px; }
+select[multiple] { height:60px; }
 </style>
 </head>
 <body>
@@ -170,7 +172,7 @@ let students=[], beltTests=[], instructors=[], locations=[], nextStudentId=1000;
 let editingStudent=null, editingTest=null;
 const beltOptions=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"];
 
-// LOCALSTORAGE
+// LOCAL STORAGE
 function saveAllData(){ 
     localStorage.setItem('students',JSON.stringify(students)); 
     localStorage.setItem('beltTests',JSON.stringify(beltTests)); 
@@ -185,6 +187,15 @@ function loadAllData(){
     locations=JSON.parse(localStorage.getItem('locations')||'[]'); 
     nextStudentId=parseInt(localStorage.getItem('nextStudentId')||'1000'); 
 }
+
+// DASHBOARD
+function updateBeltCounts(){
+  if(beltTests.length===0){document.getElementById('beltCounts').innerText="No belt tests yet.";return;}
+  let counts={}; beltTests.forEach(t=>{ counts[t.belt]=(counts[t.belt]||0)+1; });
+  document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
+}
+
+// POPULATE TABLES
 function populateTables(){
     const tbodyS=document.querySelector('#studentsTable tbody'); tbodyS.innerHTML='';
     students.forEach(s=>{ addStudentRowToTable(s); });
@@ -192,13 +203,8 @@ function populateTables(){
     beltTests.forEach(t=>{ addTestRowToTable(t); });
     updateBeltCounts();
 }
-function updateBeltCounts(){
-  if(beltTests.length===0){document.getElementById('beltCounts').innerText="No belt tests yet.";return;}
-  let counts={}; beltTests.forEach(t=>{ counts[t.belt]=(counts[t.belt]||0)+1; });
-  document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
-}
 
-// STUDENT MODAL
+// STUDENT FUNCTIONS
 function openStudentModal(s=null){
   editingStudent=s;
   document.getElementById('studentName').value=s?s.name:'';
@@ -206,10 +212,13 @@ function openStudentModal(s=null){
   document.getElementById('studentBelt').value=s?s.belt:'White';
   document.getElementById('studentEligible').checked=s?s.eligible:false;
   document.getElementById('studentActive').checked=s?s.active:true;
+
   const instSel=document.getElementById('studentInstructor'); instSel.innerHTML='';
   instructors.forEach(i=>{const o=document.createElement('option');o.value=i;o.text=i;if(s&&s.instructors.includes(i)) o.selected=true; instSel.add(o);});
+
   const locSel=document.getElementById('studentLocation'); locSel.innerHTML='';
   locations.forEach(l=>{const o=document.createElement('option');o.value=l;o.text=l;if(s&&s.location===l) o.selected=true; locSel.add(o);});
+
   document.getElementById('studentModal').style.display='flex';
 }
 function closeStudentModal(){ document.getElementById('studentModal').style.display='none'; editingStudent=null; }
@@ -222,6 +231,7 @@ function saveStudent(){
   const location=document.getElementById('studentLocation').value;
   const eligible=document.getElementById('studentEligible').checked;
   const active=document.getElementById('studentActive').checked;
+
   if(editingStudent){
     editingStudent.name=name; editingStudent.birthdate=birthdate; editingStudent.belt=belt; editingStudent.instructors=instructor; editingStudent.location=location; editingStudent.eligible=eligible; editingStudent.active=active;
   } else {
@@ -251,11 +261,17 @@ function addStudentRowToTable(s){
 function editStudent(id){ const s=students.find(x=>x.id===id); if(s) openStudentModal(s);}
 function deleteStudent(id){ if(confirm('Delete student?')){students=students.filter(x=>x.id!==id); saveAllData(); populateTables();}}
 
-// BELT TEST MODAL
+// BELT TEST FUNCTIONS
 function openTestModal(t=null){
   editingTest=t;
   const studentSel=document.getElementById('testStudentId'); studentSel.innerHTML='';
-  students.filter(s=>s.active && s.eligible).forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.text=`${s.name} (${s.id})`; if(t&&t.studentId===s.id) o.selected=true; studentSel.add(o); });
+  students.filter(s=>s.active && s.eligible).forEach(s=>{ 
+    const o=document.createElement('option'); 
+    o.value=s.id; 
+    o.text=`${s.name} (${s.id})`; 
+    if(t&&t.studentId===s.id) o.selected=true; 
+    studentSel.add(o); 
+  });
   document.getElementById('testBelt').value=t?t.belt:'White';
   document.getElementById('testDate').value=t?t.date:'';
   const selI=document.getElementById('testInstructors'); selI.innerHTML='';
@@ -293,7 +309,7 @@ function addTestRowToTable(t){
   tbody.appendChild(row);
 }
 function editTest(index){ openTestModal(beltTests[index]); }
-function deleteTest(index){ if(confirm('Delete this test?')){ beltTests.splice(index,1); saveAllData(); populateTables(); } }
+function deleteTest(index){ if(confirm('Delete this test?')){ beltTests.splice(index,1); saveAllData(); populateTables(); }}
 
 // INSTRUCTORS & LOCATIONS
 function manageInstructors(){ const val=prompt('Comma-separated instructors', instructors.join(',')); if(val!==null){ instructors=val.split(',').map(x=>x.trim()).filter(x=>x); saveAllData(); populateTables(); } }
@@ -311,5 +327,6 @@ function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[];
 // INIT
 loadAllData(); populateTables();
 </script>
+
 </body>
 </html>
