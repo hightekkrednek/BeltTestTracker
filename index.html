@@ -75,6 +75,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
           <th>ID</th>
           <th>Name</th>
           <th>Birthdate</th>
+          <th>Age</th> <!-- NEW COLUMN -->
           <th>Belt</th>
           <th>Instructor</th>
           <th>Location</th>
@@ -274,13 +275,23 @@ function saveStudent(){
   }
   saveAllData(); populateTables(); closeStudentModal();
 }
+function calculateAge(birthdate) {
+  if(!birthdate) return '';
+  const dob = new Date(birthdate);
+  const diff = Date.now() - dob.getTime();
+  const ageDt = new Date(diff);
+  return Math.abs(ageDt.getUTCFullYear() - 1970);
+}
+
 function addStudentRowToTable(s){
   const tbody=document.querySelector('#studentsTable tbody');
-  const row=document.createElement('tr'); if(s.active) row.classList.add('student-active');
+  const row=document.createElement('tr'); 
+  if(s.active) row.classList.add('student-active');
   row.innerHTML=`
     <td>${s.id}</td>
     <td>${s.name}</td>
     <td>${s.birthdate}</td>
+    <td>${calculateAge(s.birthdate)}</td> <!-- NEW AGE COLUMN -->
     <td class="${beltClassName(s.belt)}">${s.belt}</td>
     <td>${s.instructors.join(',')}</td>
     <td>${s.location}</td>
