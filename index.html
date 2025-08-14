@@ -19,14 +19,13 @@ textarea { width: 100%; }
 .belt-Green { background-color: #a5d6a7; color: #000; }
 .belt-Blue { background-color: #81d4fa; color: #000; }
 .belt-Red { background-color: #ef9a9a; color: #000; }
-.belt-Black { background-color: #000; color: #fff; }
+.belt-Black { background-color: #000000; color: #fff; }
 .next-test-soon { font-weight: bold; color: #d84315; }
 #calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
 .calendar-day { border: 1px solid #ccc; min-height: 80px; padding: 5px; border-radius: 5px; background-color: #f5f5f5; }
 .calendar-day h4 { margin: 0 0 5px 0; font-size: 14px; text-align: center; }
 .test-entry { font-size: 12px; margin: 2px 0; padding: 2px 4px; border-radius: 3px; cursor: pointer; }
 .test-entry:hover { opacity: 0.8; text-decoration: underline; }
-.upcoming { background-color: purple; color: white; }
 @media print {
     body * { visibility: hidden; }
     .printable, .printable * { visibility: visible; }
@@ -57,7 +56,7 @@ textarea { width: 100%; }
 <form id="studentForm">
 <input type="text" id="firstName" placeholder="First Name" required>
 <input type="text" id="lastName" placeholder="Last Name" required>
-<input type="date" id="dob" required>
+<input type="date" id="dob" placeholder="Date of Birth" required>
 <select id="currentBelt" required>
 <option value="">Select Belt</option>
 <option value="White">White</option>
@@ -124,26 +123,21 @@ textarea { width: 100%; }
 </div>
 
 <script>
-const beltColors={White:"#fff",Yellow:"#fff59d",Green:"#a5d6a7",Blue:"#81d4fa",Red:"#ef9a9a",Black:"#000"};
-
+// --- Utility ---
 function getData(key){ return JSON.parse(localStorage.getItem(key))||[]; }
 function saveData(key,data){ localStorage.setItem(key, JSON.stringify(data)); }
+const beltColors={White:"#fff",Yellow:"#fff59d",Green:"#a5d6a7",Blue:"#81d4fa",Red:"#ef9a9a",Black:"#000"};
 
+// --- Generate sequential 4-digit ID ---
 function generateStudentId(){
-    const students=getData('students');
-    if(students.length===0) return 1000;
-    const maxId=students.reduce((max,s)=>s.id>max?s.id:max,1000);
-    if(maxId>=9999){ alert("Max students reached."); return null; }
-    return maxId+1;
+    const students = getData('students');
+    if(students.length === 0) return 1000;
+    const maxId = students.reduce((max,s)=>s.id>max?s.id:max,1000);
+    if(maxId >= 9999){ alert("Maximum number of students reached (ID limit 9999)."); return null; }
+    return maxId + 1;
 }
 
-function getNextBelt(currentBelt){
-    const order=['White','Yellow','Green','Blue','Red','Black'];
-    const i=order.indexOf(currentBelt);
-    return i>=0 && i<order.length-1?order[i+1]:currentBelt;
-}
-
-// Demo Data
+// --- Demo Data Initialization ---
 if(!localStorage.getItem('students')){
     const demoStudents=[
         {id:1000,firstName:'Ethan',lastName:'Lee',dob:'2015-04-10',currentBelt:'White',nextTestDate:'2025-09-01'},
@@ -156,11 +150,12 @@ if(!localStorage.getItem('tests')){
     const demoTests=[
         {studentId:1000,studentName:'Ethan Lee',beltTestedFor:'White',testDate:'2025-08-01',result:'Pass',comments:'Great start!'},
         {studentId:1001,studentName:'Evelyn Kim',beltTestedFor:'Yellow',testDate:'2025-07-15',result:'Pass',comments:'Good techniques.'},
-        {studentId:1002,studentName:'Liam Chen',beltTestedFor:'Green',testDate:'2025-06-20',result:'Pass',comments:'Needs flexibility.'}
+        {studentId:1002,studentName:'Liam Chen',beltTestedFor:'Green',testDate:'2025-06-20',result:'Pass',comments:'Needs more flexibility.'}
     ];
     saveData('tests',demoTests);
 }
 
+// --- DOM ---
 const studentForm=document.getElementById('studentForm');
 const studentsTableBody=document.querySelector('#studentsTable tbody');
 const studentSelect=document.getElementById('studentSelect');
@@ -169,201 +164,350 @@ const testForm=document.getElementById('testForm');
 const testsTableBody=document.querySelector('#testsTable tbody');
 const exportStudentsBtn=document.getElementById('exportStudentsBtn');
 const exportTestsBtn=document.getElementById('exportTestsBtn');
-const resetDemoBtn=document.getElementById('resetDemoBtn');
-let calendarMonth=(new Date()).getMonth(), calendarYear=(new Date()).getFullYear();
+const resetDemoBtn = document.getElementById('resetDemoBtn');
 
-function renderStudents(){
-    const students=getData('students');
-    const filter=searchInput.value.toLowerCase();
-    studentsTableBody.innerHTML='';
-    studentSelect.innerHTML='<option value="">Select Student</option>';
-    students.forEach(s=>{
-        const name=`${s.firstName} ${s.lastName}`.toLowerCase();
-        if(filter && !name.includes(filter) && !s.currentBelt.toLowerCase().includes(filter)) return;
-
-        const row=document.createElement('tr');
-        const idCell=document.createElement('td'); idCell.textContent=s.id;
-        const nameCell=document.createElement('td'); nameCell.textContent=`${s.firstName} ${s.lastName}`; nameCell.contentEditable=true;
-        const dobCell=document.createElement('td'); dobCell.textContent=s.dob; dobCell.contentEditable=true;
-        const beltCell=document.createElement('td'); beltCell.textContent=s.currentBelt; beltCell.classList.add('belt-'+s.currentBelt); beltCell.contentEditable=true;
-        const nextTestCell=document.createElement('td'); nextTestCell.textContent=s.nextTestDate||'-';
-
-        const actionsCell=document.createElement('td');
-        const saveBtn=document.createElement('button'); saveBtn.textContent='Save';
-        saveBtn.addEventListener('click',()=>saveStudentEdit(s.id,nameCell,dobCell,beltCell));
-        const delBtn=document.createElement('button'); delBtn.textContent='Delete'; delBtn.style.color='red';
-        delBtn.addEventListener('click',()=>deleteStudent(s.id));
-        actionsCell.appendChild(saveBtn); actionsCell.appendChild(delBtn);
-
-        row.appendChild(idCell); row.appendChild(nameCell); row.appendChild(dobCell); row.appendChild(beltCell); row.appendChild(nextTestCell); row.appendChild(actionsCell);
-        studentsTableBody.appendChild(row);
-
-        const opt=document.createElement('option'); opt.value=s.id; opt.textContent=`${s.firstName} ${s.lastName}`;
-        studentSelect.appendChild(opt);
-    });
-    renderTests(); renderDashboard(); renderCalendar();
-}
-
-function saveStudentEdit(id,nameCell,dobCell,beltCell){
-    const students=getData('students'); const s=students.find(st=>st.id===id);
-    if(!s) return;
-    const names=nameCell.textContent.trim().split(' '); if(names.length<2){ alert('Enter full name'); renderStudents(); return;}
-    const dob=dobCell.textContent.trim();
-    const belt=beltCell.textContent.trim();
-    const belts=['White','Yellow','Green','Blue','Red','Black'];
-    if(!belts.includes(belt)){ alert('Invalid belt'); renderStudents(); return; }
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(dob)){ alert('Use YYYY-MM-DD'); renderStudents(); return; }
-    s.firstName=names[0]; s.lastName=names.slice(1).join(' '); s.dob=dob; s.currentBelt=belt;
-    saveData('students',students); renderStudents();
-}
-
-function deleteStudent(id){
-    if(confirm('Delete this student?')){
-        let students=getData('students'); students=students.filter(s=>s.id!==id); saveData('students',students);
-        let tests=getData('tests'); tests=tests.filter(t=>t.studentId!==id); saveData('tests',tests);
-        renderStudents();
-    }
-}
-
+// --- Student Form ---
 studentForm.addEventListener('submit',e=>{
-    e.preventDefault(); const id=generateStudentId(); if(id===null) return;
-    const students=getData('students'); 
-    const newS={id,firstName:document.getElementById('firstName').value,lastName:document.getElementById('lastName').value,dob:document.getElementById('dob').value,currentBelt:document.getElementById('currentBelt').value,nextTestDate:null};
-    students.push(newS); saveData('students',students); studentForm.reset(); renderStudents();
+    e.preventDefault();
+    const newId = generateStudentId();
+    if(newId === null) return;
+    const students=getData('students');
+    const newStudent={
+        id:newId,
+        firstName:document.getElementById('firstName').value,
+        lastName:document.getElementById('lastName').value,
+        dob:document.getElementById('dob').value,
+        currentBelt:document.getElementById('currentBelt').value,
+        nextTestDate:null
+    };
+    students.push(newStudent); saveData('students',students);
+    studentForm.reset(); renderStudents();
 });
 
+// --- Test Form ---
 testForm.addEventListener('submit',e=>{
     e.preventDefault();
     const tests=getData('tests'); const students=getData('students');
-    const sid=parseInt(document.getElementById('studentSelect').value); const s=students.find(st=>st.id===sid);
-    if(!s) return;
-    const newT={studentId:sid,studentName:`${s.firstName} ${s.lastName}`,beltTestedFor:document.getElementById('beltTestedFor').value,testDate:document.getElementById('testDate').value,result:document.getElementById('testResult').value,comments:document.getElementById('comments').value};
-    if(newT.result==='Pass'){ s.currentBelt=newT.beltTestedFor; const d=new Date(newT.testDate); d.setMonth(d.getMonth()+3); s.nextTestDate=d.toISOString().split('T')[0]; saveData('students',students);}
-    tests.push(newT); saveData('tests',tests); testForm.reset(); renderTests(); renderStudents();
+    const studentId=parseInt(document.getElementById('studentSelect').value);
+    const student=students.find(s=>s.id===studentId);
+    const newTest={
+        studentId,
+        studentName:`${student.firstName} ${student.lastName}`,
+        beltTestedFor:document.getElementById('beltTestedFor').value,
+        testDate:document.getElementById('testDate').value,
+        result:document.getElementById('testResult').value,
+        comments:document.getElementById('comments').value
+    };
+    if(newTest.result==='Pass'){
+        student.currentBelt=newTest.beltTestedFor;
+        const nextDate=new Date(newTest.testDate);
+        nextDate.setMonth(nextDate.getMonth()+3);
+        student.nextTestDate=nextDate.toISOString().split('T')[0];
+        saveData('students',students);
+    }
+    tests.push(newTest); saveData('tests',tests);
+    testForm.reset(); renderTests(); renderStudents();
 });
 
-// --- Render Tests ---
-function renderTests(){
-    const tests=getData('tests'); testsTableBody.innerHTML='';
-    tests.forEach(t=>{
-        const row=document.createElement('tr');
-        ['studentName','beltTestedFor','testDate','result','comments'].forEach(key=>{
-            const td=document.createElement('td'); td.textContent=t[key]; td.contentEditable=true; row.appendChild(td);
-        });
-        const act=document.createElement('td');
-        const saveBtn=document.createElement('button'); saveBtn.textContent='Save';
-        saveBtn.addEventListener('click',()=>saveTestEdit(t,row));
-        const delBtn=document.createElement('button'); delBtn.textContent='Delete'; delBtn.style.color='red';
-        delBtn.addEventListener('click',()=>deleteTest(t));
-        act.appendChild(saveBtn); act.appendChild(delBtn); row.appendChild(act);
+// --- Render Students with Inline Edit ---
+function renderStudents(){
+    const students = getData('students');
+    const filter = searchInput.value.toLowerCase();
+    studentsTableBody.innerHTML = '';
+    studentSelect.innerHTML = '<option value="">Select Student</option>';
+    const today = new Date();
+    const twoWeeksLater = new Date(); twoWeeksLater.setDate(today.getDate() + 14);
+
+    students.forEach((s) => {
+        const name = `${s.firstName} ${s.lastName}`.toLowerCase();
+        if(filter && !name.includes(filter) && !s.currentBelt.toLowerCase().includes(filter)) return;
+
+        const beltClass = `belt-${s.currentBelt}`;
+        let nextClass = '';
+        if(s.nextTestDate){
+            const nextDate = new Date(s.nextTestDate);
+            if(nextDate >= today && nextDate <= twoWeeksLater) nextClass = 'next-test-soon';
+        }
+
+        const row = document.createElement('tr');
+
+        const idCell = document.createElement('td'); idCell.textContent = s.id;
+        const nameCell = document.createElement('td'); nameCell.textContent = `${s.firstName} ${s.lastName}`; nameCell.contentEditable = true;
+        const dobCell = document.createElement('td'); dobCell.textContent = s.dob; dobCell.contentEditable = true;
+        const beltCell = document.createElement('td'); beltCell.textContent = s.currentBelt; beltCell.classList.add(beltClass); beltCell.contentEditable = true;
+        const nextTestCell = document.createElement('td'); nextTestCell.textContent = s.nextTestDate || '-';
+
+        const actionsCell = document.createElement('td');
+        const saveBtn = document.createElement('button'); saveBtn.textContent = 'Save';
+        saveBtn.addEventListener('click', () => saveStudentEdit(s.id, nameCell, dobCell, beltCell));
+        const deleteBtn = document.createElement('button'); deleteBtn.textContent = 'Delete'; deleteBtn.style.color = 'red';
+        deleteBtn.addEventListener('click', () => deleteStudent(s.id));
+        actionsCell.appendChild(saveBtn);
+        actionsCell.appendChild(deleteBtn);
+
+        row.appendChild(idCell);
+        row.appendChild(nameCell);
+        row.appendChild(dobCell);
+        row.appendChild(beltCell);
+        row.appendChild(nextTestCell);
+        row.appendChild(actionsCell);
+
+        studentsTableBody.appendChild(row);
+
+        // Update student select dropdown
+        const opt = document.createElement('option'); opt.value = s.id; opt.textContent = `${s.firstName} ${s.lastName}`;
+        studentSelect.appendChild(opt);
+    });
+
+    renderDashboard();
+    renderCalendar();
+}
+
+// --- Save Student Inline Edit ---
+function saveStudentEdit(studentId, nameCell, dobCell, beltCell) {
+    const students = getData('students');
+    const student = students.find(s => s.id === studentId);
+    if(!student) return;
+
+    const fullName = nameCell.textContent.trim();
+    const nameParts = fullName.split(' ');
+    if(nameParts.length < 2){
+        alert('Please enter full name (First Last)');
+        renderStudents();
+        return;
+    }
+
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ');
+    const dob = dobCell.textContent.trim();
+    const belt = beltCell.textContent.trim();
+    const validBelts = ['White','Yellow','Green','Blue','Red','Black'];
+
+    if(!validBelts.includes(belt)){
+        alert('Invalid belt. Must be White, Yellow, Green, Blue, Red, or Black.');
+        renderStudents();
+        return;
+    }
+
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(dob)){
+        alert('Invalid date of birth format. Use YYYY-MM-DD.');
+        renderStudents();
+        return;
+    }
+
+    student.firstName = firstName;
+    student.lastName = lastName;
+    student.dob = dob;
+    student.currentBelt = belt;
+
+    saveData('students', students);
+    renderStudents();
+    renderTests();
+    renderCalendar();
+    renderDashboard();
+}
+
+// --- Delete Student ---
+function deleteStudent(id){ 
+    let students=getData('students'); 
+    if(confirm("Delete this student?")) {
+        students=students.filter(s=>s.id!==id); 
+        saveData('students',students); 
+        renderStudents(); 
+    }
+}
+
+// --- Inline Editable Test Table ---
+function renderTests() {
+    const tests = getData('tests');
+    const filter = searchInput.value.toLowerCase();
+    testsTableBody.innerHTML = '';
+
+    tests.forEach((t, index) => {
+        if(filter && !t.studentName.toLowerCase().includes(filter) && !t.beltTestedFor.toLowerCase().includes(filter)) return;
+
+        const row = document.createElement('tr');
+
+        const studentCell = document.createElement('td'); studentCell.textContent = t.studentName;
+        const beltCell = document.createElement('td'); beltCell.textContent = t.beltTestedFor; beltCell.classList.add(`belt-${t.beltTestedFor}`); beltCell.contentEditable = true;
+        const dateCell = document.createElement('td'); dateCell.textContent = t.testDate; dateCell.contentEditable = true;
+        const resultCell = document.createElement('td'); resultCell.textContent = t.result; resultCell.contentEditable = true;
+        const commentsCell = document.createElement('td'); commentsCell.textContent = t.comments; commentsCell.contentEditable = true;
+
+        const actionsCell = document.createElement('td');
+        const saveBtn = document.createElement('button'); saveBtn.textContent = "Save";
+        saveBtn.addEventListener('click', () => saveTestEdit(index, beltCell, dateCell, resultCell, commentsCell));
+        const deleteBtn = document.createElement('button'); deleteBtn.textContent = "Delete"; deleteBtn.style.color='red';
+        deleteBtn.addEventListener('click', ()=>deleteTest(index));
+        actionsCell.appendChild(saveBtn); actionsCell.appendChild(deleteBtn);
+
+        row.appendChild(studentCell);
+        row.appendChild(beltCell);
+        row.appendChild(dateCell);
+        row.appendChild(resultCell);
+        row.appendChild(commentsCell);
+        row.appendChild(actionsCell);
+
         testsTableBody.appendChild(row);
     });
 }
 
-// --- Save Test Edit ---
-function saveTestEdit(test,row){
-    const tests=getData('tests'); const t=tests.find(x=>x.studentId===test.studentId && x.testDate===test.testDate && x.beltTestedFor===test.beltTestedFor);
-    if(!t) return;
-    t.studentName=row.cells[0].textContent; t.beltTestedFor=row.cells[1].textContent;
-    t.testDate=row.cells[2].textContent; t.result=row.cells[3].textContent; t.comments=row.cells[4].textContent;
-    saveData('tests',tests); renderTests(); renderCalendar(); renderDashboard();
+function saveTestEdit(index, beltCell, dateCell, resultCell, commentsCell) {
+    const tests = getData('tests');
+    const t = tests[index];
+    const newBelt = beltCell.textContent.trim();
+    const newDate = dateCell.textContent.trim();
+    const newResult = resultCell.textContent.trim();
+    const newComments = commentsCell.textContent.trim();
+    const validBelts = ['White','Yellow','Green','Blue','Red','Black'];
+    const validResults = ['Pass','Fail'];
+
+    if(!validBelts.includes(newBelt) || !validResults.includes(newResult) || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)){
+        alert('Invalid date format. Use YYYY-MM-DD.');
+        renderTests();
+        return;
+    }
+
+    t.beltTestedFor = newBelt;
+    t.testDate = newDate;
+    t.result = newResult;
+    t.comments = newComments;
+
+    // Update student belt if test passed
+    const students = getData('students');
+    const student = students.find(s => s.id === t.studentId);
+    if(student && newResult === 'Pass'){
+        student.currentBelt = newBelt;
+        const nextDate = new Date(newDate);
+        nextDate.setMonth(nextDate.getMonth() + 3);
+        student.nextTestDate = nextDate.toISOString().split('T')[0];
+        saveData('students', students);
+    }
+
+    saveData('tests', tests);
+    renderTests();
+    renderStudents();
+    renderCalendar();
+    renderDashboard();
 }
 
-function deleteTest(test){
-    if(confirm('Delete this test?')){
-        let tests=getData('tests'); tests=tests.filter(t=>!(t.studentId===test.studentId && t.testDate===test.testDate && t.beltTestedFor===test.beltTestedFor)); saveData('tests',tests); renderTests(); renderCalendar(); renderDashboard();
+// --- Delete Test ---
+function deleteTest(index){
+    const tests = getData('tests');
+    if(confirm('Delete this test record?')){
+        tests.splice(index,1);
+        saveData('tests',tests);
+        renderTests();
+        renderStudents();
+        renderCalendar();
+        renderDashboard();
     }
 }
 
-// --- Dashboard ---
-function renderDashboard(){
-    const students=getData('students'); const tests=getData('tests');
-    const beltCounts={White:0,Yellow:0,Green:0,Blue:0,Red:0,Black:0};
-    students.forEach(s=>beltCounts[s.currentBelt]++);
-    const beltDiv=document.getElementById('beltCounts'); beltDiv.innerHTML=''; for(const b in beltCounts){ const d=document.createElement('div'); d.textContent=`${b}: ${beltCounts[b]}`; beltDiv.appendChild(d);}
-    const upcoming=students.filter(s=>s.nextTestDate && new Date(s.nextTestDate)>=new Date());
-    const upDiv=document.getElementById('upcomingTests'); upDiv.innerHTML=`Upcoming Tests: ${upcoming.length}`;
-    const pass=tests.filter(t=>t.result==='Pass').length; const fail=tests.filter(t=>t.result==='Fail').length;
-    document.getElementById('testSummary').textContent=`Pass: ${pass} | Fail: ${fail}`;
-}
-
-// --- Calendar ---
-function renderCalendar(){
-    const cal=document.getElementById('calendar'); cal.innerHTML='';
-    const firstDay=new Date(calendarYear,calendarMonth,1).getDay();
-    const lastDate=new Date(calendarYear,calendarMonth+1,0).getDate();
-    document.getElementById('calendarMonthYear').textContent=`${calendarYear}-${calendarMonth+1}`;
-    for(let i=0;i<firstDay;i++){ const d=document.createElement('div'); cal.appendChild(d);}
-    const tests=getData('tests');
-    for(let d=1; d<=lastDate; d++){
-    const dayDiv=document.createElement('div'); dayDiv.classList.add('calendar-day');
-    const dateStr = `${calendarYear}-${String(calendarMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const h4=document.createElement('h4'); h4.textContent=d; dayDiv.appendChild(h4);
-    
-    tests.forEach(t=>{
-        if(t.testDate===dateStr){
-            const entry=document.createElement('div');
-            entry.classList.add('test-entry');
-            if(new Date(t.testDate) > new Date()) entry.classList.add('upcoming');
-            entry.textContent=`${t.studentName} - ${t.beltTestedFor} (${t.result})`;
-            entry.addEventListener('click', ()=>{
-                studentSelect.value = t.studentId;
-                document.getElementById('beltTestedFor').value = t.beltTestedFor;
-                document.getElementById('testDate').value = t.testDate;
-                document.getElementById('testResult').value = t.result;
-                document.getElementById('comments').value = t.comments;
-            });
-            dayDiv.appendChild(entry);
-        }
-    });
-
-    cal.appendChild(dayDiv);
-}
-
-// --- Calendar Controls ---
-document.getElementById('prevMonthBtn').onclick = ()=>{
-    calendarMonth--;
-    if(calendarMonth<0){ calendarMonth=11; calendarYear--; }
-    renderCalendar();
-};
-document.getElementById('nextMonthBtn').onclick = ()=>{
-    calendarMonth++;
-    if(calendarMonth>11){ calendarMonth=0; calendarYear++; }
-    renderCalendar();
-};
-
-// --- Search ---
-searchInput.addEventListener('input', renderStudents);
+// --- Search Filter ---
+searchInput.addEventListener('input', () => {
+    renderStudents();
+    renderTests();
+});
 
 // --- CSV Export ---
 function exportCSV(data, filename){
-    const csv=data.map(row=>Object.values(row).map(v=>`"${v}"`).join(',')).join('\n');
-    const blob=new Blob([csv], {type:'text/csv'}); const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url);
+    const csv = [];
+    const headers = Object.keys(data[0]);
+    csv.push(headers.join(','));
+    data.forEach(row => {
+        csv.push(headers.map(field => `"${row[field]}"`).join(','));
+    });
+    const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
-exportStudentsBtn.addEventListener('click', ()=>exportCSV(getData('students'),'students.csv'));
-exportTestsBtn.addEventListener('click', ()=>exportCSV(getData('tests'),'tests.csv'));
+
+exportStudentsBtn.addEventListener('click', () => {
+    const students = getData('students');
+    if(students.length>0) exportCSV(students, 'students.csv');
+});
+exportTestsBtn.addEventListener('click', () => {
+    const tests = getData('tests');
+    if(tests.length>0) exportCSV(tests, 'tests.csv');
+});
+
+// --- Dashboard ---
+function renderDashboard(){
+    const students = getData('students');
+    const tests = getData('tests');
+    const beltCounts={White:0,Yellow:0,Green:0,Blue:0,Red:0,Black:0};
+    students.forEach(s=>beltCounts[s.currentBelt]++);
+    document.getElementById('beltCounts').innerHTML='Belt Counts:<br>'+Object.entries(beltCounts).map(([b,c])=>`${b}: ${c}`).join('<br>');
+
+    const today=new Date(); const nextMonth=new Date(); nextMonth.setMonth(today.getMonth()+1);
+    const upcoming = tests.filter(t => { const d = new Date(t.testDate); return d >= today && d <= nextMonth; });
+    document.getElementById('upcomingTests').innerHTML=`Upcoming Tests (Next Month): ${upcoming.length}`;
+
+    const passCount = tests.filter(t => t.result==='Pass').length;
+    const failCount = tests.filter(t => t.result==='Fail').length;
+    document.getElementById('testSummary').innerHTML=`Test Results: Pass ${passCount} | Fail ${failCount}`;
+}
+
+// --- Calendar ---
+let calendarMonth=(new Date()).getMonth(), calendarYear=(new Date()).getFullYear();
+document.getElementById('prevMonthBtn').addEventListener('click',()=>{
+    calendarMonth--; if(calendarMonth<0){calendarMonth=11; calendarYear--;}
+    renderCalendar();
+});
+document.getElementById('nextMonthBtn').addEventListener('click',()=>{
+    calendarMonth++; if(calendarMonth>11){calendarMonth=0; calendarYear++;}
+    renderCalendar();
+});
+
+function renderCalendar(){
+    const calendarDiv=document.getElementById('calendar');
+    calendarDiv.innerHTML='';
+    document.getElementById('calendarMonthYear').textContent=
+        `${new Date(calendarYear, calendarMonth).toLocaleString('default', { month: 'long' })} ${calendarYear}`;
+    const firstDay=new Date(calendarYear, calendarMonth, 1).getDay();
+    const daysInMonth=new Date(calendarYear, calendarMonth+1, 0).getDate();
+    for(let i=0;i<firstDay;i++){ calendarDiv.appendChild(document.createElement('div')); }
+    const tests=getData('tests');
+    for(let day=1; day<=daysInMonth; day++){
+        const dayDiv=document.createElement('div'); dayDiv.classList.add('calendar-day');
+        const dayHeader=document.createElement('h4'); dayHeader.textContent=day; dayDiv.appendChild(dayHeader);
+        const dayStr=`${calendarYear}-${String(calendarMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const dayTests = tests.filter(t => t.testDate===dayStr);
+        dayTests.forEach(t=>{
+            const testEntry=document.createElement('div'); testEntry.classList.add('test-entry'); testEntry.classList.add(`belt-${t.beltTestedFor}`);
+            testEntry.textContent=`${t.studentName} (${t.beltTestedFor}) - ${t.result}`;
+            dayDiv.appendChild(testEntry);
+        });
+        calendarDiv.appendChild(dayDiv);
+    }
+}
 
 // --- Print ---
 function printSection(id){
-    const elem=document.getElementById(id);
-    const newWin=window.open('','Print','width=900,height=600');
-    newWin.document.write('<html><head><title>Print</title></head><body>'+elem.outerHTML+'</body></html>');
-    newWin.document.close(); newWin.focus(); newWin.print(); newWin.close();
+    const content=document.getElementById(id).outerHTML;
+    const w=window.open(); w.document.write('<html><head><title>Print</title></head><body>'+content+'</body></html>');
+    w.document.close(); w.print();
 }
 
-// --- Reset Demo ---
-resetDemoBtn.addEventListener('click', ()=>{
-    if(confirm('Reset demo data? This will erase all current data.')){
-        localStorage.removeItem('students'); localStorage.removeItem('tests'); location.reload();
+// --- Reset Demo Data ---
+resetDemoBtn.addEventListener('click', () => {
+    if(confirm("Reset all data to demo? All changes will be lost.")){
+        localStorage.removeItem('students'); localStorage.removeItem('tests');
+        location.reload();
     }
 });
 
-// --- Initialize ---
+// --- Initial Render ---
 renderStudents();
 renderTests();
-renderDashboard();
 renderCalendar();
+renderDashboard();
 </script>
 </body>
 </html>
