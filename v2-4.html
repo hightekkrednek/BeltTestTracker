@@ -89,6 +89,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
           <th>Instructor</th>
           <th>Location</th>
           <th>Eligible</th>
+<th>Next Eligible Date</th> <!-- NEW COLUMN -->
           <th>Active</th>
           <th>Actions</th>
         </tr>
@@ -272,7 +273,21 @@ function updateBeltCounts(){
   document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
 }
 
+function checkEligibilityDates(){
+  const today = new Date();
+  students.forEach(student => {
+    if(student.active && student.nextEligibleDate){
+      const eligibleDate = new Date(student.nextEligibleDate);
+      if(today >= eligibleDate){
+        student.eligible = true;
+        delete student.nextEligibleDate; // clear date once eligibility is restored
+      }
+    }
+  });
+}
 
+
+checkEligibilityDates();
 
 // POPULATE TABLES
 function populateTables(){
@@ -354,6 +369,7 @@ function addStudentRowToTable(s){
     <td>${s.instructors.join(',')}</td>
     <td>${s.location}</td>
     <td>${s.eligible?'✔':''}</td>
+    <td>${s.nextEligibleDate ? s.nextEligibleDate : ''}</td> <!-- NEW -->
     <td>${s.active?'✔':''}</td>
     <td><button onclick="editStudent(${s.id})">Edit</button><button onclick="deleteStudent(${s.id})">Delete</button></td>
   `;
@@ -407,6 +423,14 @@ function saveTest(){
     const student = students.find(s => s.id === studentId);
     if (student) {
       student.eligible = false;
+// Schedule eligibility return after 3 months if student is active
+      if(student.active){
+        const testDate = new Date(date);
+        const eligibilityDate = new Date(testDate);
+        eligibilityDate.setMonth(eligibilityDate.getMonth() + 3);
+
+        student.nextEligibleDate = eligibilityDate.toISOString().split('T')[0]; // store as YYYY-MM-DD
+      }
     }
   }
 
