@@ -1,1 +1,530 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taekwondo Tracker</title>
+<style>
+body { font-family: Arial, sans-serif; margin:0; background:#f4f4f9; color:#333; overflow-x:hidden; }
+h2 { margin-top:0; }
+section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:95%; }
+table { width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:auto; word-wrap:break-word; }
+
+
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+th,td { padding:10px; border:1px solid #ddd; text-align:left; font-size:14px; overflow-wrap: break-word; }
+th { background:#e2e2f1; }
+input[type="text"], input[type="number"], input[type="date"], select { width:95%; padding:6px; box-sizing:border-box; border-radius:4px; border:1px solid #ccc; }
+input[type="checkbox"] { width:20px; height:20px; }
+button { margin:5px; padding:8px 12px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:14px; }
+button:hover { background:#534fd1; }
+.control-panel { background:#e8e8f8; padding:20px; border-radius:8px; margin:20px auto; max-width:95%; display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-start; }
+.belt-White{background:#ffffff;}
+.belt-White-Stripe{background:#f9f9f9;}
+.belt-Yellow{background:#fffacd;}
+.belt-Yellow-Stripe{background:#fff8b0;}
+.belt-Green{background:#90ee90;}
+.belt-Green-Stripe{background:#a0f0a0;}
+.belt-Blue{background:#add8e6;}
+.belt-Blue-Stripe{background:#b7dfee;}
+.belt-Red{background:#ff7f7f;}
+.belt-Red-Stripe{background:#ff9999;}
+.belt-Black{background:#333333; color:#fff;}
+.student-active{background:#e6ffe6;}
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000; overflow:auto; padding:10px;}
+.modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:100%; max-height:90%; overflow-y:auto; }
+.modal-header { font-weight:bold; margin-bottom:10px; }
+.modal-footer { text-align:right; margin-top:10px; }
+select[multiple] { height:60px; }
+li { margin-bottom:5px; }
+li button { background:#ff4d4d; margin-left:5px; font-size:12px; padding:2px 6px; }
+li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
+.count-display { margin-bottom:10px; font-weight:bold; }
+</style>
+</head>
+<body>
+
+  
+<h1 style="
+    text-align: center;
+    background-color: #222;
+    color: white;
+    padding: 15px 0;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    font-size: 2em;
+    border-bottom: 4px solid #ffcc00;
+">
+    Impact Martial Arts Belt Tracker
+</h1>
+
+
+  
+<section id="dashboard">
+<h2>Dashboard</h2>
+<div id="beltCounts">No students yet.</div>
+</section>
+
+
+  
+<section id="studentsSection">
+  <h2>Students</h2>
+  <div class="count-display" id="studentCounts"></div>
+  <label for="studentSearch">Search Students / Belt / Instructor / Location:</label>
+  <input type="text" id="studentSearch" placeholder="Type to filter..." oninput="searchStudents()">
+  <div class="table-container">
+    <table id="studentsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Birthdate</th>
+          <th>Age</th>
+          <th>Belt</th>
+          <th>Instructor</th>
+          <th>Location</th>
+          <th>Eligible</th>
+<th>Next Eligible Date</th> <!-- NEW COLUMN -->
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <button onclick="openStudentModal()">Add Student</button>
+</section>
+
+
+  
+<section id="beltTestsSection">
+  <h2>Belt Tests</h2>
+  <div class="count-display" id="eligibleCount"></div>
+  <div class="table-container">
+    <table id="beltTestsTable">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Belt</th>
+          <th>Date</th>
+          <th>Instructor(s)</th>
+          <th>Location</th>
+          <th>Result</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <button onclick="openTestModal()">Add Belt Test</button>
+</section>
+
+   
+<section class="control-panel">
+<h2>Control Panel</h2>
+<div>
+<button onclick="openBeltModal()">Manage Belts</button>
+<button onclick="openInstructorModal()">Manage Instructors</button>
+<button onclick="openLocationModal()">Manage Locations</button>
+<button onclick="importAll()">Import Data</button>
+<button onclick="exportAll()">Export Data</button>
+<button onclick="resetData()">Reset Data</button>
+</div>
+</section>
+
+<!-- MODALS -->
+
+   
+<div class="modal" id="studentModal">
+<div class="modal-content">
+<div class="modal-header">Add/Edit Student</div>
+<div class="modal-body">
+<label>Name: <input type="text" id="studentName"></label><br><br>
+<label>Birthdate: <input type="date" id="studentBirthdate"></label><br><br>
+<label>Belt: <select id="studentBelt"></select></label><br><br>
+<label>Instructor: <select id="studentInstructor"></select></label><br><br>
+<label>Location: <select id="studentLocation"></select></label><br><br>
+<label>Eligible: <input type="checkbox" id="studentEligible"></label><br><br>
+<label>Active: <input type="checkbox" id="studentActive"></label>
+</div>
+<div class="modal-footer">
+<button onclick="closeStudentModal()">Cancel</button>
+<button onclick="saveStudent()">Save</button>
+</div>
+</div>
+</div>
+
+  
+<div class="modal" id="testModal">
+<div class="modal-content">
+<div class="modal-header">Add/Edit Belt Test</div>
+<div class="modal-body">
+<label>Student: <select id="testStudentId"></select></label><br><br>
+<label>Belt: <select id="testBelt"></select></label><br><br>
+<label>Date: <input type="date" id="testDate"></label><br><br>
+<label>Instructor(s): <select id="testInstructors" multiple></select></label><br><br>
+<label>Location: <select id="testLocation"></select></label>
+  <label>Result: 
+  <select id="testResult">
+    <option value="Pass">Pass</option>
+    <option value="Fail">Fail</option>
+  </select>
+</label><br><br>
+</div>
+<div class="modal-footer">
+<button onclick="closeTestModal()">Cancel</button>
+<button onclick="saveTest()">Save</button>
+</div>
+</div>
+</div>
+
+  
+<div class="modal" id="beltModal">
+<div class="modal-content">
+<div class="modal-header">Manage Belts</div>
+<div class="modal-body">
+<ul id="beltList"></ul>
+<input type="text" id="newBeltName" placeholder="New Belt Name">
+<button onclick="addBelt()">Add</button>
+</div>
+<div class="modal-footer"><button onclick="closeBeltModal()">Close</button></div>
+</div>
+</div>
+
+  
+<div class="modal" id="instructorModal">
+<div class="modal-content">
+<div class="modal-header">Manage Instructors</div>
+<div class="modal-body">
+<ul id="instructorList"></ul>
+<input type="text" id="newInstructorName" placeholder="New Instructor Name">
+<button onclick="addInstructor()">Add</button>
+</div>
+<div class="modal-footer"><button onclick="closeInstructorModal()">Close</button></div>
+</div>
+</div>
+
+  
+<div class="modal" id="locationModal">
+<div class="modal-content">
+<div class="modal-header">Manage Locations</div>
+<div class="modal-body">
+<ul id="locationList"></ul>
+<input type="text" id="newLocationName" placeholder="New Location Name">
+<button onclick="addLocation()">Add</button>
+</div>
+<div class="modal-footer"><button onclick="closeLocationModal()">Close</button></div>
+</div>
+</div>
+
+<script>
+
+  // function used for searching then posting results to student table
+function searchStudents() {
+  const query = document.getElementById('studentSearch').value.toLowerCase();
+  const tbody = document.querySelector('#studentsTable tbody');
+  tbody.innerHTML = ''; // clear table
+
+  students
+    .filter(s => {
+      const nameMatch = s.name.toLowerCase().includes(query);
+      const beltMatch = s.belt.toLowerCase().includes(query);
+      const instructorMatch = s.instructors.some(i => i.toLowerCase().includes(query));
+      const locationMatch = s.location.toLowerCase().includes(query);
+      return nameMatch || beltMatch || instructorMatch || locationMatch;
+    })
+    .forEach(s => addStudentRowToTable(s));
+}
+
+// DATA
+
+  // defaults that are hardcoded. when data reset or new system... this is the data that will populate
+let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
+let editingStudent=null, editingTest=null;
+
+// STORAGE
+function saveAllData(){
+  localStorage.setItem('students',JSON.stringify(students));
+  localStorage.setItem('beltTests',JSON.stringify(beltTests));
+  localStorage.setItem('instructors',JSON.stringify(instructors));
+  localStorage.setItem('locations',JSON.stringify(locations));
+  localStorage.setItem('belts',JSON.stringify(belts));
+  localStorage.setItem('nextStudentId',nextStudentId);
+}
+function loadAllData(){
+  students=JSON.parse(localStorage.getItem('students')||'[]');
+  beltTests=JSON.parse(localStorage.getItem('beltTests')||'[]');
+  instructors=JSON.parse(localStorage.getItem('instructors')||'[]');
+  locations=JSON.parse(localStorage.getItem('locations')||'[]');
+  belts=JSON.parse(localStorage.getItem('belts')||JSON.stringify(belts));
+  nextStudentId=parseInt(localStorage.getItem('nextStudentId')||'1000');
+}
+
+// DASHBOARD
+function updateBeltCounts(){
+  if(students.length===0){document.getElementById('beltCounts').innerText="No students yet.";return;}
+  let counts={};
+  students.forEach(s=>{ counts[s.belt]=(counts[s.belt]||0)+1; });
+  document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
+}
+
+function checkEligibilityDates(){
+  const today = new Date();
+  students.forEach(student => {
+    if(student.active && student.nextEligibleDate){
+      const eligibleDate = new Date(student.nextEligibleDate);
+      if(today >= eligibleDate){
+        student.eligible = true;
+        delete student.nextEligibleDate; // clear date once eligibility is restored
+      }
+    }
+  });
+}
+
+
+checkEligibilityDates();
+
+// POPULATE TABLES
+function populateTables(){
+  const tbodyS=document.querySelector('#studentsTable tbody'); tbodyS.innerHTML='';
+  students.forEach(s=>{ addStudentRowToTable(s); });
+  const tbodyT=document.querySelector('#beltTestsTable tbody'); tbodyT.innerHTML='';
+  beltTests.forEach(t=>{ addTestRowToTable(t); });
+  updateBeltCounts();
+  populateBeltSelector();
+  updateCounts();
+}
+
+function updateCounts(){
+  const activeCount = students.filter(s=>s.active).length;
+  const inactiveCount = students.filter(s=>!s.active).length;
+  document.getElementById('studentCounts').innerText = `Active Students: ${activeCount} | Inactive Students: ${inactiveCount}`;
+
+  const eligibleCount = students.filter(s=>s.active && s.eligible).length;
+  document.getElementById('eligibleCount').innerText = `Eligible Students for Belt Test: ${eligibleCount}`;
+}
+
+function beltClassName(belt){ return 'belt-'+belt.replace(/\s/g,'-'); }
+function populateBeltSelector(){
+  const sel=document.getElementById('studentBelt'); sel.innerHTML='';
+  belts.forEach(b=>{const o=document.createElement('option'); o.value=b; o.text=b; sel.add(o);});
+  const testSel=document.getElementById('testBelt'); testSel.innerHTML='';
+  belts.forEach(b=>{const o=document.createElement('option'); o.value=b; o.text=b; testSel.add(o);});
+}
+
+// STUDENTS
+function openStudentModal(s=null){
+  editingStudent=s;
+  document.getElementById('studentName').value=s?s.name:'';
+  document.getElementById('studentBirthdate').value=s?s.birthdate:'';
+  document.getElementById('studentBelt').value=s?s.belt:belts[0];
+  document.getElementById('studentEligible').checked=s?s.eligible:false;
+  document.getElementById('studentActive').checked=s?s.active:true;
+  const instSel=document.getElementById('studentInstructor'); instSel.innerHTML='';
+  instructors.forEach(i=>{ const o=document.createElement('option'); o.value=i; o.text=i; if(s&&s.instructors.includes(i)) o.selected=true; instSel.add(o); });
+  const locSel=document.getElementById('studentLocation'); locSel.innerHTML='';
+  locations.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.text=l; if(s&&s.location===l) o.selected=true; locSel.add(o); });
+  document.getElementById('studentModal').style.display='flex';
+}
+function closeStudentModal(){ document.getElementById('studentModal').style.display='none'; editingStudent=null; }
+function saveStudent(){
+  const name=document.getElementById('studentName').value.trim();
+  if(!name){ alert('Name required'); return;}
+  const birthdate=document.getElementById('studentBirthdate').value;
+  const belt=document.getElementById('studentBelt').value;
+  const instructor=[document.getElementById('studentInstructor').value];
+  const location=document.getElementById('studentLocation').value;
+  const eligible=document.getElementById('studentEligible').checked;
+  const active=document.getElementById('studentActive').checked;
+  if(editingStudent){
+    editingStudent.name=name; editingStudent.birthdate=birthdate; editingStudent.belt=belt;
+    editingStudent.instructors=instructor; editingStudent.location=location; editingStudent.eligible=eligible; editingStudent.active=active;
+  } else {
+    students.push({id:nextStudentId++, name, birthdate, belt, instructors:instructor, location, eligible, active});
+  }
+  saveAllData(); populateTables(); closeStudentModal();
+}
+function calculateAge(birthdate){
+  if(!birthdate) return '';
+  const today=new Date(); const birth=new Date(birthdate);
+  let age=today.getFullYear()-birth.getFullYear();
+  const m=today.getMonth()-birth.getMonth();
+  if(m<0 || (m===0 && today.getDate()<birth.getDate())) age--;
+  return age;
+}
+function addStudentRowToTable(s){
+  const tbody=document.querySelector('#studentsTable tbody');
+  const row=document.createElement('tr'); if(s.active) row.classList.add('student-active');
+  row.innerHTML=`
+    <td>${s.id}</td>
+    <td>${s.name}</td>
+    <td>${s.birthdate}</td>
+    <td>${calculateAge(s.birthdate)}</td>
+    <td class="${beltClassName(s.belt)}">${s.belt}</td>
+    <td>${s.instructors.join(',')}</td>
+    <td>${s.location}</td>
+    <td>${s.eligible?'✔':''}</td>
+    <td>${s.nextEligibleDate ? s.nextEligibleDate : ''}</td> <!-- NEW -->
+    <td>${s.active?'✔':''}</td>
+    <td><button onclick="editStudent(${s.id})">Edit</button><button onclick="deleteStudent(${s.id})">Delete</button></td>
+  `;
+  tbody.appendChild(row);
+}
+function editStudent(id){ const s=students.find(x=>x.id===id); if(s) openStudentModal(s);}
+function deleteStudent(id){ if(confirm('Delete student?')){ students=students.filter(x=>x.id!==id); saveAllData(); populateTables(); }}
+
+// BELT TESTS
+function openTestModal(t=null){
+  editingTest=t;
+  const studentSel=document.getElementById('testStudentId'); studentSel.innerHTML='';
+  students.filter(s=>s.active && s.eligible).forEach(s=>{ 
+    const o=document.createElement('option'); o.value=s.id; o.text=`${s.name} (${s.id})`; if(t&&t.studentId===s.id)o.selected=true; studentSel.add(o); });
+  document.getElementById('testBelt').value=t?t.belt:belts[0];
+  document.getElementById('testDate').value=t?t.date:'';
+  const selI=document.getElementById('testInstructors'); selI.innerHTML='';
+  instructors.forEach(i=>{ const o=document.createElement('option'); o.value=i; o.text=i; if(t&&t.instructors.includes(i)) o.selected=true; selI.add(o); });
+  const selL=document.getElementById('testLocation'); selL.innerHTML='';
+  locations.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.text=l; if(t&&t.location===l) o.selected=true; selL.add(o); });
+  document.getElementById('testLocation').value = t ? t.location : '';
+  document.getElementById('testResult').value = t ? t.result || 'Pass' : 'Pass';
+
+  document.getElementById('testModal').style.display='flex';
+}
+  
+function closeTestModal(){ document.getElementById('testModal').style.display='none'; editingTest=null; }
+  
+function saveTest(){
+  const studentId = parseInt(document.getElementById('testStudentId').value);
+  const belt = document.getElementById('testBelt').value;
+  const date = document.getElementById('testDate').value;
+  if (isNaN(studentId) || !belt || !date) {
+    alert('Student, Belt, and Date required');
+    return;
+  }
+  const instructorsSelected = [...document.getElementById('testInstructors').selectedOptions].map(o => o.value);
+  const location = document.getElementById('testLocation').value;
+  const result = document.getElementById('testResult').value;
+
+  if (editingTest) {
+    editingTest.studentId = studentId;
+    editingTest.belt = belt;
+    editingTest.date = date;
+    editingTest.instructors = instructorsSelected;
+    editingTest.location = location;
+    editingTest.result = result;
+  } else {
+    beltTests.push({ studentId, belt, date, instructors: instructorsSelected, location, result });
+    // Remove eligibility after recording a test for this student
+    const student = students.find(s => s.id === studentId);
+    if (student) {
+      student.eligible = false;
+// Schedule eligibility return after 3 months if student is active
+      if(student.active){
+        const testDate = new Date(date);
+        const eligibilityDate = new Date(testDate);
+        eligibilityDate.setMonth(eligibilityDate.getMonth() + 3);
+
+        student.nextEligibleDate = eligibilityDate.toISOString().split('T')[0]; // store as YYYY-MM-DD
+      }
+    }
+  }
+
+  // Update student belt automatically
+  const student = students.find(s => s.id === studentId);
+  if (student) student.belt = belt;
+
+  saveAllData();
+  populateTables();
+  closeTestModal();
+}
+
+
+function addTestRowToTable(t) {
+  const tbody = document.querySelector('#beltTestsTable tbody');
+  const student = students.find(s => s.id === t.studentId);
+  const row = document.createElement('tr');
+
+  // Student cell (name + ID)
+  const studentCell = row.insertCell(0);
+  studentCell.innerHTML = `
+    <div>${student ? student.name : 'Unknown'}</div>
+    <div style="font-size: 0.8em; color: gray;">ID: ${t.studentId}</div>
+  `;
+
+  // Belt cell
+  const beltCell = row.insertCell(1);
+  beltCell.className = beltClassName(t.belt);
+  beltCell.textContent = t.belt;
+
+  // Date cell
+  const dateCell = row.insertCell(2);
+  dateCell.textContent = t.date;
+
+  // Instructors cell
+  const instructorsCell = row.insertCell(3);
+  instructorsCell.textContent = t.instructors.join(',');
+
+  // Location cell
+  const locationCell = row.insertCell(4);
+  locationCell.textContent = t.location;
+
+  // Result cell
+const resultCell = row.insertCell(5); // Note: actions cell will now be 6
+resultCell.textContent = t.result || '';
+
+  // Actions cell
+  const actionsCell = row.insertCell(6);
+  actionsCell.innerHTML = `
+    <button onclick="editTest(${beltTests.indexOf(t)})">Edit</button>
+    <button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button>
+  `;
+
+  tbody.appendChild(row);
+}
+
+function editTest(index){ const t=beltTests[index]; if(t) openTestModal(t); }
+function deleteTest(index){ if(confirm('Delete belt test?')){ beltTests.splice(index,1); saveAllData(); populateTables(); } }
+
+// MODALS: BELTS, INSTRUCTORS, LOCATIONS
+function openBeltModal(){ document.getElementById('beltModal').style.display='flex'; refreshBeltList(); }
+function closeBeltModal(){ document.getElementById('beltModal').style.display='none'; }
+function addBelt(){ const name=document.getElementById('newBeltName').value.trim(); if(name&&!belts.includes(name)){ belts.push(name); saveAllData(); populateBeltSelector(); refreshBeltList(); document.getElementById('newBeltName').value=''; } }
+function refreshBeltList(){ const ul=document.getElementById('beltList'); ul.innerHTML=''; belts.forEach((b,i)=>{ 
+  const li=document.createElement('li'); li.innerText=b; 
+  const del=document.createElement('button'); del.innerText='X'; del.onclick=()=>{ belts.splice(i,1); saveAllData(); populateBeltSelector(); refreshBeltList(); }; li.appendChild(del);
+  ul.appendChild(li);}); }
+
+function openInstructorModal(){ document.getElementById('instructorModal').style.display='flex'; refreshInstructorList(); }
+function closeInstructorModal(){ document.getElementById('instructorModal').style.display='none'; }
+function addInstructor(){ const name=document.getElementById('newInstructorName').value.trim(); if(name&&!instructors.includes(name)){ instructors.push(name); saveAllData(); refreshInstructorList(); document.getElementById('newInstructorName').value=''; } }
+function refreshInstructorList(){ const ul=document.getElementById('instructorList'); ul.innerHTML=''; instructors.forEach((i,n)=>{ const li=document.createElement('li'); li.innerText=i; const del=document.createElement('button'); del.innerText='X'; del.onclick=()=>{ instructors.splice(n,1); saveAllData(); refreshInstructorList(); }; li.appendChild(del); ul.appendChild(li); }); }
+
+function openLocationModal(){ document.getElementById('locationModal').style.display='flex'; refreshLocationList(); }
+function closeLocationModal(){ document.getElementById('locationModal').style.display='none'; }
+function addLocation(){ const name=document.getElementById('newLocationName').value.trim(); if(name&&!locations.includes(name)){ locations.push(name); saveAllData(); refreshLocationList(); document.getElementById('newLocationName').value=''; } }
+function refreshLocationList(){ const ul=document.getElementById('locationList'); ul.innerHTML=''; locations.forEach((l,n)=>{ const li=document.createElement('li'); li.innerText=l; const del=document.createElement('button'); del.innerText='X'; del.onclick=()=>{ locations.splice(n,1); saveAllData(); refreshLocationList(); }; li.appendChild(del); ul.appendChild(li); }); }
+
+// IMPORT / EXPORT / RESET
+function exportAll(){ const data={students, beltTests, instructors, locations, belts, nextStudentId}; const blob=new Blob([JSON.stringify(data,null,2)], {type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='taekwondo_data.json'; a.click(); URL.revokeObjectURL(url); }
+function importAll(){ const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.onchange=e=>{ const file=e.target.files[0]; const reader=new FileReader(); reader.onload=ev=>{ try{ const data=JSON.parse(ev.target.result); students=data.students||[]; beltTests=data.beltTests||[]; instructors=data.instructors||[]; locations=data.locations||[]; belts=data.belts||[]; nextStudentId=data.nextStudentId||1000; saveAllData(); populateTables(); alert('Import successful'); }catch(err){ alert('Import failed'); } }; reader.readAsText(file); }; input.click(); }
+function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables(); } }
+
+// INIT
+window.onload=function(){ loadAllData(); populateTables(); };
+</script>
+
+<!-- Place this where you want the button to appear -->
+<button onclick="window.location.href='belthelp.html'" class="button">Help / Instructions</button>
+
+<p>
+
+v2.5
+  <br>
+</body>
+</html>
