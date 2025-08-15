@@ -10,6 +10,8 @@ h2 { margin-top:0; }
 section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:95%; }
 table { width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:auto; word-wrap:break-word; }
 
+
+
 .table-container {
   overflow-x: auto;
   width: 100%;
@@ -47,6 +49,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </head>
 <body>
 
+  // Header that houses the Dojang Name
 <h1 style="
     text-align: center;
     background-color: #222;
@@ -60,14 +63,20 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
     Impact Martial Arts Belt Tracker
 </h1>
 
+
+ // Belt counts at top of the page. 
 <section id="dashboard">
 <h2>Dashboard</h2>
 <div id="beltCounts">No students yet.</div>
 </section>
 
+
+  // student table, search and add button
 <section id="studentsSection">
   <h2>Students</h2>
   <div class="count-display" id="studentCounts"></div>
+  <label for="studentSearch">Search Students / Belt / Instructor / Location:</label>
+  <input type="text" id="studentSearch" placeholder="Type to filter..." oninput="searchStudents()">
   <div class="table-container">
     <table id="studentsTable">
       <thead>
@@ -90,6 +99,8 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
   <button onclick="openStudentModal()">Add Student</button>
 </section>
 
+
+  // Belt test section that shows Belt tests 
 <section id="beltTestsSection">
   <h2>Belt Tests</h2>
   <div class="count-display" id="eligibleCount"></div>
@@ -102,6 +113,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
           <th>Date</th>
           <th>Instructor(s)</th>
           <th>Location</th>
+          <th>Result</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -111,6 +123,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
   <button onclick="openTestModal()">Add Belt Test</button>
 </section>
 
+  // Control pannel for adding instructors, locations, belts, import/export json files and reseting data. 
 <section class="control-panel">
 <h2>Control Panel</h2>
 <div>
@@ -124,6 +137,8 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </section>
 
 <!-- MODALS -->
+
+  //add student modal 
 <div class="modal" id="studentModal">
 <div class="modal-content">
 <div class="modal-header">Add/Edit Student</div>
@@ -143,15 +158,23 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
+  //add belt test modal
 <div class="modal" id="testModal">
 <div class="modal-content">
 <div class="modal-header">Add/Edit Belt Test</div>
 <div class="modal-body">
-<label>Student: <select id="testStudentId"></select></label><br><br>
+<label>Student: <select id="testStudentId onchange="updateCurrentBelt()"></select></label><br><br>
+<label>Current Belt: <span id="currentBeltDisplay">-</span></label><br><br>
 <label>Belt: <select id="testBelt"></select></label><br><br>
 <label>Date: <input type="date" id="testDate"></label><br><br>
 <label>Instructor(s): <select id="testInstructors" multiple></select></label><br><br>
 <label>Location: <select id="testLocation"></select></label>
+  <label>Result: 
+  <select id="testResult">
+    <option value="Pass">Pass</option>
+    <option value="Fail">Fail</option>
+  </select>
+</label><br><br>
 </div>
 <div class="modal-footer">
 <button onclick="closeTestModal()">Cancel</button>
@@ -160,6 +183,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
+  //manage belts modal
 <div class="modal" id="beltModal">
 <div class="modal-content">
 <div class="modal-header">Manage Belts</div>
@@ -172,6 +196,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
+  //instructor modal
 <div class="modal" id="instructorModal">
 <div class="modal-content">
 <div class="modal-header">Manage Instructors</div>
@@ -184,6 +209,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
+  //location modal
 <div class="modal" id="locationModal">
 <div class="modal-content">
 <div class="modal-header">Manage Locations</div>
@@ -197,7 +223,27 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 
 <script>
+
+  // function used for searching then posting results to student table
+function searchStudents() {
+  const query = document.getElementById('studentSearch').value.toLowerCase();
+  const tbody = document.querySelector('#studentsTable tbody');
+  tbody.innerHTML = ''; // clear table
+
+  students
+    .filter(s => {
+      const nameMatch = s.name.toLowerCase().includes(query);
+      const beltMatch = s.belt.toLowerCase().includes(query);
+      const instructorMatch = s.instructors.some(i => i.toLowerCase().includes(query));
+      const locationMatch = s.location.toLowerCase().includes(query);
+      return nameMatch || beltMatch || instructorMatch || locationMatch;
+    })
+    .forEach(s => addStudentRowToTable(s));
+}
+
 // DATA
+
+  // defaults that are hardcoded. when data reset or new system... this is the data that will populate
 let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
 let editingStudent=null, editingTest=null;
 
@@ -226,6 +272,8 @@ function updateBeltCounts(){
   students.forEach(s=>{ counts[s.belt]=(counts[s.belt]||0)+1; });
   document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
 }
+
+
 
 // POPULATE TABLES
 function populateTables(){
@@ -321,15 +369,48 @@ function openTestModal(t=null){
   const studentSel=document.getElementById('testStudentId'); studentSel.innerHTML='';
   students.filter(s=>s.active && s.eligible).forEach(s=>{ 
     const o=document.createElement('option'); o.value=s.id; o.text=`${s.name} (${s.id})`; if(t&&t.studentId===s.id)o.selected=true; studentSel.add(o); });
-  document.getElementById('testBelt').value=t?t.belt:belts[0];
+    
+
+// Only show current belt if creating a new test
+  const currentBeltDisplay = document.getElementById('currentBeltDisplay');
+  if (!t) { // new record
+    const student = students.find(s => s.id == studentSel.value);
+    currentBeltDisplay.textContent = student ? student.belt : '-';
+  } else {
+    currentBeltDisplay.textContent = '-'; // or leave empty for edits
+  }
+
+// keeps current belt in test record from updating on edit.. only on create. 
+function updateCurrentBelt() {
+  // Only update if creating a new test
+  if (editingTest) return; // do nothing if editing an existing test
+
+  const studentId = parseInt(document.getElementById('testStudentId').value);
+  const student = students.find(s => s.id === studentId);
+  document.getElementById('currentBeltDisplay').textContent = student ? student.belt : '-';
+}
+
+document.getElementById('testBelt').value=t?t.belt:belts[0];
   document.getElementById('testDate').value=t?t.date:'';
   const selI=document.getElementById('testInstructors'); selI.innerHTML='';
   instructors.forEach(i=>{ const o=document.createElement('option'); o.value=i; o.text=i; if(t&&t.instructors.includes(i)) o.selected=true; selI.add(o); });
   const selL=document.getElementById('testLocation'); selL.innerHTML='';
   locations.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.text=l; if(t&&t.location===l) o.selected=true; selL.add(o); });
-  document.getElementById('testModal').style.display='flex';
+  
+// NEW: show current belt only for new tests
+if (!t) { 
+  updateCurrentBelt(); // populate initially for new test
+} else {
+  document.getElementById('currentBeltDisplay').textContent = '-'; // blank for edits
 }
+
+document.getElementById('testModal').style.display='flex';
+document.getElementById('testLocation').value = t ? t.location : '';
+document.getElementById('testResult').value = t ? t.result || 'Pass' : 'Pass';
+}
+  
 function closeTestModal(){ document.getElementById('testModal').style.display='none'; editingTest=null; }
+  
 function saveTest(){
   const studentId=parseInt(document.getElementById('testStudentId').value);
   const belt=document.getElementById('testBelt').value;
@@ -337,33 +418,61 @@ function saveTest(){
   if(isNaN(studentId)||!belt||!date){alert('Student, Belt, and Date required'); return;}
   const instructorsSelected=[...document.getElementById('testInstructors').selectedOptions].map(o=>o.value);
   const location=document.getElementById('testLocation').value;
+  const result = document.getElementById('testResult').value;
   if(editingTest){
-    editingTest.studentId=studentId; editingTest.belt=belt; editingTest.date=date; editingTest.instructors=instructorsSelected; editingTest.location=location;
+    editingTest.studentId=studentId; editingTest.belt=belt; editingTest.date=date; editingTest.instructors=instructorsSelected; editingTest.location=location; editingTest.result=result;
   } else {
-    beltTests.push({studentId,belt,date,instructors:instructorsSelected,location});
+    beltTests.push({studentId,belt,date,instructors:instructorsSelected,location, result});
   }
   // NEW FEATURE: update student belt automatically
   const student=students.find(s=>s.id===studentId);
   if(student) student.belt=belt;
   saveAllData(); populateTables(); closeTestModal();
 }
-function addTestRowToTable(t){
-  const tbody=document.querySelector('#beltTestsTable tbody');
-  const student=students.find(s=>s.id===t.studentId);
-  const row=document.createElement('tr');
-  row.innerHTML=`
-    <td>${student ? student.name : 'Unknown'}</td>
-    <td class="${beltClassName(t.belt)}">${t.belt}</td>
-    <td>${t.date}</td>
-    <td>${t.instructors.join(',')}</td>
-    <td>${t.location}</td>
-    <td>
-      <button onclick="editTest(${beltTests.indexOf(t)})">Edit</button>
-      <button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button>
-    </td>
+
+function addTestRowToTable(t) {
+  const tbody = document.querySelector('#beltTestsTable tbody');
+  const student = students.find(s => s.id === t.studentId);
+  const row = document.createElement('tr');
+
+  // Student cell (name + ID)
+  const studentCell = row.insertCell(0);
+  studentCell.innerHTML = `
+    <div>${student ? student.name : 'Unknown'}</div>
+    <div style="font-size: 0.8em; color: gray;">ID: ${t.studentId}</div>
   `;
+
+  // Belt cell
+  const beltCell = row.insertCell(1);
+  beltCell.className = beltClassName(t.belt);
+  beltCell.textContent = t.belt;
+
+  // Date cell
+  const dateCell = row.insertCell(2);
+  dateCell.textContent = t.date;
+
+  // Instructors cell
+  const instructorsCell = row.insertCell(3);
+  instructorsCell.textContent = t.instructors.join(',');
+
+  // Location cell
+  const locationCell = row.insertCell(4);
+  locationCell.textContent = t.location;
+
+  // Result cell
+const resultCell = row.insertCell(5); // Note: actions cell will now be 6
+resultCell.textContent = t.result || '';
+
+  // Actions cell
+  const actionsCell = row.insertCell(6);
+  actionsCell.innerHTML = `
+    <button onclick="editTest(${beltTests.indexOf(t)})">Edit</button>
+    <button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button>
+  `;
+
   tbody.appendChild(row);
 }
+
 function editTest(index){ const t=beltTests[index]; if(t) openTestModal(t); }
 function deleteTest(index){ if(confirm('Delete belt test?')){ beltTests.splice(index,1); saveAllData(); populateTables(); } }
 
@@ -394,5 +503,13 @@ function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[];
 // INIT
 window.onload=function(){ loadAllData(); populateTables(); };
 </script>
+
+<!-- Place this where you want the button to appear -->
+<button onclick="window.location.href='belthelp.html'" class="button">Help / Instructions</button>
+
+<p>
+
+v2.3
+  <br>
 </body>
 </html>
