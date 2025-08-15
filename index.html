@@ -68,6 +68,8 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 <section id="studentsSection">
   <h2>Students</h2>
   <div class="count-display" id="studentCounts"></div>
+  <label for="studentSearch">Search Students / Belt / Instructor / Location:</label>
+  <input type="text" id="studentSearch" placeholder="Type to filter..." oninput="searchStudents()">
   <div class="table-container">
     <table id="studentsTable">
       <thead>
@@ -197,6 +199,23 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 
 <script>
+
+function searchStudents() {
+  const query = document.getElementById('studentSearch').value.toLowerCase();
+  const tbody = document.querySelector('#studentsTable tbody');
+  tbody.innerHTML = ''; // clear table
+
+  students
+    .filter(s => {
+      const nameMatch = s.name.toLowerCase().includes(query);
+      const beltMatch = s.belt.toLowerCase().includes(query);
+      const instructorMatch = s.instructors.some(i => i.toLowerCase().includes(query));
+      const locationMatch = s.location.toLowerCase().includes(query);
+      return nameMatch || beltMatch || instructorMatch || locationMatch;
+    })
+    .forEach(s => addStudentRowToTable(s));
+}
+
 // DATA
 let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
 let editingStudent=null, editingTest=null;
@@ -226,6 +245,8 @@ function updateBeltCounts(){
   students.forEach(s=>{ counts[s.belt]=(counts[s.belt]||0)+1; });
   document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
 }
+
+
 
 // POPULATE TABLES
 function populateTables(){
@@ -347,23 +368,46 @@ function saveTest(){
   if(student) student.belt=belt;
   saveAllData(); populateTables(); closeTestModal();
 }
-function addTestRowToTable(t){
-  const tbody=document.querySelector('#beltTestsTable tbody');
-  const student=students.find(s=>s.id===t.studentId);
-  const row=document.createElement('tr');
-  row.innerHTML=`
-    <td>${student ? student.name : 'Unknown'}</td>
-    <td class="${beltClassName(t.belt)}">${t.belt}</td>
-    <td>${t.date}</td>
-    <td>${t.instructors.join(',')}</td>
-    <td>${t.location}</td>
-    <td>
-      <button onclick="editTest(${beltTests.indexOf(t)})">Edit</button>
-      <button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button>
-    </td>
+
+function addTestRowToTable(t) {
+  const tbody = document.querySelector('#beltTestsTable tbody');
+  const student = students.find(s => s.id === t.studentId);
+  const row = document.createElement('tr');
+
+  // Student cell (name + ID)
+  const studentCell = row.insertCell(0);
+  studentCell.innerHTML = `
+    <div>${student ? student.name : 'Unknown'}</div>
+    <div style="font-size: 0.8em; color: gray;">ID: ${t.studentId}</div>
   `;
+
+  // Belt cell
+  const beltCell = row.insertCell(1);
+  beltCell.className = beltClassName(t.belt);
+  beltCell.textContent = t.belt;
+
+  // Date cell
+  const dateCell = row.insertCell(2);
+  dateCell.textContent = t.date;
+
+  // Instructors cell
+  const instructorsCell = row.insertCell(3);
+  instructorsCell.textContent = t.instructors.join(',');
+
+  // Location cell
+  const locationCell = row.insertCell(4);
+  locationCell.textContent = t.location;
+
+  // Actions cell
+  const actionsCell = row.insertCell(5);
+  actionsCell.innerHTML = `
+    <button onclick="editTest(${beltTests.indexOf(t)})">Edit</button>
+    <button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button>
+  `;
+
   tbody.appendChild(row);
 }
+
 function editTest(index){ const t=beltTests[index]; if(t) openTestModal(t); }
 function deleteTest(index){ if(confirm('Delete belt test?')){ beltTests.splice(index,1); saveAllData(); populateTables(); } }
 
