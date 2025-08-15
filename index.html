@@ -10,6 +10,8 @@ h2 { margin-top:0; }
 section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:95%; }
 table { width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:auto; word-wrap:break-word; }
 
+
+
 .table-container {
   overflow-x: auto;
   width: 100%;
@@ -47,6 +49,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </head>
 <body>
 
+  
 <h1 style="
     text-align: center;
     background-color: #222;
@@ -60,11 +63,15 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
     Impact Martial Arts Belt Tracker
 </h1>
 
+
+  
 <section id="dashboard">
 <h2>Dashboard</h2>
 <div id="beltCounts">No students yet.</div>
 </section>
 
+
+  
 <section id="studentsSection">
   <h2>Students</h2>
   <div class="count-display" id="studentCounts"></div>
@@ -82,6 +89,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
           <th>Instructor</th>
           <th>Location</th>
           <th>Eligible</th>
+<th>Next Eligible Date</th> <!-- NEW COLUMN -->
           <th>Active</th>
           <th>Actions</th>
         </tr>
@@ -92,6 +100,8 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
   <button onclick="openStudentModal()">Add Student</button>
 </section>
 
+
+  
 <section id="beltTestsSection">
   <h2>Belt Tests</h2>
   <div class="count-display" id="eligibleCount"></div>
@@ -104,6 +114,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
           <th>Date</th>
           <th>Instructor(s)</th>
           <th>Location</th>
+          <th>Result</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -113,6 +124,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
   <button onclick="openTestModal()">Add Belt Test</button>
 </section>
 
+   
 <section class="control-panel">
 <h2>Control Panel</h2>
 <div>
@@ -126,6 +138,8 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </section>
 
 <!-- MODALS -->
+
+   
 <div class="modal" id="studentModal">
 <div class="modal-content">
 <div class="modal-header">Add/Edit Student</div>
@@ -145,6 +159,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
+  
 <div class="modal" id="testModal">
 <div class="modal-content">
 <div class="modal-header">Add/Edit Belt Test</div>
@@ -154,6 +169,12 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 <label>Date: <input type="date" id="testDate"></label><br><br>
 <label>Instructor(s): <select id="testInstructors" multiple></select></label><br><br>
 <label>Location: <select id="testLocation"></select></label>
+  <label>Result: 
+  <select id="testResult">
+    <option value="Pass">Pass</option>
+    <option value="Fail">Fail</option>
+  </select>
+</label><br><br>
 </div>
 <div class="modal-footer">
 <button onclick="closeTestModal()">Cancel</button>
@@ -162,6 +183,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
+  
 <div class="modal" id="beltModal">
 <div class="modal-content">
 <div class="modal-header">Manage Belts</div>
@@ -174,6 +196,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
+  
 <div class="modal" id="instructorModal">
 <div class="modal-content">
 <div class="modal-header">Manage Instructors</div>
@@ -186,6 +209,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
+  
 <div class="modal" id="locationModal">
 <div class="modal-content">
 <div class="modal-header">Manage Locations</div>
@@ -200,6 +224,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 
 <script>
 
+  // function used for searching then posting results to student table
 function searchStudents() {
   const query = document.getElementById('studentSearch').value.toLowerCase();
   const tbody = document.querySelector('#studentsTable tbody');
@@ -217,6 +242,8 @@ function searchStudents() {
 }
 
 // DATA
+
+  // defaults that are hardcoded. when data reset or new system... this is the data that will populate
 let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
 let editingStudent=null, editingTest=null;
 
@@ -246,7 +273,21 @@ function updateBeltCounts(){
   document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
 }
 
+function checkEligibilityDates(){
+  const today = new Date();
+  students.forEach(student => {
+    if(student.active && student.nextEligibleDate){
+      const eligibleDate = new Date(student.nextEligibleDate);
+      if(today >= eligibleDate){
+        student.eligible = true;
+        delete student.nextEligibleDate; // clear date once eligibility is restored
+      }
+    }
+  });
+}
 
+
+checkEligibilityDates();
 
 // POPULATE TABLES
 function populateTables(){
@@ -328,6 +369,7 @@ function addStudentRowToTable(s){
     <td>${s.instructors.join(',')}</td>
     <td>${s.location}</td>
     <td>${s.eligible?'✔':''}</td>
+    <td>${s.nextEligibleDate ? s.nextEligibleDate : ''}</td> <!-- NEW -->
     <td>${s.active?'✔':''}</td>
     <td><button onclick="editStudent(${s.id})">Edit</button><button onclick="deleteStudent(${s.id})">Delete</button></td>
   `;
@@ -348,26 +390,59 @@ function openTestModal(t=null){
   instructors.forEach(i=>{ const o=document.createElement('option'); o.value=i; o.text=i; if(t&&t.instructors.includes(i)) o.selected=true; selI.add(o); });
   const selL=document.getElementById('testLocation'); selL.innerHTML='';
   locations.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.text=l; if(t&&t.location===l) o.selected=true; selL.add(o); });
+  document.getElementById('testLocation').value = t ? t.location : '';
+  document.getElementById('testResult').value = t ? t.result || 'Pass' : 'Pass';
+
   document.getElementById('testModal').style.display='flex';
 }
+  
 function closeTestModal(){ document.getElementById('testModal').style.display='none'; editingTest=null; }
+  
 function saveTest(){
-  const studentId=parseInt(document.getElementById('testStudentId').value);
-  const belt=document.getElementById('testBelt').value;
-  const date=document.getElementById('testDate').value;
-  if(isNaN(studentId)||!belt||!date){alert('Student, Belt, and Date required'); return;}
-  const instructorsSelected=[...document.getElementById('testInstructors').selectedOptions].map(o=>o.value);
-  const location=document.getElementById('testLocation').value;
-  if(editingTest){
-    editingTest.studentId=studentId; editingTest.belt=belt; editingTest.date=date; editingTest.instructors=instructorsSelected; editingTest.location=location;
-  } else {
-    beltTests.push({studentId,belt,date,instructors:instructorsSelected,location});
+  const studentId = parseInt(document.getElementById('testStudentId').value);
+  const belt = document.getElementById('testBelt').value;
+  const date = document.getElementById('testDate').value;
+  if (isNaN(studentId) || !belt || !date) {
+    alert('Student, Belt, and Date required');
+    return;
   }
-  // NEW FEATURE: update student belt automatically
-  const student=students.find(s=>s.id===studentId);
-  if(student) student.belt=belt;
-  saveAllData(); populateTables(); closeTestModal();
+  const instructorsSelected = [...document.getElementById('testInstructors').selectedOptions].map(o => o.value);
+  const location = document.getElementById('testLocation').value;
+  const result = document.getElementById('testResult').value;
+
+  if (editingTest) {
+    editingTest.studentId = studentId;
+    editingTest.belt = belt;
+    editingTest.date = date;
+    editingTest.instructors = instructorsSelected;
+    editingTest.location = location;
+    editingTest.result = result;
+  } else {
+    beltTests.push({ studentId, belt, date, instructors: instructorsSelected, location, result });
+    // Remove eligibility after recording a test for this student
+    const student = students.find(s => s.id === studentId);
+    if (student) {
+      student.eligible = false;
+// Schedule eligibility return after 3 months if student is active
+      if(student.active){
+        const testDate = new Date(date);
+        const eligibilityDate = new Date(testDate);
+        eligibilityDate.setMonth(eligibilityDate.getMonth() + 3);
+
+        student.nextEligibleDate = eligibilityDate.toISOString().split('T')[0]; // store as YYYY-MM-DD
+      }
+    }
+  }
+
+  // Update student belt automatically
+  const student = students.find(s => s.id === studentId);
+  if (student) student.belt = belt;
+
+  saveAllData();
+  populateTables();
+  closeTestModal();
 }
+
 
 function addTestRowToTable(t) {
   const tbody = document.querySelector('#beltTestsTable tbody');
@@ -398,8 +473,12 @@ function addTestRowToTable(t) {
   const locationCell = row.insertCell(4);
   locationCell.textContent = t.location;
 
+  // Result cell
+const resultCell = row.insertCell(5); // Note: actions cell will now be 6
+resultCell.textContent = t.result || '';
+
   // Actions cell
-  const actionsCell = row.insertCell(5);
+  const actionsCell = row.insertCell(6);
   actionsCell.innerHTML = `
     <button onclick="editTest(${beltTests.indexOf(t)})">Edit</button>
     <button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button>
@@ -443,6 +522,8 @@ window.onload=function(){ loadAllData(); populateTables(); };
 <button onclick="window.location.href='belthelp.html'" class="button">Help / Instructions</button>
 
 <p>
+
+v2.4
   <br>
 </body>
 </html>
