@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -134,6 +135,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 <button onclick="importAll()">Import Data</button>
 <button onclick="exportAll()">Export Data</button>
 <button onclick="resetData()">Reset Data</button>
+<button onclick="openReportsModal()">Reports</button>
 </div>
 </section>
 
@@ -222,6 +224,51 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 </div>
 </div>
 
+
+<div class="modal" id="reportsModal">
+  <div class="modal-content">
+    <div class="modal-header">Generate Reports</div>
+    <div class="modal-body">
+      <label>Belt:
+        <select id="reportBelt"><option value="">All</option></select>
+      </label><br><br>
+      <label>Instructor:
+        <select id="reportInstructor"><option value="">All</option></select>
+      </label><br><br>
+      <label>Location:
+        <select id="reportLocation"><option value="">All</option></select>
+      </label><br><br>
+      <label>Active Only: <input type="checkbox" id="reportActiveOnly" checked></label><br><br>
+      <label>Eligible Only: <input type="checkbox" id="reportEligibleOnly" checked></label><br><br>
+      <label>Include Belt Test History: <input type="checkbox" id="reportIncludeTests" checked></label><br><br>
+      <div class="table-container">
+        <table id="reportTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Belt</th>
+              <th>Instructor(s)</th>
+              <th>Location</th>
+              <th>Eligible</th>
+              <th>Next Eligible Date</th>
+              <th>Active</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeReportsModal()">Close</button>
+      <button onclick="exportReportCSV()">Export CSV</button>
+      <button onclick="generateReport()">Generate</button>
+    </div>
+  </div>
+</div>
+
+
+  
 <script>
 
   // function used for searching then posting results to student table
@@ -514,6 +561,107 @@ function exportAll(){ const data={students, beltTests, instructors, locations, b
 function importAll(){ const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.onchange=e=>{ const file=e.target.files[0]; const reader=new FileReader(); reader.onload=ev=>{ try{ const data=JSON.parse(ev.target.result); students=data.students||[]; beltTests=data.beltTests||[]; instructors=data.instructors||[]; locations=data.locations||[]; belts=data.belts||[]; nextStudentId=data.nextStudentId||1000; saveAllData(); populateTables(); alert('Import successful'); }catch(err){ alert('Import failed'); } }; reader.readAsText(file); }; input.click(); }
 function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables(); } }
 
+// REPORTS
+
+function openReportsModal(){
+  // Populate filters
+  const beltSel = document.getElementById('reportBelt');
+  beltSel.innerHTML = '<option value="">All</option>';
+  belts.forEach(b => { const o = document.createElement('option'); o.value=b; o.text=b; beltSel.add(o); });
+
+  const instrSel = document.getElementById('reportInstructor');
+  instrSel.innerHTML = '<option value="">All</option>';
+  instructors.forEach(i => { const o = document.createElement('option'); o.value=i; o.text=i; instrSel.add(o); });
+
+  const locSel = document.getElementById('reportLocation');
+  locSel.innerHTML = '<option value="">All</option>';
+  locations.forEach(l => { const o = document.createElement('option'); o.value=l; o.text=l; locSel.add(o); });
+
+  document.getElementById('reportsModal').style.display = 'flex';
+}
+
+function closeReportsModal(){
+  document.getElementById('reportsModal').style.display = 'none';
+}
+
+function generateReport(){
+  const belt = document.getElementById('reportBelt').value;
+  const instructor = document.getElementById('reportInstructor').value;
+  const location = document.getElementById('reportLocation').value;
+  const activeOnly = document.getElementById('reportActiveOnly').checked;
+  const eligibleOnly = document.getElementById('reportEligibleOnly').checked;
+  const includeTests = document.getElementById('reportIncludeTests').checked;
+
+  let filteredStudents = students;
+  if(belt) filteredStudents = filteredStudents.filter(s => s.belt === belt);
+  if(instructor) filteredStudents = filteredStudents.filter(s => s.instructors.includes(instructor));
+  if(location) filteredStudents = filteredStudents.filter(s => s.location === location);
+  if(activeOnly) filteredStudents = filteredStudents.filter(s => s.active);
+  if(eligibleOnly) filteredStudents = filteredStudents.filter(s => s.eligible);
+
+  const tbody = document.querySelector('#reportTable tbody');
+  tbody.innerHTML = '';
+
+  filteredStudents.forEach(s => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${s.id}</td>
+      <td>${s.name}</td>
+      <td>${s.belt}</td>
+      <td>${s.instructors.join(',')}</td>
+      <td>${s.location}</td>
+      <td>${s.eligible?'✔':''}</td>
+      <td>${s.nextEligibleDate || ''}</td>
+      <td>${s.active?'✔':''}</td>
+    `;
+    tbody.appendChild(row);
+
+    if(includeTests){
+      const studentTests = beltTests.filter(t => t.studentId === s.id);
+      studentTests.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.style.background = '#f0f0f0';
+        tr.innerHTML = `
+          <td></td>
+          <td colspan="1">Test: ${t.belt}</td>
+          <td colspan="1">${t.date}</td>
+          <td>${t.instructors.join(',')}</td>
+          <td>${t.location}</td>
+          <td>${t.result || ''}</td>
+          <td colspan="2"></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  });
+}
+
+
+function exportReportCSV(){
+  const includeTests = document.getElementById('reportIncludeTests').checked;
+  let rows = [['ID','Name','Belt','Instructor(s)','Location','Eligible','Next Eligible Date','Active']];
+  const tbody = document.querySelector('#reportTable tbody');
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    const row = Array.from(tr.children).map(td => td.textContent.replace(/\n/g,' ').trim());
+    rows.push(row);
+    // Include tests in CSV if toggle enabled
+    if(includeTests && row[1].startsWith('Test:')){
+      // Already included as a separate row in the table
+    }
+  });
+
+  if(rows.length===1){ alert('No data to export'); return; }
+  const csvContent = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csvContent], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='report.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+
+  
+  
 // INIT
 window.onload=function(){ loadAllData(); populateTables(); };
 </script>
@@ -523,7 +671,7 @@ window.onload=function(){ loadAllData(); populateTables(); };
 
 <p>
 
-v2.4
+v2.5
   <br>
 </body>
 </html>
