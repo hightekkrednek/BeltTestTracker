@@ -3,160 +3,155 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taekwondo Tracker Help / Instructions</title>
+<title>Impact Martial Arts Belt Tracker - Instructions</title>
 <style>
-body { font-family: Arial, sans-serif; margin:0; background:#f4f4f9; color:#333; }
-h1, h2, h3 { margin:0; padding:0; }
-h1 { text-align:center; background:#222; color:white; padding:15px 0; border-bottom:4px solid #ffcc00; font-size:2em; }
-section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:95%; }
-button { margin:10px 0; padding:10px 15px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:14px; }
-button:hover { background:#534fd1; }
-ul { margin-top:0; }
-ol { margin-top:0; }
-code { background:#f0f0f0; padding:2px 4px; border-radius:3px; }
+body {
+    font-family: Arial, sans-serif;
+    margin:0;
+    background:#f4f4f9;
+    color:#333;
+}
+h1, h2 {
+    text-align:center;
+}
+h1 {
+    background-color: #222;
+    color: #fff;
+    padding: 20px 0;
+    margin:0;
+    border-bottom: 4px solid #ffcc00;
+}
+section {
+    background:#fff;
+    margin:20px auto;
+    padding:20px;
+    border-radius:8px;
+    box-shadow:0 0 10px rgba(0,0,0,0.05);
+    max-width:900px;
+}
+ol {
+    padding-left: 20px;
+}
+ul {
+    margin:0;
+    padding-left: 20px;
+}
+code {
+    background: #eee;
+    padding: 2px 4px;
+    border-radius:4px;
+}
+.button {
+    display:inline-block;
+    background:#6c63ff;
+    color:white;
+    padding:6px 12px;
+    border-radius:4px;
+    margin:2px 0;
+    text-decoration:none;
+    font-size:14px;
+}
+.button:hover {
+    background:#534fd1;
+}
 </style>
 </head>
 <body>
 
-<h1>Impact Martial Arts Belt Tracker – Instructions</h1>
+<h1>Impact Martial Arts Belt Tracker - Instructions</h1>
+
+
+<!-- Place this where you want the button to appear -->
+<button onclick="window.location.href='index.html'" class="button">Return to App</button>
+
+
 
 <section>
-<h2>Version 2.4 – Stable</h2>
-<p>This manual provides detailed guidance on how to use the Belt Tracker system, including its features, workflow, and business rules.</p>
-
-<h3>1. Dashboard Overview</h3>
+<h2>Overview</h2>
+<p>The <strong>Impact Martial Arts Belt Tracker</strong> is designed to help instructors manage students, belt tests, and other key information in an organized way. Features include:</p>
 <ul>
-<li>The <strong>Dashboard</strong> displays:
-  <ul>
-    <li>Total count of students per belt.</li>
-    <li>Number of <strong>Active</strong> and <strong>Inactive</strong> students.</li>
-    <li>Number of students <strong>Eligible</strong> for belt tests.</li>
-  </ul>
-</li>
-<li>The dashboard updates automatically when students or tests are added/edited.</li>
+    <li>Adding, editing, and deleting students</li>
+    <li>Tracking belt tests and automatically updating student belts</li>
+    <li>Managing instructors, belts, and locations</li>
+    <li>Importing and exporting data for backup</li>
+    <li>Displaying student counts, active/inactive status, and eligibility for belt tests</li>
 </ul>
-
-<h3>2. Student Management</h3>
-<ol>
-<li><strong>Adding a Student:</strong>
-  <ol>
-    <li>Click the <strong>Add Student</strong> button.</li>
-    <li>Enter the <strong>Name</strong> and <strong>Birthdate</strong>. Age is calculated automatically.</li>
-    <li>Select a <strong>Belt</strong>, <strong>Instructor</strong>, and <strong>Location</strong>.</li>
-    <li>Check <strong>Eligible</strong> if the student is ready for a test.</li>
-    <li>Check <strong>Active</strong> if the student is currently enrolled.</li>
-    <li>Click <strong>Save</strong> to add the student.</li>
-  </ol>
-</li>
-
-<li><strong>Editing a Student:</strong>
-  <ol>
-    <li>Click <strong>Edit</strong> next to the student in the table.</li>
-    <li>Update any information, including belt, instructor, location, or active status.</li>
-    <li>Save changes. The table and dashboard will update automatically.</li>
-  </ol>
-</li>
-
-<li><strong>Deleting a Student:</strong>
-  <ol>
-    <li>Click <strong>Delete</strong> next to the student.</li>
-    <li>Confirm the deletion. This removes the student and all associated belt tests.</li>
-  </ol>
-</li>
-
-<li><strong>Business Rules for Students:</strong>
-  <ul>
-    <li>Only <strong>Active</strong> students are eligible for belt tests.</li>
-    <li>After a belt test, eligibility is removed and the <strong>Next Eligible Date</strong> is automatically set 3 months from the test date for active students.</li>
-    <li>Once the eligibility date arrives, the student becomes <strong>Eligible</strong> again.</li>
-  </ul>
-</li>
-</ol>
-
-<h3>3. Belt Tests</h3>
-<ol>
-<li><strong>Adding a Belt Test:</strong>
-  <ol>
-    <li>Click <strong>Add Belt Test</strong>.</li>
-    <li>Select a student from the dropdown. Only students who are <strong>Active</strong> and <strong>Eligible</strong> appear.</li>
-    <li>Select the <strong>Belt</strong> being tested for, the <strong>Date</strong>, <strong>Instructor(s)</strong>, <strong>Location</strong>, and <strong>Result</strong> (Pass/Fail).</li>
-    <li>Click <strong>Save</strong>.</li>
-  </ol>
-</li>
-
-<li><strong>Editing a Belt Test:</strong>
-  <ol>
-    <li>Click <strong>Edit</strong> next to the test entry.</li>
-    <li>Update any details, then save.</li>
-  </ol>
-</li>
-
-<li><strong>Deleting a Belt Test:</strong>
-  <ol>
-    <li>Click <strong>Delete</strong> next to the test entry.</li>
-    <li>Confirm deletion. The student’s eligibility status will not change automatically; manual adjustment may be needed.</li>
-  </ol>
-</li>
-
-<li><strong>Business Rules for Belt Tests:</strong>
-  <ul>
-    <li>Passing a test updates the student’s belt automatically.</li>
-    <li>After a test, the student becomes <strong>Ineligible</strong> until the <strong>Next Eligible Date</strong> is reached.</li>
-    <li>Eligibility returns automatically only if the student is <strong>Active</strong>.</li>
-  </ul>
-</li>
-</ol>
-
-<h3>4. Control Panel</h3>
-<ul>
-<li><strong>Manage Belts:</strong> Add, remove, or reorder belt types.</li>
-<li><strong>Manage Instructors:</strong> Add or remove instructors for assignment to students and tests.</li>
-<li><strong>Manage Locations:</strong> Add or remove locations where classes/tests occur.</li>
-<li><strong>Import / Export Data:</strong> Save your system data to a JSON file or load from one.</li>
-<li><strong>Reset Data:</strong> Clears all students, tests, instructors, and locations. Belt defaults remain.</li>
-</ul>
-
-<h3>5. Search and Filter</h3>
-<ul>
-<li>Use the search bar in the Students section to filter by name, belt, instructor, or location.</li>
-<li>Filtering updates the table in real-time without affecting data.</li>
-</ul>
-
-<h3>6. General Notes</h3>
-<ul>
-<li>Always save changes in modals before closing.</li>
-<li>Age is automatically calculated from birthdate.</li>
-<li>Students who are inactive are ignored in eligibility and belt test selection.</li>
-<li>Next Eligible Date is displayed in the Students table between <code>Eligible</code> and <code>Active</code> columns.</li>
-<li>The system auto-updates dashboards and eligibility status on page load and after any save action.</li>
-</ul>
-
-<button onclick="window.location.href='index.html'">Back to Dashboard</button>
 </section>
 
 <section>
-<h2>Version 2.4 – Stable</h2>
-<p>Welcome to the latest version of the Belt Tracker. This guide explains the new features, workflow, and tips for using the system efficiently.</p>
-
-<h3>New Features</h3>
+<h2>Dashboard</h2>
+<p>The dashboard shows a summary of the number of students per belt.</p>
 <ul>
-<li><strong>Next Eligibility Date:</strong> After a belt test, the system automatically sets a 3-month wait period before the student becomes eligible again. The date appears in the <em>Next Eligible Date</em> column.</li>
-<li><strong>Eligibility Automation:</strong> Active students automatically regain eligibility when their scheduled date arrives.</li>
-<li><strong>Student Management:</strong> Easily add/edit students, set their active status, and track eligibility. Age is calculated from birthdate automatically.</li>
-<li><strong>Belt Test Handling:</strong> Selecting a student for a test is limited to those who are active and eligible. Passing a test updates their belt and schedules next eligibility.</li>
-<li><strong>Dashboard Updates:</strong> View counts of active, inactive, and eligible students, plus belt distribution statistics.</li>
-<li><strong>Data Management:</strong> Import/export all system data or reset to default belts and start fresh.</li>
+    <li>Visit the top of the page to see counts per belt automatically updated.</li>
 </ul>
-
-<h3>Quick Tips</h3>
-<ul>
-<li>Use the search bar to filter students by name, belt, instructor, or location.</li>
-<li>Click <strong>Edit</strong> to modify student or belt test information.</li>
-<li>Ensure a student is marked as <strong>Active</strong> to be considered for belt tests and automated eligibility scheduling.</li>
-<li>Always save changes in modals before closing.</li>
-</ul>
-
 </section>
+
+<section>
+<h2>Students</h2>
+<ol>
+    <li>Click <code>Add Student</code> to open the student modal.</li>
+    <li>Fill in <strong>Name</strong>, <strong>Birthdate</strong>, <strong>Belt</strong>, <strong>Instructor</strong>, <strong>Location</strong>, and check <strong>Eligible</strong> and <strong>Active</strong> if applicable.</li>
+    <li>Click <code>Save</code> to add or update the student.</li>
+    <li>The <strong>Students Table</strong> displays all students with their:
+        <ul>
+            <li>ID</li>
+            <li>Name</li>
+            <li>Birthdate</li>
+            <li>Age (calculated automatically)</li>
+            <li>Belt</li>
+            <li>Instructor</li>
+            <li>Location</li>
+            <li>Eligible status</li>
+            <li>Active status</li>
+        </ul>
+    </li>
+    <li>Edit a student by clicking <code>Edit</code> or remove with <code>Delete</code>.</li>
+    <li>Above the student table, you'll see counts of <strong>Active</strong> and <strong>Inactive</strong> students.</li>
+</ol>
+</section>
+
+<section>
+<h2>Belt Tests</h2>
+<ol>
+    <li>Click <code>Add Belt Test</code> to open the test modal.</li>
+    <li>Select a student (only <strong>Active</strong> and <strong>Eligible</strong> students appear).</li>
+    <li>Choose the <strong>Belt</strong> being tested for, <strong>Date</strong>, <strong>Instructor(s)</strong>, and <strong>Location</strong>.</li>
+    <li>Click <code>Save</code> to record the test. The student's belt will automatically update to the new belt.</li>
+    <li>The belt test table shows all test records with options to edit or delete.</li>
+    <li>Above the belt test table, you'll see a count of students eligible for belt tests.</li>
+</ol>
+</section>
+
+<section>
+<h2>Control Panel</h2>
+<p>Located below the tables, the Control Panel lets you manage global data:</p>
+<ul>
+    <li><code>Manage Belts</code> - Add, edit, or remove belt types. You can also change the order of belts by using the up (↑) and down (↓) arrows in the Belt Management modal. This order determines how belts appear in dropdown lists and reports.</li>
+    <li><code>Manage Instructors</code> - Add or remove instructors</li>
+    <li><code>Manage Locations</code> - Add or remove training locations</li>
+    <li><code>Import Data</code> - Load data from a JSON file</li>
+    <li><code>Export Data</code> - Save current data to a JSON file</li>
+    <li><code>Reset Data</code> - Clear all data and restore default belts</li>
+</ul>
+</section>
+
+<section>
+<h2>Tips & Best Practices</h2>
+<ul>
+    <li>Always make sure students are marked <strong>Active and Eligible</strong> to appear in belt test selections.</li>
+    <li>Use the import/export functions to backup your data regularly.</li>
+    <li>Keep belt names consistent to ensure proper tracking and dashboard accuracy.</li>
+    <li>Check the <strong>Dashboard</strong> for a quick visual of belt distribution.</li>
+</ul>
+</section>
+
+<section>
+<h2>Contact / Support</h2>
+<p>If you encounter issues or have questions about using the app, contact the developer, Dennis, at Hightekkrednek@gmail.com or instructor team managing the tracker.</p>
+</section>
+
+<!-- Place this where you want the button to appear -->
+<button onclick="window.location.href='index.html'" class="button">Return to App</button>
 
 </body>
 </html>
