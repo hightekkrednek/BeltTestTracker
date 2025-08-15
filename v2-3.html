@@ -374,6 +374,9 @@ function openTestModal(t=null){
   instructors.forEach(i=>{ const o=document.createElement('option'); o.value=i; o.text=i; if(t&&t.instructors.includes(i)) o.selected=true; selI.add(o); });
   const selL=document.getElementById('testLocation'); selL.innerHTML='';
   locations.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.text=l; if(t&&t.location===l) o.selected=true; selL.add(o); });
+  document.getElementById('testLocation').value = t ? t.location : '';
+  document.getElementById('testResult').value = t ? t.result || 'Pass' : 'Pass';
+
   document.getElementById('testModal').style.display='flex';
 }
   
