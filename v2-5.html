@@ -240,6 +240,7 @@ li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
       </label><br><br>
       <label>Active Only: <input type="checkbox" id="reportActiveOnly" checked></label><br><br>
       <label>Eligible Only: <input type="checkbox" id="reportEligibleOnly" checked></label><br><br>
+      <label>Include Belt Test History: <input type="checkbox" id="reportIncludeTests" checked></label><br><br>
       <div class="table-container">
         <table id="reportTable">
           <thead>
@@ -589,9 +590,9 @@ function generateReport(){
   const location = document.getElementById('reportLocation').value;
   const activeOnly = document.getElementById('reportActiveOnly').checked;
   const eligibleOnly = document.getElementById('reportEligibleOnly').checked;
+  const includeTests = document.getElementById('reportIncludeTests').checked;
 
   let filteredStudents = students;
-
   if(belt) filteredStudents = filteredStudents.filter(s => s.belt === belt);
   if(instructor) filteredStudents = filteredStudents.filter(s => s.instructors.includes(instructor));
   if(location) filteredStudents = filteredStudents.filter(s => s.location === location);
@@ -600,6 +601,7 @@ function generateReport(){
 
   const tbody = document.querySelector('#reportTable tbody');
   tbody.innerHTML = '';
+
   filteredStudents.forEach(s => {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -613,16 +615,42 @@ function generateReport(){
       <td>${s.active?'✔':''}</td>
     `;
     tbody.appendChild(row);
+
+    if(includeTests){
+      const studentTests = beltTests.filter(t => t.studentId === s.id);
+      studentTests.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.style.background = '#f0f0f0';
+        tr.innerHTML = `
+          <td></td>
+          <td colspan="1">Test: ${t.belt}</td>
+          <td colspan="1">${t.date}</td>
+          <td>${t.instructors.join(',')}</td>
+          <td>${t.location}</td>
+          <td>${t.result || ''}</td>
+          <td colspan="2"></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
   });
 }
 
+
 function exportReportCSV(){
-  const rows = [['ID','Name','Belt','Instructor(s)','Location','Eligible','Next Eligible Date','Active']];
+  const includeTests = document.getElementById('reportIncludeTests').checked;
+  let rows = [['ID','Name','Belt','Instructor(s)','Location','Eligible','Next Eligible Date','Active']];
   const tbody = document.querySelector('#reportTable tbody');
+
   tbody.querySelectorAll('tr').forEach(tr => {
-    const row = Array.from(tr.children).map(td => td.textContent);
+    const row = Array.from(tr.children).map(td => td.textContent.replace(/\n/g,' ').trim());
     rows.push(row);
+    // Include tests in CSV if toggle enabled
+    if(includeTests && row[1].startsWith('Test:')){
+      // Already included as a separate row in the table
+    }
   });
+
   if(rows.length===1){ alert('No data to export'); return; }
   const csvContent = rows.map(r => r.join(',')).join('\n');
   const blob = new Blob([csvContent], {type:'text/csv'});
@@ -630,6 +658,7 @@ function exportReportCSV(){
   const a = document.createElement('a'); a.href=url; a.download='report.csv'; a.click();
   URL.revokeObjectURL(url);
 }
+
 
   
   
