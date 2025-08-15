@@ -383,23 +383,42 @@ function openTestModal(t=null){
 function closeTestModal(){ document.getElementById('testModal').style.display='none'; editingTest=null; }
   
 function saveTest(){
-  const studentId=parseInt(document.getElementById('testStudentId').value);
-  const belt=document.getElementById('testBelt').value;
-  const date=document.getElementById('testDate').value;
-  if(isNaN(studentId)||!belt||!date){alert('Student, Belt, and Date required'); return;}
-  const instructorsSelected=[...document.getElementById('testInstructors').selectedOptions].map(o=>o.value);
-  const location=document.getElementById('testLocation').value;
-  const result = document.getElementById('testResult').value;
-  if(editingTest){
-    editingTest.studentId=studentId; editingTest.belt=belt; editingTest.date=date; editingTest.instructors=instructorsSelected; editingTest.location=location; editingTest.result=result;
-  } else {
-    beltTests.push({studentId,belt,date,instructors:instructorsSelected,location, result});
+  const studentId = parseInt(document.getElementById('testStudentId').value);
+  const belt = document.getElementById('testBelt').value;
+  const date = document.getElementById('testDate').value;
+  if (isNaN(studentId) || !belt || !date) {
+    alert('Student, Belt, and Date required');
+    return;
   }
-  // NEW FEATURE: update student belt automatically
-  const student=students.find(s=>s.id===studentId);
-  if(student) student.belt=belt;
-  saveAllData(); populateTables(); closeTestModal();
+  const instructorsSelected = [...document.getElementById('testInstructors').selectedOptions].map(o => o.value);
+  const location = document.getElementById('testLocation').value;
+  const result = document.getElementById('testResult').value;
+
+  if (editingTest) {
+    editingTest.studentId = studentId;
+    editingTest.belt = belt;
+    editingTest.date = date;
+    editingTest.instructors = instructorsSelected;
+    editingTest.location = location;
+    editingTest.result = result;
+  } else {
+    beltTests.push({ studentId, belt, date, instructors: instructorsSelected, location, result });
+    // Remove eligibility after recording a test for this student
+    const student = students.find(s => s.id === studentId);
+    if (student) {
+      student.eligible = false;
+    }
+  }
+
+  // Update student belt automatically
+  const student = students.find(s => s.id === studentId);
+  if (student) student.belt = belt;
+
+  saveAllData();
+  populateTables();
+  closeTestModal();
 }
+
 
 function addTestRowToTable(t) {
   const tbody = document.querySelector('#beltTestsTable tbody');
