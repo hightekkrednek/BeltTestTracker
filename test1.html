@@ -9,7 +9,12 @@ body { font-family: Arial, sans-serif; margin:0; background:#f4f4f9; color:#333;
 h2 { margin-top:0; }
 section { background:#fff; margin:20px auto; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:95%; }
 table { width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:auto; word-wrap:break-word; }
-.table-container { overflow-x: auto; width: 100%; }
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
 th,td { padding:10px; border:1px solid #ddd; text-align:left; font-size:14px; overflow-wrap: break-word; }
 th { background:#e2e2f1; }
 input[type="text"], input[type="number"], input[type="date"], select { width:95%; padding:6px; box-sizing:border-box; border-radius:4px; border:1px solid #ccc; }
@@ -28,37 +33,47 @@ li button { background:#ff4d4d; margin-left:5px; font-size:12px; padding:2px 6px
 li .upBtn, li .downBtn { background:#4d94ff; margin-left:3px; }
 .count-display { margin-bottom:10px; font-weight:bold; }
 
-/* Belt colors and gradients */
-.belt-White { background: #ffffff; }
-.belt-Junior-yellow { background: linear-gradient(90deg, #fffacd, #fff199); }
-.belt-Yellow { background: linear-gradient(90deg, #ffff66, #ffeb3b); }
-.belt-Advanced-yellow { background: linear-gradient(90deg, #fff44f, #ffeb3b); }
-.belt-Junior-Green { background: linear-gradient(90deg, #a8e6a2, #90ee90); }
-.belt-Green { background: linear-gradient(90deg, #66c466, #00b300); }
-.belt-Advanced-Green { background: linear-gradient(90deg, #4caf50, #2e7d32); }
-.belt-Junior-blue { background: linear-gradient(90deg, #add8e6, #87ceeb); }
-.belt-Blue { background: linear-gradient(90deg, #6495ed, #4169e1); }
-.belt-Advanced-Blue { background: linear-gradient(90deg, #1e90ff, #0d47a1); }
-.belt-Junior-red { background: linear-gradient(90deg, #ff7f7f, #ff6666); }
-.belt-Red { background: linear-gradient(90deg, #ff0000, #cc0000); }
-.belt-Advanced-red { background: linear-gradient(90deg, #b71c1c, #7f0000); }
-.belt-Recommend-Black-Level-1 { background: linear-gradient(90deg, #444444, #222222); color:#fff; }
-.belt-Recommend-Black-Level-2 { background: linear-gradient(90deg, #555555, #222222); color:#fff; }
-.belt-Recommend-Black-Level-3 { background: linear-gradient(90deg, #666666, #333333); color:#fff; }
-.belt-Black-1st-degree { background: linear-gradient(90deg, #000000, #111111); color:#fff; }
-.belt-Black-2nd-degree { background: linear-gradient(90deg, #0d0d0d, #1a1a1a); color:#fff; }
-.belt-Black-3rd-degree { background: linear-gradient(90deg, #1a1a1a, #262626); color:#fff; }
-.belt-Black-4th-degree { background: linear-gradient(90deg, #262626, #333333); color:#fff; }
-.belt-Black-5th-degree { background: linear-gradient(90deg, #333333, #404040); color:#fff; }
-.belt-Black-6th-degree { background: linear-gradient(90deg, #404040, #4d4d4d); color:#fff; }
-.belt-Black-7th-degree { background: linear-gradient(90deg, #4d4d4d, #595959); color:#fff; }
-.belt-Black-8th-degree { background: linear-gradient(90deg, #595959, #666666); color:#fff; }
-.belt-Black-9th-degree { background: linear-gradient(90deg, #666666, #737373); color:#fff; }
+/* Gradient Belt Colors */
+.belt-White { background: linear-gradient(to right, #ffffff, #f0f0f0); }
+.belt-Junior-yellow { background: linear-gradient(to right, #fffacd, #fff2a8); }
+.belt-Yellow { background: linear-gradient(to right, #ffff00, #ffea00); }
+.belt-Advanced-yellow { background: linear-gradient(to right, #ffd700, #ffc200); }
+.belt-Junior-Green { background: linear-gradient(to right, #90ee90, #7ee07e); }
+.belt-Green { background: linear-gradient(to right, #008000, #00a000); }
+.belt-Advanced-Green { background: linear-gradient(to right, #00b300, #00e600); }
+.belt-Junior-blue { background: linear-gradient(to right, #add8e6, #7fccee); }
+.belt-Blue { background: linear-gradient(to right, #0000ff, #0000cc); }
+.belt-Advanced-Blue { background: linear-gradient(to right, #0000a0, #00007f); }
+.belt-Junior-red { background: linear-gradient(to right, #ff7f7f, #ff4d4d); }
+.belt-Red { background: linear-gradient(to right, #ff0000, #cc0000); }
+.belt-Advanced-red { background: linear-gradient(to right, #a00000, #7f0000); }
+.belt-Recommended-Black-Level-1 { background: linear-gradient(to right, #333333, #1a1a1a); color:#fff; }
+.belt-Recommended-Black-Level-2 { background: linear-gradient(to right, #444444, #1a1a1a); color:#fff; }
+.belt-Recommended-Black-Level-3 { background: linear-gradient(to right, #555555, #1a1a1a); color:#fff; }
+.belt-Black-1st-degree { background: linear-gradient(to right, #000000, #1a1a1a); color:#fff; }
+.belt-Black-2nd-degree { background: linear-gradient(to right, #0a0a0a, #1a1a1a); color:#fff; }
+.belt-Black-3rd-degree { background: linear-gradient(to right, #1a1a1a, #333333); color:#fff; }
+.belt-Black-4th-degree { background: linear-gradient(to right, #2a2a2a, #444444); color:#fff; }
+.belt-Black-5th-degree { background: linear-gradient(to right, #3a3a3a, #555555); color:#fff; }
+.belt-Black-6th-degree { background: linear-gradient(to right, #4a4a4a, #666666); color:#fff; }
+.belt-Black-7th-degree { background: linear-gradient(to right, #5a5a5a, #777777); color:#fff; }
+.belt-Black-8th-degree { background: linear-gradient(to right, #6a6a6a, #888888); color:#fff; }
+.belt-Black-9th-degree { background: linear-gradient(to right, #7a7a7a, #999999); color:#fff; }
+
 </style>
 </head>
 <body>
 
-<h1 style="text-align: center; background-color: #222; color: white; padding: 15px 0; margin: 0; font-family: Arial, sans-serif; font-size: 2em; border-bottom: 4px solid #ffcc00;">
+<h1 style="
+    text-align: center;
+    background-color: #222;
+    color: white;
+    padding: 15px 0;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    font-size: 2em;
+    border-bottom: 4px solid #ffcc00;
+">
 Impact Martial Arts Belt Tracker
 </h1>
 
@@ -68,53 +83,53 @@ Impact Martial Arts Belt Tracker
 </section>
 
 <section id="studentsSection">
-<h2>Students</h2>
-<div class="count-display" id="studentCounts"></div>
-<label for="studentSearch">Search Students / Belt / Instructor / Location:</label>
-<input type="text" id="studentSearch" placeholder="Type to filter..." oninput="searchStudents()">
-<div class="table-container">
-<table id="studentsTable">
-<thead>
-<tr>
-<th>ID</th>
-<th>Name</th>
-<th>Birthdate</th>
-<th>Age</th>
-<th>Belt</th>
-<th>Instructor</th>
-<th>Location</th>
-<th>Eligible</th>
-<th>Next Eligible Date</th>
-<th>Active</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-<button onclick="openStudentModal()">Add Student</button>
+  <h2>Students</h2>
+  <div class="count-display" id="studentCounts"></div>
+  <label for="studentSearch">Search Students / Belt / Instructor / Location:</label>
+  <input type="text" id="studentSearch" placeholder="Type to filter..." oninput="searchStudents()">
+  <div class="table-container">
+    <table id="studentsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Birthdate</th>
+          <th>Age</th>
+          <th>Belt</th>
+          <th>Instructor</th>
+          <th>Location</th>
+          <th>Eligible</th>
+          <th>Next Eligible Date</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <button onclick="openStudentModal()">Add Student</button>
 </section>
 
 <section id="beltTestsSection">
-<h2>Belt Tests</h2>
-<div class="count-display" id="eligibleCount"></div>
-<div class="table-container">
-<table id="beltTestsTable">
-<thead>
-<tr>
-<th>Student</th>
-<th>Belt</th>
-<th>Date</th>
-<th>Instructor(s)</th>
-<th>Location</th>
-<th>Result</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-<button onclick="openTestModal()">Add Belt Test</button>
+  <h2>Belt Tests</h2>
+  <div class="count-display" id="eligibleCount"></div>
+  <div class="table-container">
+    <table id="beltTestsTable">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Belt</th>
+          <th>Date</th>
+          <th>Instructor(s)</th>
+          <th>Location</th>
+          <th>Result</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <button onclick="openTestModal()">Add Belt Test</button>
 </section>
 
 <section class="control-panel">
@@ -209,239 +224,303 @@ Impact Martial Arts Belt Tracker
 </div>
 
 <script>
-// --- DATA, STORAGE, DASHBOARD, TABLES, MODALS ---
-// This script is a direct continuation of your v2.5 functionality with full gradient belt update.
-// --- DATA STORAGE ---
-let students = JSON.parse(localStorage.getItem('students')) || [];
-let belts = JSON.parse(localStorage.getItem('belts')) || [
-    "White","Junior yellow","Yellow","Advanced yellow","Junior Green","Green","Advanced Green",
-    "Junior blue","Blue","Advanced Blue","Junior red","Red","Advanced red",
-    "Recommended Black Level 1","Recommended Black Level 2","Recommended Black Level 3",
-    "Black 1st degree","Black 2nd degree","Black 3rd degree","Black 4th degree",
-    "Black 5th degree","Black 6th degree","Black 7th degree","Black 8th degree","Black 9th degree"
-];
-let instructors = JSON.parse(localStorage.getItem('instructors')) || [];
-let locations = JSON.parse(localStorage.getItem('locations')) || [];
-let tests = JSON.parse(localStorage.getItem('tests')) || [];
+// --- FULL v2.5 JS ---
+// DATA & STORAGE
+let students=[], beltTests=[], instructors=[], locations=[], belts=[
+"White","Junior yellow","Yellow","Advanced yellow",
+"Junior Green","Green","Advanced Green",
+"Junior blue","Blue","Advanced Blue",
+"Junior red","Red","Advanced red",
+"Recommended Black Level 1","Recommended Black Level 2","Recommended Black Level 3",
+"Black 1st degree","Black 2nd degree","Black 3rd degree","Black 4th degree","Black 5th degree",
+"Black 6th degree","Black 7th degree","Black 8th degree","Black 9th degree"
+], nextStudentId=1000;
 
-// --- SAVE & LOAD ---
-function saveData() {
-    localStorage.setItem('students', JSON.stringify(students));
-    localStorage.setItem('belts', JSON.stringify(belts));
-    localStorage.setItem('instructors', JSON.stringify(instructors));
-    localStorage.setItem('locations', JSON.stringify(locations));
-    localStorage.setItem('tests', JSON.stringify(tests));
-    updateDashboard();
-    renderTables();
-    renderBeltModal();
-    renderStudentBeltOptions();
-    renderTestBeltOptions();
+let editingStudent=null, editingTest=null;
+
+function saveAllData(){
+  localStorage.setItem('students',JSON.stringify(students));
+  localStorage.setItem('beltTests',JSON.stringify(beltTests));
+  localStorage.setItem('instructors',JSON.stringify(instructors));
+  localStorage.setItem('locations',JSON.stringify(locations));
+  localStorage.setItem('belts',JSON.stringify(belts));
+  localStorage.setItem('nextStudentId',nextStudentId);
 }
 
-// --- DASHBOARD ---
-function updateDashboard() {
-    let counts = {};
-    belts.forEach(b => counts[b]=0);
-    students.forEach(s => { if(counts[s.belt]!==undefined) counts[s.belt]++; });
-    let html = '<ul>';
-    for(let belt of belts){
-        html += `<li><span class="belt-${belt.replace(/ /g,'-').replace(/'/g,'')}">${belt}: ${counts[belt]}</span></li>`;
+function loadAllData(){
+  students=JSON.parse(localStorage.getItem('students')||'[]');
+  beltTests=JSON.parse(localStorage.getItem('beltTests')||'[]');
+  instructors=JSON.parse(localStorage.getItem('instructors')||'[]');
+  locations=JSON.parse(localStorage.getItem('locations')||'[]');
+  belts=JSON.parse(localStorage.getItem('belts')||JSON.stringify(belts));
+  nextStudentId=parseInt(localStorage.getItem('nextStudentId')||'1000');
+}
+
+// Dashboard
+function updateBeltCounts(){
+  if(students.length===0){document.getElementById('beltCounts').innerText="No students yet.";return;}
+  let counts={};
+  students.forEach(s=>{ counts[s.belt]=(counts[s.belt]||0)+1; });
+  document.getElementById('beltCounts').innerText=Object.entries(counts).map(([b,n])=>`${b}: ${n}`).join(', ');
+}
+
+function checkEligibilityDates(){
+  const today = new Date();
+  students.forEach(student => {
+    if(student.active && student.nextEligibleDate){
+      const eligibleDate = new Date(student.nextEligibleDate);
+      if(today >= eligibleDate){
+        student.eligible = true;
+        delete student.nextEligibleDate;
+      }
     }
-    html += '</ul>';
-    document.getElementById('beltCounts').innerHTML = html;
+  });
 }
 
-// --- STUDENT TABLE ---
-function renderTables() {
-    const tbody = document.querySelector('#studentsTable tbody');
-    tbody.innerHTML = '';
-    students.forEach((s,i)=>{
-        const tr = document.createElement('tr');
-        tr.className = s.active ? 'student-active' : '';
-        tr.innerHTML = `
-            <td>${i+1}</td>
-            <td>${s.name}</td>
-            <td>${s.birthdate}</td>
-            <td>${calculateAge(s.birthdate)}</td>
-            <td><span class="belt-${s.belt.replace(/ /g,'-').replace(/'/g,'')}">${s.belt}</span></td>
-            <td>${s.instructor}</td>
-            <td>${s.location}</td>
-            <td>${s.eligible ? 'Yes' : 'No'}</td>
-            <td>${s.nextEligibleDate || ''}</td>
-            <td>${s.active ? 'Yes' : 'No'}</td>
-            <td>
-                <button onclick="editStudent(${i})">Edit</button>
-                <button onclick="deleteStudent(${i})">Delete</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-    renderEligibleCount();
+// Populate Tables
+function populateTables(){
+  const tbodyS=document.querySelector('#studentsTable tbody'); tbodyS.innerHTML='';
+  students.forEach(s=>{ addStudentRowToTable(s); });
+  const tbodyT=document.querySelector('#beltTestsTable tbody'); tbodyT.innerHTML='';
+  beltTests.forEach(t=>{ addTestRowToTable(t); });
+  updateBeltCounts();
+  populateBeltSelector();
+  updateCounts();
 }
 
-// --- ELIGIBILITY COUNTER ---
-function renderEligibleCount() {
-    const count = students.filter(s=>s.eligible).length;
-    document.getElementById('eligibleCount').innerText = `Eligible Students: ${count}`;
+function updateCounts(){
+  const activeCount = students.filter(s=>s.active).length;
+  const inactiveCount = students.filter(s=>!s.active).length;
+  document.getElementById('studentCounts').innerText = `Active Students: ${activeCount} | Inactive Students: ${inactiveCount}`;
+  const eligibleCount = students.filter(s=>s.active && s.eligible).length;
+  document.getElementById('eligibleCount').innerText = `Eligible Students for Belt Test: ${eligibleCount}`;
 }
 
-// --- AGE CALCULATION ---
-function calculateAge(birthdate) {
-    const birth = new Date(birthdate);
-    const diff = Date.now() - birth.getTime();
-    const age = new Date(diff).getUTCFullYear()-1970;
-    return age;
+// Belt Class
+function beltClassName(belt){ return 'belt-'+belt.replace(/\s/g,'-'); }
+function populateBeltSelector(){
+  const sel=document.getElementById('studentBelt'); sel.innerHTML='';
+  belts.forEach(b=>{const o=document.createElement('option'); o.value=b; o.text=b; sel.add(o);});
+  const testSel=document.getElementById('testBelt'); testSel.innerHTML='';
+  belts.forEach(b=>{const o=document.createElement('option'); o.value=b; o.text=b; testSel.add(o);});
 }
 
-// --- SEARCH ---
-function searchStudents() {
-    const val = document.getElementById('studentSearch').value.toLowerCase();
-    const tbody = document.querySelector('#studentsTable tbody');
-    Array.from(tbody.rows).forEach(row=>{
-        row.style.display = Array.from(row.cells).some(cell=>cell.innerText.toLowerCase().includes(val)) ? '' : 'none';
-    });
+// Student Functions
+function openStudentModal(s=null){
+  editingStudent=s;
+  document.getElementById('studentName').value=s?s.name:'';
+  document.getElementById('studentBirthdate').value=s?s.birthdate:'';
+  document.getElementById('studentBelt').value=s?s.belt:belts[0];
+  document.getElementById('studentEligible').checked=s?s.eligible:false;
+  document.getElementById('studentActive').checked=s?s.active:true;
+  const instSel=document.getElementById('studentInstructor'); instSel.innerHTML='';
+  instructors.forEach(i=>{ const o=document.createElement('option'); o.value=i; o.text=i; if(s&&s.instructors.includes(i)) o.selected=true; instSel.add(o); });
+  const locSel=document.getElementById('studentLocation'); locSel.innerHTML='';
+  locations.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.text=l; if(s&&s.location===l) o.selected=true; locSel.add(o); });
+  document.getElementById('studentModal').style.display='flex';
+}
+function closeStudentModal(){ document.getElementById('studentModal').style.display='none'; editingStudent=null; }
+function saveStudent(){
+  const name=document.getElementById('studentName').value.trim();
+  if(!name){ alert('Name required'); return;}
+  const birthdate=document.getElementById('studentBirthdate').value;
+  const belt=document.getElementById('studentBelt').value;
+  const instructor=[document.getElementById('studentInstructor').value];
+  const location=document.getElementById('studentLocation').value;
+  const eligible=document.getElementById('studentEligible').checked;
+  const active=document.getElementById('studentActive').checked;
+  if(editingStudent){
+    editingStudent.name=name; editingStudent.birthdate=birthdate; editingStudent.belt=belt;
+    editingStudent.instructors=instructor; editingStudent.location=location; editingStudent.eligible=eligible; editingStudent.active=active;
+  } else {
+    students.push({id:nextStudentId++, name, birthdate, belt, instructors:instructor, location, eligible, active});
+  }
+  saveAllData(); populateTables(); closeStudentModal();
+}
+function calculateAge(birthdate){
+  if(!birthdate) return '';
+  const today=new Date(); const birth=new Date(birthdate);
+  let age=today.getFullYear()-birth.getFullYear();
+  const m=today.getMonth()-birth.getMonth();
+  if(m<0 || (m===0 && today.getDate()<birth.getDate())) age--;
+  return age;
+}
+function addStudentRowToTable(s){
+  const tbody=document.querySelector('#studentsTable tbody');
+  const row=document.createElement('tr');
+  row.className = s.active ? 'student-active' : '';
+  row.innerHTML = `
+    <td>${s.id}</td>
+    <td>${s.name}</td>
+    <td>${s.birthdate || ''}</td>
+    <td>${calculateAge(s.birthdate)}</td>
+    <td class="${beltClassName(s.belt)}">${s.belt}</td>
+    <td>${s.instructors.join(', ')}</td>
+    <td>${s.location || ''}</td>
+    <td>${s.eligible ? 'Yes' : 'No'}</td>
+    <td>${s.nextEligibleDate || ''}</td>
+    <td><input type="checkbox" ${s.active?'checked':''} onchange="toggleActive(${s.id}, this.checked)"></td>
+    <td>
+      <button onclick="openStudentModalById(${s.id})">Edit</button>
+      <button onclick="deleteStudent(${s.id})">Delete</button>
+    </td>
+  `;
+  tbody.appendChild(row);
 }
 
-// --- MODALS ---
-function openStudentModal() { document.getElementById('studentModal').style.display='flex'; }
-function closeStudentModal() { document.getElementById('studentModal').style.display='none'; }
-function openTestModal() { document.getElementById('testModal').style.display='flex'; }
-function closeTestModal() { document.getElementById('testModal').style.display='none'; }
-function openBeltModal() { document.getElementById('beltModal').style.display='flex'; renderBeltModal(); }
-function closeBeltModal() { document.getElementById('beltModal').style.display='none'; }
-function openInstructorModal() { document.getElementById('instructorModal').style.display='flex'; renderInstructorModal(); }
-function closeInstructorModal() { document.getElementById('instructorModal').style.display='none'; }
-function openLocationModal() { document.getElementById('locationModal').style.display='flex'; renderLocationModal(); }
-function closeLocationModal() { document.getElementById('locationModal').style.display='none'; }
-
-// --- STUDENT CRUD ---
-function saveStudent() {
-    const name = document.getElementById('studentName').value;
-    const birthdate = document.getElementById('studentBirthdate').value;
-    const belt = document.getElementById('studentBelt').value;
-    const instructor = document.getElementById('studentInstructor').value;
-    const location = document.getElementById('studentLocation').value;
-    const eligible = document.getElementById('studentEligible').checked;
-    const active = document.getElementById('studentActive').checked;
-    if(name && birthdate) {
-        const editIndex = document.getElementById('studentModal').dataset.editIndex;
-        if(editIndex!==undefined) {
-            students[editIndex] = {name,birthdate,belt,instructor,location,eligible,active, nextEligibleDate:students[editIndex].nextEligibleDate};
-            delete document.getElementById('studentModal').dataset.editIndex;
-        } else {
-            students.push({name,birthdate,belt,instructor,location,eligible,active,nextEligibleDate:null});
-        }
-        saveData();
-        closeStudentModal();
-    } else { alert('Name and Birthdate are required'); }
+function openStudentModalById(id){
+  const s = students.find(st => st.id === id);
+  if(s) openStudentModal(s);
 }
-function editStudent(i){
-    const s = students[i];
-    document.getElementById('studentName').value = s.name;
-    document.getElementById('studentBirthdate').value = s.birthdate;
-    document.getElementById('studentBelt').value = s.belt;
-    document.getElementById('studentInstructor').value = s.instructor;
-    document.getElementById('studentLocation').value = s.location;
-    document.getElementById('studentEligible').checked = s.eligible;
-    document.getElementById('studentActive').checked = s.active;
-    document.getElementById('studentModal').dataset.editIndex = i;
-    openStudentModal();
-}
-function deleteStudent(i){ if(confirm('Delete this student?')) { students.splice(i,1); saveData(); } }
 
-// --- BELT MODAL ---
-function renderBeltModal() {
-    const ul = document.getElementById('beltList');
-    ul.innerHTML='';
-    belts.forEach((b,i)=>{
-        const li = document.createElement('li');
-        li.innerHTML = `<span class="belt-${b.replace(/ /g,'-').replace(/'/g,'')}">${b}</span>
-                        <button class="upBtn" onclick="moveBeltUp(${i})">↑</button>
-                        <button class="downBtn" onclick="moveBeltDown(${i})">↓</button>
-                        <button onclick="deleteBelt(${i})">X</button>`;
-        ul.appendChild(li);
-    });
+function deleteStudent(id){
+  if(confirm('Delete student?')){
+    students = students.filter(s=>s.id!==id);
+    saveAllData(); populateTables();
+  }
+}
+
+function toggleActive(id, val){
+  const s = students.find(st=>st.id===id);
+  if(s){ s.active = val; saveAllData(); populateTables(); }
+}
+
+// Belt Test Functions
+function openTestModal(t=null){
+  editingTest = t;
+  const studentSel=document.getElementById('testStudentId'); studentSel.innerHTML='';
+  students.forEach(s=>{const o=document.createElement('option'); o.value=s.id; o.text=s.name; studentSel.add(o); });
+  if(t){ studentSel.value=t.studentId; document.getElementById('testBelt').value=t.belt; document.getElementById('testDate').value=t.date; document.getElementById('testResult').value=t.result; }
+  document.getElementById('testModal').style.display='flex';
+}
+
+function closeTestModal(){ document.getElementById('testModal').style.display='none'; editingTest=null; }
+
+function saveTest(){
+  const studentId=parseInt(document.getElementById('testStudentId').value);
+  const belt=document.getElementById('testBelt').value;
+  const date=document.getElementById('testDate').value;
+  const instructors = Array.from(document.getElementById('testInstructors').selectedOptions).map(o=>o.value);
+  const location=document.getElementById('testLocation').value;
+  const result=document.getElementById('testResult').value;
+  if(!studentId || !belt || !date){ alert('All fields required'); return;}
+  if(editingTest){
+    editingTest.studentId=studentId; editingTest.belt=belt; editingTest.date=date;
+    editingTest.instructors=instructors; editingTest.location=location; editingTest.result=result;
+  } else {
+    beltTests.push({studentId, belt, date, instructors, location, result});
+  }
+  saveAllData(); populateTables(); closeTestModal();
+}
+
+function addTestRowToTable(t){
+  const tbody=document.querySelector('#beltTestsTable tbody');
+  const student = students.find(s=>s.id===t.studentId);
+  const row=document.createElement('tr');
+  row.innerHTML=`
+    <td>${student ? student.name : 'Unknown'}</td>
+    <td class="${beltClassName(t.belt)}">${t.belt}</td>
+    <td>${t.date}</td>
+    <td>${t.instructors.join(', ')}</td>
+    <td>${t.location || ''}</td>
+    <td>${t.result}</td>
+    <td>
+      <button onclick="openTestModalById(${beltTests.indexOf(t)})">Edit</button>
+      <button onclick="deleteTest(${beltTests.indexOf(t)})">Delete</button>
+    </td>
+  `;
+  tbody.appendChild(row);
+}
+
+function openTestModalById(idx){
+  openTestModal(beltTests[idx]);
+}
+
+function deleteTest(idx){
+  if(confirm('Delete belt test?')){
+    beltTests.splice(idx,1); saveAllData(); populateTables();
+  }
+}
+
+// Sorting, Searching, Import/Export
+function searchStudents(){
+  const filter=document.getElementById('studentSearch').value.toLowerCase();
+  const rows=document.querySelectorAll('#studentsTable tbody tr');
+  rows.forEach(row=>{
+    row.style.display = Array.from(row.cells).some(td=>td.innerText.toLowerCase().includes(filter)) ? '' : 'none';
+  });
+}
+
+function importAll(){
+  const json=prompt("Paste JSON data");
+  if(!json) return;
+  try{
+    const data=JSON.parse(json);
+    students=data.students||[]; beltTests=data.beltTests||[];
+    instructors=data.instructors||[]; locations=data.locations||[]; belts=data.belts||belts;
+    nextStudentId=data.nextStudentId||nextStudentId;
+    saveAllData(); populateTables();
+  }catch(e){ alert("Invalid JSON"); }
+}
+
+function exportAll(){
+  const data={students,beltTests,instructors,locations,belts,nextStudentId};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='taekwondo_data.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetData(){
+  if(confirm("Reset all data?")){
+    students=[]; beltTests=[]; instructors=[]; locations=[]; belts=[
+      "White","Junior yellow","Yellow","Advanced yellow",
+      "Junior Green","Green","Advanced Green",
+      "Junior blue","Blue","Advanced Blue",
+      "Junior red","Red","Advanced red",
+      "Recommended Black Level 1","Recommended Black Level 2","Recommended Black Level 3",
+      "Black 1st degree","Black 2nd degree","Black 3rd degree","Black 4th degree","Black 5th degree",
+      "Black 6th degree","Black 7th degree","Black 8th degree","Black 9th degree"
+    ]; nextStudentId=1000;
+    saveAllData(); populateTables();
+  }
+}
+
+// Control Panel Modals
+function openBeltModal(){ document.getElementById('beltModal').style.display='flex'; refreshBeltList(); }
+function closeBeltModal(){ document.getElementById('beltModal').style.display='none'; }
+function refreshBeltList(){
+  const ul=document.getElementById('beltList'); ul.innerHTML='';
+  belts.forEach((b,i)=>{
+    const li=document.createElement('li'); li.innerHTML=`${b} <button onclick="deleteBelt(${i})">Del</button> <button class="upBtn" onclick="moveBeltUp(${i})">↑</button> <button class="downBtn" onclick="moveBeltDown(${i})">↓</button>`;
+    ul.appendChild(li);
+  });
 }
 function addBelt(){
-    const val = document.getElementById('newBeltName').value;
-    if(val && !belts.includes(val)) { belts.push(val); document.getElementById('newBeltName').value=''; saveData(); }
+  const name=document.getElementById('newBeltName').value.trim(); if(!name) return;
+  belts.push(name); document.getElementById('newBeltName').value=''; refreshBeltList(); populateBeltSelector(); saveAllData();
 }
-function deleteBelt(i){ if(confirm('Delete this belt?')){ belts.splice(i,1); saveData(); } }
-function moveBeltUp(i){ if(i>0){ [belts[i-1],belts[i]]=[belts[i],belts[i-1]]; saveData(); } }
-function moveBeltDown(i){ if(i<belts.length-1){ [belts[i+1],belts[i]]=[belts[i],belts[i+1]]; saveData(); } }
+function deleteBelt(i){ if(confirm("Delete belt?")){ belts.splice(i,1); refreshBeltList(); populateBeltSelector(); saveAllData(); } }
+function moveBeltUp(i){ if(i===0) return; [belts[i-1],belts[i]]=[belts[i],belts[i-1]]; refreshBeltList(); populateBeltSelector(); saveAllData(); }
+function moveBeltDown(i){ if(i===belts.length-1) return; [belts[i+1],belts[i]]=[belts[i],belts[i+1]]; refreshBeltList(); populateBeltSelector(); saveAllData(); }
 
-// --- RENDER SELECT OPTIONS ---
-function renderStudentBeltOptions(){
-    const sel = document.getElementById('studentBelt');
-    sel.innerHTML='';
-    belts.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.text=b; sel.appendChild(o); });
-}
-function renderTestBeltOptions(){
-    const sel = document.getElementById('testBelt');
-    sel.innerHTML='';
-    belts.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.text=b; sel.appendChild(o); });
-}
-function renderInstructorModal(){
-    const ul = document.getElementById('instructorList'); ul.innerHTML='';
-    instructors.forEach((ins,i)=>{ const li=document.createElement('li'); li.innerHTML=`${ins}<button onclick="deleteInstructor(${i})">X</button>`; ul.appendChild(li); });
-}
-function renderLocationModal(){
-    const ul = document.getElementById('locationList'); ul.innerHTML='';
-    locations.forEach((loc,i)=>{ const li=document.createElement('li'); li.innerHTML=`${loc}<button onclick="deleteLocation(${i})">X</button>`; ul.appendChild(li); });
-}
-function addInstructor(){ const val=document.getElementById('newInstructorName').value; if(val&&!instructors.includes(val)){ instructors.push(val); document.getElementById('newInstructorName').value=''; saveData(); } }
-function deleteInstructor(i){ if(confirm('Delete instructor?')){ instructors.splice(i,1); saveData(); } }
-function addLocation(){ const val=document.getElementById('newLocationName').value; if(val&&!locations.includes(val)){ locations.push(val); document.getElementById('newLocationName').value=''; saveData(); } }
-function deleteLocation(i){ if(confirm('Delete location?')){ locations.splice(i,1); saveData(); } }
+function openInstructorModal(){ document.getElementById('instructorModal').style.display='flex'; refreshInstructorList(); }
+function closeInstructorModal(){ document.getElementById('instructorModal').style.display='none'; }
+function refreshInstructorList(){ const ul=document.getElementById('instructorList'); ul.innerHTML=''; instructors.forEach((i,n)=>{ const li=document.createElement('li'); li.innerHTML=`${i} <button onclick="deleteInstructor(${n})">Del</button>`; ul.appendChild(li); }); }
+function addInstructor(){ const name=document.getElementById('newInstructorName').value.trim(); if(!name) return; instructors.push(name); document.getElementById('newInstructorName').value=''; refreshInstructorList(); saveAllData(); }
 
-// --- TEST CRUD ---
-function saveTest(){
-    const studentId = document.getElementById('testStudentId').value;
-    const belt = document.getElementById('testBelt').value;
-    const date = document.getElementById('testDate').value;
-    const instructorEls = document.getElementById('testInstructors').selectedOptions;
-    const location = document.getElementById('testLocation').value;
-    const result = document.getElementById('testResult').value;
-    if(studentId && belt && date && location){
-        tests.push({studentId,belt,date,instructors:[...instructorEls].map(o=>o.value),location,result});
-        saveData();
-        closeTestModal();
-    } else { alert('All fields required'); }
-}
+function deleteInstructor(i){ if(confirm("Delete instructor?")){ instructors.splice(i,1); refreshInstructorList(); saveAllData(); } }
 
-// --- RENDER STUDENT SELECTS ---
-function renderStudentSelectOptions(){
-    const sel = document.getElementById('testStudentId');
-    sel.innerHTML='';
-    students.forEach((s,i)=>{ const o=document.createElement('option'); o.value=i; o.text=s.name; sel.appendChild(o); });
-}
-function renderInstructorSelectOptions(){
-    const sel = document.getElementById('testInstructors');
-    sel.innerHTML='';
-    instructors.forEach(ins=>{ const o=document.createElement('option'); o.value=ins; o.text=ins; sel.appendChild(o); });
-}
-function renderLocationSelectOptions(){
-    const sel = document.getElementById('testLocation');
-    sel.innerHTML='';
-    locations.forEach(loc=>{ const o=document.createElement('option'); o.value=loc; o.text=loc; sel.appendChild(o); });
-}
+function openLocationModal(){ document.getElementById('locationModal').style.display='flex'; refreshLocationList(); }
+function closeLocationModal(){ document.getElementById('locationModal').style.display='none'; }
+function refreshLocationList(){ const ul=document.getElementById('locationList'); ul.innerHTML=''; locations.forEach((l,n)=>{ const li=document.createElement('li'); li.innerHTML=`${l} <button onclick="deleteLocation(${n})">Del</button>`; ul.appendChild(li); }); }
+function addLocation(){ const name=document.getElementById('newLocationName').value.trim(); if(!name) return; locations.push(name); document.getElementById('newLocationName').value=''; refreshLocationList(); saveAllData(); }
+function deleteLocation(i){ if(confirm("Delete location?")){ locations.splice(i,1); refreshLocationList(); saveAllData(); } }
 
-// --- IMPORT/EXPORT/RESET ---
-function importAll(){
-    const json = prompt('Paste JSON here');
-    if(json){ try{ const obj=JSON.parse(json); students=obj.students||[]; belts=obj.belts||belts; instructors=obj.instructors||[]; locations=obj.locations||[]; tests=obj.tests||[]; saveData(); } catch(e){ alert('Invalid JSON'); } }
-}
-function exportAll(){ const data=JSON.stringify({students,belts,instructors,locations,tests}); prompt('Copy your data:',data); }
-function resetData(){ if(confirm('Reset all data?')){ students=[]; belts=[...belts]; instructors=[]; locations=[]; tests=[]; saveData(); } }
-
-// --- INITIAL RENDER ---
-saveData();
-renderStudentSelectOptions();
-renderInstructorSelectOptions();
-renderLocationSelectOptions();
-renderStudentBeltOptions();
-renderTestBeltOptions();
+// Initial load
+loadAllData(); populateTables();
 
 </script>
+
 </body>
 </html>
