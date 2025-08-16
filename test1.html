@@ -25,17 +25,31 @@ input[type="checkbox"] { width:20px; height:20px; }
 button { margin:5px; padding:8px 12px; border-radius:4px; border:none; background:#6c63ff; color:#fff; cursor:pointer; font-size:14px; }
 button:hover { background:#534fd1; }
 .control-panel { background:#e8e8f8; padding:20px; border-radius:8px; margin:20px auto; max-width:95%; display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-start; }
-.belt-White{background:#ffffff;}
-.belt-White-Stripe{background:#f9f9f9;}
-.belt-Yellow{background:#fffacd;}
-.belt-Yellow-Stripe{background:#fff8b0;}
-.belt-Green{background:#90ee90;}
-.belt-Green-Stripe{background:#a0f0a0;}
-.belt-Blue{background:#add8e6;}
-.belt-Blue-Stripe{background:#b7dfee;}
-.belt-Red{background:#ff7f7f;}
-.belt-Red-Stripe{background:#ff9999;}
-.belt-Black{background:#333333; color:#fff;}
+.belt-White { background:#ffffff; color:#000; }
+.belt-Junior-yellow { background:#fff8dc; }
+.belt-Yellow { background:#fffacd; }
+.belt-Advanced-yellow { background:#fff59d; }
+.belt-Junior-Green { background:#b2f7b2; }
+.belt-Green { background:#90ee90; }
+.belt-Advanced-Green { background:#70e070; }
+.belt-Junior-blue { background:#add8e6; }
+.belt-Blue { background:#87ceeb; }
+.belt-Advanced-Blue { background:#66b3ff; }
+.belt-Junior-red { background:#ffb2b2; }
+.belt-Red { background:#ff7f7f; }
+.belt-Advanced-red { background:#ff4d4d; }
+.belt-Recommended-Black-Level-1 { background:#333; color:#fff; }
+.belt-Recommended-Black-Level-2 { background:#2e2e2e; color:#fff; }
+.belt-Recommended-Black-Level-3 { background:#282828; color:#fff; }
+.belt-Black-1st-degree { background:#1f1f1f; color:#fff; }
+.belt-Black-2nd-degree { background:#1a1a1a; color:#fff; }
+.belt-Black-3rd-degree { background:#141414; color:#fff; }
+.belt-Black-4th-degree { background:#0f0f0f; color:#fff; }
+.belt-Black-5th-degree { background:#0a0a0a; color:#fff; }
+.belt-Black-6th-degree { background:#050505; color:#fff; }
+.belt-Black-7th-degree { background:#000000; color:#fff; }
+.belt-Black-8th-degree { background:#000000; color:#fff; }
+.belt-Black-9th-degree { background:#000000; color:#fff; }
 .student-active{background:#e6ffe6;}
 .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000; overflow:auto; padding:10px;}
 .modal-content { background:#fff; padding:20px; border-radius:8px; width:400px; max-width:100%; max-height:90%; overflow-y:auto; }
@@ -291,7 +305,34 @@ function searchStudents() {
 // DATA
 
   // defaults that are hardcoded. when data reset or new system... this is the data that will populate
-let students=[], beltTests=[], instructors=[], locations=[], belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"], nextStudentId=1000;
+let students=[], beltTests=[], instructors=[], locations=[], 
+belts = [
+  "White",
+  "Junior yellow",
+  "Yellow",
+  "Advanced yellow",
+  "Junior Green",
+  "Green",
+  "Advanced Green",
+  "Junior blue",
+  "Blue",
+  "Advanced Blue",
+  "Junior red",
+  "Red",
+  "Advanced red",
+  "Recommended Black Level 1",
+  "Recommended Black Level 2",
+  "Recommended Black Level 3",
+  "Black 1st degree",
+  "Black 2nd degree",
+  "Black 3rd degree",
+  "Black 4th degree",
+  "Black 5th degree",
+  "Black 6th degree",
+  "Black 7th degree",
+  "Black 8th degree",
+  "Black 9th degree"
+];, nextStudentId=1000;
 let editingStudent=null, editingTest=null;
 
 // STORAGE
@@ -356,7 +397,9 @@ function updateCounts(){
   document.getElementById('eligibleCount').innerText = `Eligible Students for Belt Test: ${eligibleCount}`;
 }
 
-function beltClassName(belt){ return 'belt-'+belt.replace(/\s/g,'-'); }
+function beltClassName(belt){
+  return 'belt-' + belt.replace(/\s/g,'-');
+}
 function populateBeltSelector(){
   const sel=document.getElementById('studentBelt'); sel.innerHTML='';
   belts.forEach(b=>{const o=document.createElement('option'); o.value=b; o.text=b; sel.add(o);});
@@ -601,7 +644,35 @@ function refreshLocationList(){ const ul=document.getElementById('locationList')
 // IMPORT / EXPORT / RESET
 function exportAll(){ const data={students, beltTests, instructors, locations, belts, nextStudentId}; const blob=new Blob([JSON.stringify(data,null,2)], {type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='taekwondo_data.json'; a.click(); URL.revokeObjectURL(url); }
 function importAll(){ const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.onchange=e=>{ const file=e.target.files[0]; const reader=new FileReader(); reader.onload=ev=>{ try{ const data=JSON.parse(ev.target.result); students=data.students||[]; beltTests=data.beltTests||[]; instructors=data.instructors||[]; locations=data.locations||[]; belts=data.belts||[]; nextStudentId=data.nextStudentId||1000; saveAllData(); populateTables(); alert('Import successful'); }catch(err){ alert('Import failed'); } }; reader.readAsText(file); }; input.click(); }
-function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[]; instructors=[]; locations=[]; belts=["White","White Stripe","Yellow","Yellow Stripe","Green","Green Stripe","Blue","Blue Stripe","Red","Red Stripe","Black"]; nextStudentId=1000; saveAllData(); populateTables(); } }
+function resetData(){ if(confirm('Reset all data?')){ students=[]; beltTests=[]; instructors=[]; locations=[]; 
+  belts = [
+  "White",
+  "Junior yellow",
+  "Yellow",
+  "Advanced yellow",
+  "Junior Green",
+  "Green",
+  "Advanced Green",
+  "Junior blue",
+  "Blue",
+  "Advanced Blue",
+  "Junior red",
+  "Red",
+  "Advanced red",
+  "Recommended Black Level 1",
+  "Recommended Black Level 2",
+  "Recommended Black Level 3",
+  "Black 1st degree",
+  "Black 2nd degree",
+  "Black 3rd degree",
+  "Black 4th degree",
+  "Black 5th degree",
+  "Black 6th degree",
+  "Black 7th degree",
+  "Black 8th degree",
+  "Black 9th degree"
+]; 
+nextStudentId=1000; saveAllData(); populateTables(); } }
 
 // REPORTS
 
