@@ -541,10 +541,52 @@ function deleteTest(index){ if(confirm('Delete belt test?')){ beltTests.splice(i
 function openBeltModal(){ document.getElementById('beltModal').style.display='flex'; refreshBeltList(); }
 function closeBeltModal(){ document.getElementById('beltModal').style.display='none'; }
 function addBelt(){ const name=document.getElementById('newBeltName').value.trim(); if(name&&!belts.includes(name)){ belts.push(name); saveAllData(); populateBeltSelector(); refreshBeltList(); document.getElementById('newBeltName').value=''; } }
-function refreshBeltList(){ const ul=document.getElementById('beltList'); ul.innerHTML=''; belts.forEach((b,i)=>{ 
-  const li=document.createElement('li'); li.innerText=b; 
-  const del=document.createElement('button'); del.innerText='X'; del.onclick=()=>{ belts.splice(i,1); saveAllData(); populateBeltSelector(); refreshBeltList(); }; li.appendChild(del);
-  ul.appendChild(li);}); }
+
+function refreshBeltList(){
+  const ul = document.getElementById('beltList');
+  ul.innerHTML = '';
+  belts.forEach((b, i) => {
+    const li = document.createElement('li');
+    li.innerText = b + ' ';
+
+    const up = document.createElement('button');
+    up.innerText = '↑';
+    up.className = 'upBtn';
+    up.onclick = () => moveBelt(i, -1);
+    up.disabled = (i === 0);
+
+    const down = document.createElement('button');
+    down.innerText = '↓';
+    down.className = 'downBtn';
+    down.onclick = () => moveBelt(i, 1);
+    down.disabled = (i === belts.length - 1);
+
+    const del = document.createElement('button');
+    del.innerText = 'X';
+    del.onclick = () => {
+      belts.splice(i, 1);
+      saveAllData();
+      populateBeltSelector();
+      refreshBeltList();
+    };
+
+    li.appendChild(up);
+    li.appendChild(down);
+    li.appendChild(del);
+    ul.appendChild(li);
+  });
+}
+  
+  // Move a belt up/down by delta (-1 = up, +1 = down)
+function moveBelt(index, delta){
+  const newIndex = index + delta;
+  if (newIndex < 0 || newIndex >= belts.length) return;
+  const [item] = belts.splice(index, 1);
+  belts.splice(newIndex, 0, item);
+  saveAllData();
+  populateBeltSelector(); // keep dropdowns in the same order
+  refreshBeltList();      // redraw the list with updated order
+}
 
 function openInstructorModal(){ document.getElementById('instructorModal').style.display='flex'; refreshInstructorList(); }
 function closeInstructorModal(){ document.getElementById('instructorModal').style.display='none'; }
